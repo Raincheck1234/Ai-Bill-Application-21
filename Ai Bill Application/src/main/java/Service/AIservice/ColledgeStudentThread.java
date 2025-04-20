@@ -3,11 +3,11 @@ package Service.AIservice;
 import java.io.IOException;
 
 public class ColledgeStudentThread implements Runnable{
-    private final int userRequest;
+//    private final int userRequest;
     private final String filePath;
     public String budgetRange;
-    public ColledgeStudentThread(int userRequest, String filePath) {
-        this.userRequest = userRequest;
+    public ColledgeStudentThread( String filePath) {
+//        this.userRequest = userRequest;
         this.filePath = filePath;
     }
 

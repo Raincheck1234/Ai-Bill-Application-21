@@ -1,5 +1,6 @@
 package Service;
 
+import Service.AIservice.ColledgeStudentThread;
 import Service.AIservice.CollegeStudentNeeds;
 import org.junit.jupiter.api.*;
 
@@ -16,12 +17,16 @@ import static org.junit.jupiter.api.Assertions.*;
 // No @ExtendWith needed as we are not using Mockito extensions
 class CollegeStudentNeedsTest {
 
+
+
     private CollegeStudentNeeds collegeStudentNeeds=new CollegeStudentNeeds();
     private static final String TEST_CSV_FILENAME = "src/test/resources/001.csv";
     @Test
-    public void testGenerateBudget() throws IOException {
-
-        collegeStudentNeeds.generateBudget(TEST_CSV_FILENAME);
+    public void testGenerateBudget() throws IOException, InterruptedException {
+        Thread t=new Thread( new ColledgeStudentThread(TEST_CSV_FILENAME));
+        t.start();
+        t.join();
+//        collegeStudentNeeds.generateBudget(TEST_CSV_FILENAME);
     }
     @Test
     public void testParseStringToDouble(){

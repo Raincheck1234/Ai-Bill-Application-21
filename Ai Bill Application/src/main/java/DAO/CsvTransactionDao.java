@@ -24,19 +24,17 @@ public class CsvTransactionDao implements TransactionDao {
     //
     @Override
     public List<Transaction> loadFromCSV(String filePath) throws IOException {
-        // 使用BOMInputStream自动处理UTF-8 BOM头
-        try (Reader reader = new InputStreamReader(
+        try (
+                Reader reader = new InputStreamReader(
                 new BOMInputStream(Files.newInputStream(Paths.get(filePath))),
                 StandardCharsets.UTF_8)) {
 
-            // 配置CSV格式（关键修改点）
             CSVFormat format = CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()
+                    .withFirstRecordAsHeader()    //根据首行的内容设置为表格的头
                     .withIgnoreHeaderCase(false)  // 禁用忽略大小写
                     .withTrim(false);             // 禁用自动trim（防止意外空格问题）
 
             try (CSVParser csvParser = new CSVParser(reader, format)) {
-
 
                 List<Transaction> transactions = new ArrayList<>();
                 for (CSVRecord record : csvParser) {
@@ -53,17 +51,16 @@ public class CsvTransactionDao implements TransactionDao {
 
 
     private Transaction parseRecord(CSVRecord record) {
-        // 重要：处理字段类型转换异常
         return new Transaction(
                 record.get("交易时间"),
                 record.get("交易类型"),
                 record.get("交易对方"),
                 record.get("商品"),
                 record.get("收/支"),
-                Double.parseDouble(record.get("金额(元)").substring(1)), // 注意数字转换
+                Double.parseDouble(record.get("金额(元)").substring(1)),
                 record.get("支付方式"),
                 record.get("当前状态"),
-                record.get("交易单号"), // 注意字段名拼写问题
+                record.get("交易单号"),
                 record.get("商户单号"),
                 record.get("备注")
         );
@@ -207,5 +204,30 @@ public class CsvTransactionDao implements TransactionDao {
             }
         }
         return true;
+    }
+
+    @Override
+    public List<Transaction> getAllTransactions() throws IOException {
+        return List.of();
+    }
+
+    @Override
+    public void addTransaction(Transaction transaction) throws IOException {
+
+    }
+
+    @Override
+    public boolean deleteTransaction(String orderNumber) throws IOException {
+        return false;
+    }
+
+    @Override
+    public boolean updateTransaction(String orderNumber, String fieldName, String newValue) throws IOException {
+        return false;
+    }
+
+    @Override
+    public Transaction getTransactionByOrderNumber(String orderNumber) throws IOException {
+        return null;
     }
 }

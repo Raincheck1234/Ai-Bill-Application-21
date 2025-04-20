@@ -10,8 +10,8 @@ import java.util.List;
 public class CollegeStudentNeeds {
     private final String requestBudge="我是一名预算有限的大学生，请根据下面我给出的花费，帮助我给下周预算范围，必须以[最低预算，最高预算],的方式给出回答，不能有多余的回复。";
     private final String requestTips="我是一名预算有限的大学生，请给我推荐一些省钱方法。";
-    private final String requestRecognition="下面我将给你一些账单的信息，请推测这个账单是什么方面的消费: ";
 
+    private final String requestRecognition="下面我将给你一些账单的信息，请推测这个账单是什么方面的消费: ";
     CsvTransactionDao dao;
     public CollegeStudentNeeds() {
         this.dao=new CsvTransactionDao();

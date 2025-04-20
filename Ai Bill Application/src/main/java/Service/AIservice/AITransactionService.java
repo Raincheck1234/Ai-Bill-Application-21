@@ -29,7 +29,7 @@ public class AITransactionService {
             List<Transaction> transactions = transactionDao.loadFromCSV(filePath);
             List<String> transactionDetails = formatTransactions(transactions, startTimeStr, endTimeStr);
 
-            String aiPrompt = userRequest + "\n" + "以下是我的账单信息，请在四百字内分析：\n" + String.join("\n", transactionDetails);
+            String aiPrompt = userRequest + "\n" + "以下是我的账单信息：\n" + String.join("\n", transactionDetails);
             return askAi(aiPrompt);
         } catch (Exception e) {
             e.printStackTrace();

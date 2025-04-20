@@ -16,7 +16,7 @@ import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 
 public class MenuUI {
-    private static final String FILE_PATH = "src\\main\\resources\\CSVForm\\0001.csv";
+    private static final String FILE_PATH = "Ai Bill Application/src/main/resources/CSVForm/0001.csv";
     private static DefaultTableModel tableModel;
     private static Vector<Vector<String>> allData = new Vector<>();
     private static TransactionServiceImpl transactionService = new TransactionServiceImpl(new CsvTransactionDao());

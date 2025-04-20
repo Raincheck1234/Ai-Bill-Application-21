@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionServiceImpl implements TransactionService {
-    private static final String CSV_PATH = "src\\main\\resources\\CSVForm\\0001.csv";
+    private static final String CSV_PATH = "Ai Bill Application/src/main/resources/CSVForm/0001.csv";
     public static CsvTransactionDao csvTransactionDao;
 
     // 通过构造函数注入 DAO 初始化建议
@@ -46,8 +46,11 @@ public class TransactionServiceImpl implements TransactionService {
         boolean found = false;
         for (int i = 0; i < allTransactions.size(); i++) {
             Transaction t = allTransactions.get(i);
+            String orderNumber=t.getOrderNumber();
+            int length=orderNumber.length();
+            orderNumber=orderNumber.substring(0,length-1);
             // 根据交易单号匹配记录（唯一标识）
-            if (t.getOrderNumber().equals(updatedTransaction.getOrderNumber())) {
+            if (orderNumber.equals(updatedTransaction.getOrderNumber())) {
                 // 3. 更新非空字段
                 updateTransactionFields(t, updatedTransaction);
                 found = true;
@@ -60,7 +63,7 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
 
-         csvTransactionDao.writeTransactionsToCSV(CSV_PATH, allTransactions);
+        csvTransactionDao.writeTransactionsToCSV(CSV_PATH, allTransactions);
     }
 
     // 辅助方法：更新非空字段
