@@ -21,6 +21,21 @@ public class HistogramPanelContainer extends JPanel {
 
     private String aiResultText = ""; // 存储 AI 分析结果
 
+
+    // Step 1: 定义监听器接口
+    public interface AIResultListener {
+        void onAIResultReady(String result);
+    }
+
+    // Step 2: 声明监听器变量
+    private AIResultListener aiResultListener;
+
+    // Step 3: 提供对外设置监听器的方法
+    public void setAIResultListener(AIResultListener listener) {
+        this.aiResultListener = listener;
+    }
+
+
     public HistogramPanelContainer() {
         setLayout(new BorderLayout(10, 10));
 
@@ -96,8 +111,17 @@ public class HistogramPanelContainer extends JPanel {
 
             if (result != null && !result.isEmpty()) {
                 SwingUtilities.invokeLater(() -> {
+
+
                     setAiResultText(result);  // 更新 AI 结果文本
-                    toggleText(result);       // 显示 AI 结果
+                    toggleText(result);// 显示 AI 结果
+
+                    if (aiResultListener != null) {
+                        aiResultListener.onAIResultReady(result);  // 通知监听器
+                    }
+
+
+
                 });
             } else {
                 System.out.println("AI分析没有返回结果!");
