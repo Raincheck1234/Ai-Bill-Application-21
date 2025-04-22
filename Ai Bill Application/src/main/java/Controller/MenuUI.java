@@ -341,6 +341,8 @@ public class MenuUI {
             } catch (IOException ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(null, "删除失败！", "错误", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
     }
