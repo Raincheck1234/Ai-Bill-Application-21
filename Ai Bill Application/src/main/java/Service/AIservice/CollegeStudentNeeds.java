@@ -1,6 +1,9 @@
 package Service.AIservice;
 
+import Constants.ConfigConstants;
 import DAO.CsvTransactionDao;
+import Service.Impl.TransactionServiceImpl;
+import Utils.CacheUtil;
 import model.Transaction;
 
 import java.io.IOException;
@@ -13,8 +16,29 @@ public class CollegeStudentNeeds {
 
     private final String requestRecognition="下面我将给你一些账单的信息，请推测这个账单是什么方面的消费: ";
     CsvTransactionDao dao;
+
+    /**
+     * 使用Caffeine缓存CSV文件
+     */
+    private static final String CAFFEINE_KEY = "transactions";  // 存储的键
+    /**
+     * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
+     */
+    private final CacheUtil<String, List<Transaction>, Exception> cache;
+
     public CollegeStudentNeeds() {
-        this.dao=new CsvTransactionDao();
+        TransactionServiceImpl.csvTransactionDao = dao;
+        this.cache = new CacheUtil<String, List<Transaction>, Exception>(
+                key -> {
+                    try {
+                        return dao.loadFromCSV(ConfigConstants.CSV_PATH);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, // 定义缓存未命中的执行逻辑
+                1, 10, 1
+        );
+
     }
     public String RecognizeTransaction(Transaction transaction){
         StringBuilder sb=new StringBuilder();
@@ -29,7 +53,7 @@ public class CollegeStudentNeeds {
     }
     //按周统计已有的支出，依靠ai得到下周的预算
     public double[] generateBudget(String path) throws IOException {
-        List<Transaction> transactions=dao.loadFromCSV(path);
+        List<Transaction> transactions=cache.get(CAFFEINE_KEY);
 
         int size=transactions.size();
         if(size==0||size==1) return new double[]{-1,-1};

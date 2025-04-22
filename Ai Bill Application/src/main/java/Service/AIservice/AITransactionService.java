@@ -1,11 +1,16 @@
 package Service.AIservice;
-
+import Service.Impl.TransactionServiceImpl;
+import Service.TransactionService;
+import Constants.ConfigConstants;
 import DAO.CsvTransactionDao;
+import Utils.CacheUtil;
 import model.Transaction;
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessageRole;
 import com.volcengine.ark.runtime.service.ArkService;
+
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,9 +29,36 @@ public class AITransactionService {
 
     private final CsvTransactionDao transactionDao = new CsvTransactionDao();
 
+    /**
+     * 使用Caffeine缓存CSV文件
+     */
+    private static final String CAFFEINE_KEY = "transactions";  // 存储的键
+    /**
+     * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
+     */
+    private final CacheUtil<String, List<Transaction>, Exception> cache;
+    /**
+     * 重构构造器初始化Caffeine
+     */
+    public AITransactionService()  {
+        // 1. 注入Dao层接口
+        TransactionServiceImpl.csvTransactionDao = transactionDao;
+        // 2. 初始化CacheUtil
+        this.cache = new CacheUtil<String, List<Transaction>, Exception>(
+                key -> {
+                    try {
+                        return transactionDao.loadFromCSV(ConfigConstants.CSV_PATH);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, // 定义缓存未命中的执行逻辑
+                1, 10, 1
+        );
+    }
+
     public String analyzeTransactions(String userRequest, String filePath, String startTimeStr, String endTimeStr) {
         try {
-            List<Transaction> transactions = transactionDao.loadFromCSV(filePath);
+            List<Transaction> transactions = cache.get(CAFFEINE_KEY);
             List<String> transactionDetails = formatTransactions(transactions, startTimeStr, endTimeStr);
 
             String aiPrompt = userRequest + "\n" + "以下是我的账单信息：\n" + String.join("\n", transactionDetails);
