@@ -10,14 +10,13 @@ public class AIserviceTest {
     public void testAnalyzeTransactions() {
         AITransactionService service = new AITransactionService();
 
-        String userRequest = "请帮我分析这个月的收支情况";
+        String userRequest = "Please help me analyze the income and expenses for this month";
         String filePath = "src/test/resources/sample_transactions.csv";
 
-        String result = service.analyzeTransactions(userRequest, filePath,"2025/03/20","");
+        String result = service.analyzeTransactions(userRequest, filePath, "2025/04/04", "");
 
-        assertNotNull(result, "AI分析结果不能为空");
-        System.out.println("AI分析结果: " + result);
+        assertNotNull(result, "AI analysis result should not be null");
+        System.out.println("AI analysis result: " + result);
     }
-
 
 }
