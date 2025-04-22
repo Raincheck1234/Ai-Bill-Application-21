@@ -23,7 +23,6 @@ public final class ConfigConstants {
 
             prop.load(input);
             CSV_PATH = prop.getProperty("csv.path");
-
         } catch (IOException e) {
             throw new RuntimeException("加载配置文件失败", e); // 转换为运行时异常
         }

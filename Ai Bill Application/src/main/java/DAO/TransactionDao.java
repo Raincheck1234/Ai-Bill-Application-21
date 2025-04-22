@@ -9,7 +9,8 @@ import java.util.List;
  * Interface for Data Access Object (DAO) operations related to Transactions.
  * Defines the contract for loading, adding, deleting, and updating transaction data.
  */
-public interface TransactionDao {
+public interface
+TransactionDao {
 
     //HEAD 交易时间	交易类型	交易对方	商品	收/支	金额(元)	支付方式	当前状态	交易单号	商户单号	备注
         //

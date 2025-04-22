@@ -4,6 +4,8 @@ import DAO.CsvTransactionDao;
 import model.Transaction;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static Constants.ConfigConstants.CSV_PATH;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -16,7 +18,7 @@ import java.util.List;
 
 class CsvTransactionDaoTest {
     // 测试文件路径（根据实际结构调整）
-    private static final String TEST_CSV_PATH = "src/test/resources/001.csv";
+    private static final String TEST_CSV_PATH = CSV_PATH;
     private static CsvTransactionDao dao;
 
     @Test
@@ -25,7 +27,7 @@ class CsvTransactionDaoTest {
         CsvTransactionDao dao = new CsvTransactionDao();
 
         // When
-        List<Transaction> transactions = dao.loadFromCSV(TEST_CSV_PATH);
+        List<Transaction> transactions = dao.loadFromCSV(CSV_PATH);
 
         // 验证第一条记录的字段
         for (int i = 0; i < transactions.size(); i++) {
@@ -61,9 +63,9 @@ class CsvTransactionDaoTest {
     void testDeleteTransaction() throws IOException {
         dao=new CsvTransactionDao();
 
-        dao.deleteTransaction("src\\main\\resources\\CSVForm\\0001.csv", "4200057899202502250932735481");
+        dao.deleteTransaction("CSV_RELATIVE_PATH", "4200057899202502250932735481");
 
-        List<Transaction> transactions = dao.loadFromCSV("src\\main\\resources\\CSVForm\\0001.csv");
+        List<Transaction> transactions = dao.loadFromCSV(CSV_PATH);
     }
     @Test
     void testChangeInfo() throws IOException{

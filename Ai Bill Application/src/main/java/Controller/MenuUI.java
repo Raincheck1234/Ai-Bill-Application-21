@@ -1,11 +1,13 @@
 package Controller;
 
+import Constants.ConfigConstants;
 import DAO.CsvTransactionDao;
 
 import Service.Impl.TransactionServiceImpl;
 
 import Service.Impl.TransactionServiceImpl;
 
+import Utils.CacheUtil;
 import model.Transaction;
 
 import javax.swing.*;
@@ -15,8 +17,11 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
+
 public class MenuUI {
-    private static final String FILE_PATH = "Ai Bill Application/src/main/resources/CSVForm/0001.csv";
+    private static final String FILE_PATH = CSV_PATH;
     private static DefaultTableModel tableModel;
     private static Vector<Vector<String>> allData = new Vector<>();
     private static TransactionServiceImpl transactionService = new TransactionServiceImpl(new CsvTransactionDao());
@@ -248,7 +253,7 @@ public class MenuUI {
                 transactionService.addTransaction(newTransaction);
 
                 // 重新加载 CSV 数据以更新表格
-                loadCSVData(FILE_PATH);
+                loadCSVData(TRANSACTION_CAFFEINE_KEY);
 
                 // 关闭对话框
                 addDialog.dispose();
@@ -269,22 +274,19 @@ public class MenuUI {
     }
 
     // 加载 CSV 数据
-    public void loadCSVData(String filePath) {
+    public void loadCSVData(String caffeineKey) {
         allData.clear();
         tableModel.setRowCount(0);
 
-        CsvTransactionDao csvTransactionDao = new CsvTransactionDao();
+        CacheUtil<String, List<Transaction>, Exception> cache = transactionService.cache;
 
-        try {
-            List<Transaction> transactions = csvTransactionDao.loadFromCSV(filePath);
-            for (Transaction transaction : transactions) {
-                Vector<String> row = createRowFromTransaction(transaction);
-                allData.add(row);
-                tableModel.addRow(row);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "CSV文件读取失败！", "错误", JOptionPane.ERROR_MESSAGE);
+//        CsvTransactionDao csvTransactionDao = new CsvTransactionDao();
+
+        List<Transaction> transactions = cache.get(caffeineKey);
+        for (Transaction transaction : transactions) {
+            Vector<String> row = createRowFromTransaction(transaction);
+            allData.add(row);
+            tableModel.addRow(row);
         }
     }
 
@@ -389,7 +391,7 @@ public class MenuUI {
                     transactionService.changeTransaction(transaction);
 
                     // 重新加载 CSV 数据以更新表格
-                    loadCSVData(FILE_PATH);
+                    loadCSVData(TRANSACTION_CAFFEINE_KEY);
 
                     JOptionPane.showMessageDialog(null, "修改成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception ex) {

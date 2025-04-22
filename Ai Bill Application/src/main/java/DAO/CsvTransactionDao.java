@@ -1,5 +1,6 @@
 package DAO;
 
+import Constants.ConfigConstants;
 import model.Transaction;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static Constants.ConfigConstants.CSV_PATH;
+
 public class CsvTransactionDao implements TransactionDao {
     //避免每次都调用loadFromCSV() 方法
     private List<Transaction> transactions;
@@ -24,9 +27,8 @@ public class CsvTransactionDao implements TransactionDao {
     public List<Transaction> loadFromCSV(String filePath) throws IOException {
         try (
                 Reader reader = new InputStreamReader(
-                new BOMInputStream(Files.newInputStream(Paths.get(filePath))),
-                StandardCharsets.UTF_8)) {
-
+                        new BOMInputStream(Files.newInputStream(Paths.get(filePath))),
+                        StandardCharsets.UTF_8)) {
             CSVFormat format = CSVFormat.DEFAULT
                     .withFirstRecordAsHeader()    //根据首行的内容设置为表格的头
                     .withIgnoreHeaderCase(false)  // 禁用忽略大小写
@@ -66,7 +68,7 @@ public class CsvTransactionDao implements TransactionDao {
 
     // 根据交易单号删除交易记录
     public boolean deleteTransaction(String filePath, String orderNumber) throws IOException {
-        if(isLoad==false){ loadFromCSV(filePath);}
+        if(!isLoad){ loadFromCSV(filePath);}
 
         List<Transaction> updatedTransactions = transactions.stream()
                 .filter(t -> !t.getOrderNumber().trim().equals(orderNumber))

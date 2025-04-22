@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
+
 public class CollegeStudentNeeds {
     private final String requestBudge="我是一名预算有限的大学生，请根据下面我给出的花费，帮助我给下周预算范围，必须以[最低预算，最高预算],的方式给出回答，不能有多余的回复。";
     private final String requestTips="我是一名预算有限的大学生，请给我推荐一些省钱方法。";
@@ -17,10 +20,6 @@ public class CollegeStudentNeeds {
     private final String requestRecognition="下面我将给你一些账单的信息，请推测这个账单是什么方面的消费: ";
     CsvTransactionDao dao;
 
-    /**
-     * 使用Caffeine缓存CSV文件
-     */
-    private static final String CAFFEINE_KEY = "transactions";  // 存储的键
     /**
      * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
      */
@@ -31,7 +30,7 @@ public class CollegeStudentNeeds {
         this.cache = new CacheUtil<String, List<Transaction>, Exception>(
                 key -> {
                     try {
-                        return dao.loadFromCSV(ConfigConstants.CSV_PATH);
+                        return dao.loadFromCSV(CSV_PATH);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -53,7 +52,7 @@ public class CollegeStudentNeeds {
     }
     //按周统计已有的支出，依靠ai得到下周的预算
     public double[] generateBudget(String path) throws IOException {
-        List<Transaction> transactions=cache.get(CAFFEINE_KEY);
+        List<Transaction> transactions=cache.get(TRANSACTION_CAFFEINE_KEY);
 
         int size=transactions.size();
         if(size==0||size==1) return new double[]{-1,-1};

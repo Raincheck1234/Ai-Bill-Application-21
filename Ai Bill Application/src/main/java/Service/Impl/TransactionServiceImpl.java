@@ -12,15 +12,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
 
 public class TransactionServiceImpl implements TransactionService {
     public static CsvTransactionDao csvTransactionDao;
-    private static final String CAFFEINE_KEY = "transactions";
 
     /**
      * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
      */
-    private final CacheUtil<String, List<Transaction>, Exception> cache;
+    public final CacheUtil<String, List<Transaction>, Exception> cache;
 
     /**
      * 通过构造函数注入路径和csvTransactionDao
@@ -34,7 +35,7 @@ public class TransactionServiceImpl implements TransactionService {
         this.cache = new CacheUtil<String, List<Transaction>, Exception>(
                 key -> {
                     try {
-                        return csvTransactionDao.loadFromCSV(ConfigConstants.CSV_PATH);
+                        return csvTransactionDao.loadFromCSV(CSV_PATH);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -49,7 +50,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @throws IOException
      */
     private List<Transaction> getAllTransactions() throws Exception {
-        return cache.get(CAFFEINE_KEY);
+        return cache.get(TRANSACTION_CAFFEINE_KEY);
     }
 
 
@@ -66,7 +67,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setTransactionTime(currentTime);
 
         // 调用 DAO 层方法添加交易
-        csvTransactionDao.addTransaction(ConfigConstants.CSV_PATH, transaction);
+        csvTransactionDao.addTransaction(CSV_PATH, transaction);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("未找到交易单号: " + updatedTransaction.getOrderNumber());
         }
         // 使用事务将写后数据写回csv文件
-        csvTransactionDao.writeTransactionsToCSV(ConfigConstants.CSV_PATH, allTransactions);
+        csvTransactionDao.writeTransactionsToCSV(CSV_PATH, allTransactions);
         // 修改后使缓存失效 （删缓存）
         cache.invalidate("transactions");
     }
@@ -139,10 +140,11 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public boolean deleteTransaction(String orderNumber) throws Exception {
-        boolean result = csvTransactionDao.deleteTransaction(ConfigConstants.CSV_PATH, orderNumber);
+        boolean result = csvTransactionDao.deleteTransaction(CSV_PATH, orderNumber);
         if (!result) {
             throw new Exception("未找到交易单号: " + orderNumber); // 或记录日志
         }
+        cache.invalidate("transactions");
         return result;
     }
 

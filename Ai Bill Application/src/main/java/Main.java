@@ -14,6 +14,9 @@ public class Main {
         showUI(mainPanel);
     }
     private static void showUI(JPanel panel) {
+        // TODO 查看根目录
+        System.out.println("当前工作目录：" + System.getProperty("user.dir"));
+
         JFrame frame = new JFrame("MenuUI Test");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 600);

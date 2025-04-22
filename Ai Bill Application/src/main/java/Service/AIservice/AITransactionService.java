@@ -18,6 +18,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.concurrent.*;
 
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
+
 public class AITransactionService {
     private static final String API_KEY = System.getenv("ARK_API_KEY");
     private static final ArkService service = ArkService.builder()
@@ -29,10 +32,6 @@ public class AITransactionService {
 
     private final CsvTransactionDao transactionDao = new CsvTransactionDao();
 
-    /**
-     * 使用Caffeine缓存CSV文件
-     */
-    private static final String CAFFEINE_KEY = "transactions";  // 存储的键
     /**
      * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
      */
@@ -47,7 +46,7 @@ public class AITransactionService {
         this.cache = new CacheUtil<String, List<Transaction>, Exception>(
                 key -> {
                     try {
-                        return transactionDao.loadFromCSV(ConfigConstants.CSV_PATH);
+                        return transactionDao.loadFromCSV(CSV_PATH);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -58,7 +57,7 @@ public class AITransactionService {
 
     public String analyzeTransactions(String userRequest, String filePath, String startTimeStr, String endTimeStr) {
         try {
-            List<Transaction> transactions = cache.get(CAFFEINE_KEY);
+            List<Transaction> transactions = cache.get(TRANSACTION_CAFFEINE_KEY);
             List<String> transactionDetails = formatTransactions(transactions, startTimeStr, endTimeStr);
 
             String aiPrompt = userRequest + "\n" + "以下是我的账单信息：\n" + String.join("\n", transactionDetails);
