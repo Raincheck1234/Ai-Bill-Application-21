@@ -17,13 +17,13 @@ public interface TransactionService {
      * 修改交易
      * @param transaction
      */
-    void changeTransaction(Transaction transaction) throws IOException;
+    void changeTransaction(Transaction transaction) throws Exception;
 
     /**
      * 根据订单号删除交易
      * @param orderNumber
      */
-    boolean deleteTransaction(String orderNumber) throws IOException;
+    boolean deleteTransaction(String orderNumber) throws Exception;
 
     /**
      * 根据用户输入信息查询交易
