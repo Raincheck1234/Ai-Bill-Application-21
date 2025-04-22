@@ -9,9 +9,7 @@ import org.apache.commons.io.input.BOMInputStream;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,9 +107,14 @@ public class CsvTransactionDao implements TransactionDao {
 
     // 统一写回 CSV
     public void writeTransactionsToCSV(String filePath, List<Transaction> transactions) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath));
+        // 1. 创建临时文件（确保与原文件同目录）
+        File targetFile = new File(filePath);
+        File tempFile = File.createTempFile("transaction_temp", ".csv", targetFile.getParentFile());
+
+        // 2. 写入数据到临时文件（使用 try-with-resources 确保资源释放）
+        try (BufferedWriter writer = Files.newBufferedWriter(tempFile.toPath());
              CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
-                     "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注")))  {
+                     "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"))) {
 
             for (Transaction t : transactions) {
                 csvPrinter.printRecord(
@@ -128,8 +131,45 @@ public class CsvTransactionDao implements TransactionDao {
                         t.getRemarks()
                 );
             }
+            csvPrinter.flush(); // 强制刷盘
+        } catch (IOException e) {
+            tempFile.delete(); // 失败时删除临时文件
+            throw e;
+        }
+
+        // 3. 原子性替换原文件
+        Path source = tempFile.toPath();
+        Path target = Paths.get(filePath);
+        try {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.err.println("移动失败原因: " + e.getMessage());
         }
     }
+
+//    // 统一写回 CSV
+//    public void writeTransactionsToCSV(String filePath, List<Transaction> transactions) throws IOException {
+//        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath));
+//             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
+//                     "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注")))  {
+//
+//            for (Transaction t : transactions) {
+//                csvPrinter.printRecord(
+//                        t.getTransactionTime(),
+//                        t.getTransactionType(),
+//                        t.getCounterparty(),
+//                        t.getCommodity(),
+//                        t.getInOut(),
+//                        "¥" + t.getPaymentAmount(),
+//                        t.getPaymentMethod(),
+//                        t.getCurrentStatus(),
+//                        t.getOrderNumber(),
+//                        t.getMerchantNumber(),
+//                        t.getRemarks()
+//                );
+//            }
+//        }
+//    }
 
     // 获取 CSV 格式（包含表头）
     private CSVFormat getCsvFormatWithHeader(String filePath) throws IOException {
