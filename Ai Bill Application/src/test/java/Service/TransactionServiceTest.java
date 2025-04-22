@@ -38,7 +38,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testChangeTransaction() throws IOException {
+    void testChangeTransaction() throws Exception {
         // 准备测试数据
         Transaction originalTransaction = new Transaction(
                 "2023-08-20 15:30:00", "转账", "李四", "虚拟商品", "支出", 500.0,
@@ -62,7 +62,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testDeleteTransaction() throws IOException {
+    void testDeleteTransaction() throws Exception {
         // 准备测试数据
         Transaction transaction = new Transaction(
                 "2023-08-20 15:30:00", "转账", "李四", "虚拟商品", "支出", 500.0,

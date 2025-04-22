@@ -9,9 +9,7 @@ import org.apache.commons.io.input.BOMInputStream;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -88,28 +86,51 @@ public class CsvTransactionDao implements TransactionDao {
         }
     }
 
-    @Override
-    public void writeTransactionsToCSV(String filePath, List<Transaction> transactions) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath));
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
-                     "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注")))  {
+  
+  
 
-            for (Transaction t : transactions) {
-                csvPrinter.printRecord(
-                        t.getTransactionTime(),
-                        t.getTransactionType(),
-                        t.getCounterparty(),
-                        t.getCommodity(),
-                        t.getInOut(),
-                        "¥" + t.getPaymentAmount(),
-                        t.getPaymentMethod(),
-                        t.getCurrentStatus(),
-                        t.getOrderNumber(),
-                        t.getMerchantNumber(),
-                        t.getRemarks()
+    @Override
+//    统一写回 CSV
+   public void writeTransactionsToCSV(String filePath, List<Transaction> transactions) throws IOException {
+       try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath));
+            CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
+                    "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注")))  {
+
+           for (Transaction t : transactions) {
+               csvPrinter.printRecord(
+                       t.getTransactionTime(),
+                       t.getTransactionType(),
+                       t.getCounterparty(),
+                       t.getCommodity(),
+                       t.getInOut(),
+                       "¥" + t.getPaymentAmount(),
+                       t.getPaymentMethod(),
+                       t.getCurrentStatus(),
+                       t.getOrderNumber(),
+                       t.getMerchantNumber(),
+                       t.getRemarks()
+               );
+           }
+       }
+   }
+
+    // 获取 CSV 格式（包含表头）
+    private CSVFormat getCsvFormatWithHeader(String filePath) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(filePath))) {
+            String headerLine = reader.readLine();
+            if (headerLine == null || headerLine.trim().isEmpty()) {
+                // 如果文件为空或不存在，返回默认表头
+                return CSVFormat.DEFAULT.withHeader(
+                        "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"
                 );
             }
+            return CSVFormat.DEFAULT.withHeader(headerLine.split(",")).withTrim();
         }
+    }
+
+    // 获取 CSV 格式（不包含表头）
+    private CSVFormat getCsvFormatWithoutHeader() {
+        return CSVFormat.DEFAULT.withTrim();
     }
 
     @Override
