@@ -6,7 +6,7 @@ public class AIAnalyzerThread implements Runnable {
     private final String startTimeStr;
     private final String endTimeStr;
 
-    public AIAnalyzerThread(String userRequest, String filePath,String startTimeStr, String endTimeStr) {
+    public AIAnalyzerThread(String userRequest, String filePath, String startTimeStr, String endTimeStr) {
         this.userRequest = userRequest;
         this.filePath = filePath;
         this.startTimeStr = startTimeStr;
@@ -16,8 +16,7 @@ public class AIAnalyzerThread implements Runnable {
     @Override
     public void run() {
         String result = new AITransactionService().analyzeTransactions(userRequest, filePath, startTimeStr, endTimeStr);
-        System.out.println("AI分析结果: " + result);
-        // TODO: 如果是UI程序，可用 SwingUtilities.invokeLater() 更新UI组件
+        System.out.println("AI analysis result: " + result);
+        // TODO: If it's a UI application, you can use SwingUtilities.invokeLater() to update UI components
     }
-
 }
