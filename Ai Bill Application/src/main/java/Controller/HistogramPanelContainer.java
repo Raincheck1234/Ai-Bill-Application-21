@@ -15,7 +15,7 @@ public class HistogramPanelContainer extends JPanel {
     private boolean isTextVisible = true;
 
     String userRequest = "分析账单";
-    String filePath = "data/transactions.csv";
+    String filePath = "src/test/resources/sample_transactions.csv";
     String startTime = "2024-01-01";
     String endTime = "2024-12-31";
 
@@ -103,32 +103,34 @@ public class HistogramPanelContainer extends JPanel {
     public void analyzeTransactionsInBackground(String userRequest, String filePath, String startTimeStr, String endTimeStr) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
-            System.out.println("分析任务开始...");  // 调试输出
-            String result = new AITransactionService().analyzeTransactions(userRequest, filePath, startTimeStr, endTimeStr);
+            try {
+                System.out.println("分析任务开始...");  // 调试输出
+                String result = new AITransactionService().analyzeTransactions(userRequest, filePath, startTimeStr, endTimeStr);
 
-            // 输出结果查看是否有返回
-            System.out.println("AI分析结果: " + result);
+                // 输出结果查看是否有返回
+                System.out.println("AI分析结果: " + result);
 
-            if (result != null && !result.isEmpty()) {
-                SwingUtilities.invokeLater(() -> {
+                if (result != null && !result.isEmpty()) {
+                    SwingUtilities.invokeLater(() -> {
+                        setAiResultText(result);  // 更新 AI 结果文本
+                        toggleText(result);       // 显示 AI 结果
 
-
-                    setAiResultText(result);  // 更新 AI 结果文本
-                    toggleText(result);// 显示 AI 结果
-
-                    if (aiResultListener != null) {
-                        aiResultListener.onAIResultReady(result);  // 通知监听器
-                    }
-
-
-
-                });
-            } else {
-                System.out.println("AI分析没有返回结果!");
+                        if (aiResultListener != null) {
+                            aiResultListener.onAIResultReady(result);  // 通知监听器
+                        }
+                    });
+                } else {
+                    System.out.println("AI分析没有返回结果!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("AI分析发生错误: " + e.getMessage());
+            } finally {
+                executor.shutdown();
             }
         });
-        executor.shutdown();
     }
+
 
     public void toggleText(String text) {
         System.out.println("切换文本显示...");  // 调试输出
