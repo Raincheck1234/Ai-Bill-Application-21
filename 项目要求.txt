@@ -1,0 +1,74 @@
+1. General Information 
+In the next few weeks, your team will be required to develop a software application that 
+will serve as a smart personal finance manager that helps users track expenses, set 
+savings goals, and analyses spending habits using AI. Agile methods should be applied 
+in all activities, from requirements through analysis/design, implementation, and testing. 
+Iterations should be planned, and outcomes should be submitted. 
+There are no restrictions on what you can include in the final product, and the given 
+specification contains only high-level abstract requirements. It should be noted that 
+determining the software requirements is one of the most important and complex phases 
+in any development project. You should apply requirement-finding techniques and Agile 
+methods to identify the actual requirements at an appropriate level. Most importantly, you 
+need to prioritize the features that are implemented in accordance with both ease of 
+implementation and meeting requirements. As in real software, you should define the 
+project scope properly. Keep your design SIMPLE. Bear in mind that there is no absolute 
+right answer – your solution may be perfectly appropriate.
+
+2. Project Specification 
+2.1 Basic Requirements 
+Managing personal finances effectively is crucial in today’s digital economy, where 
+transactions occur across multiple platforms like WeChat Pay, Alipay, and traditional 
+banking. Many individuals struggle with tracking expenses, categorizing spending, and 
+setting realistic budgets. An AI-powered personal finance tracker simplifies financial 
+management by automatically classifying transactions, detecting spending patterns, and 
+offering personalized savings recommendations. However, AI is not perfect – users must 
+manually review to ensure accuracy. By integrating AI with manual validation, this 
+software helps users make informed financial decisions while adapting to regional 
+spending habits and economic conditions, improving financial literacy and budgeting 
+skills. Here are some suggested functions to assist you in getting started. Suggested 
+features can include the following, but not limited to: 
+• Manual & Automated Data Entry: End users may input transactions manually or 
+import structured CSV files from banking/financial apps. 
+• Expense Categorisation (AI + Manual Correction): AI classifies transactions into 
+categories (e.g., groceries, rent, entertainment), but end users can verify & correct 
+misclassifications. 
+• Spending Insights & Predictions: AI suggests monthly budgets, savings goals, and 
+cost-cutting recommendations based on spending behaviour. 
+• Local Financial Context: Customisable to China-specific budgeting habits, for 
+example detects seasonal spending habits, such as higher expenses during Chinese 
+New Year. 
+A full prototype of the application should be produced. It is not required to implement the 
+full working code for all functions in the prototype, however your team should implement 
+core functions of your choice. 
+
+2.2 Other Requirements 
+• The software must be developed using Java as a stand-alone application running 
+on computers. A simple graphic user interface (GUI) should be used. The recent 
+Java Edition should be used. Do NOT build a Web-based application or Phone 
+App. 
+• All input and output data should be in simple text file format. You may use plain 
+text (txt), CSV, JSON, or XML. Do NOT use a database. 
+• Basic restrictions and error checking must be considered. 
+• Your design must be flexible and extensible to adapt to future changes, e.g. 
+modify existing features and add new features. When doing so, you should be 
+able to reuse the existing components and make the least impact on the existing 
+code. 
+Page 2 of 8 
+Your tasks are to define detailed requirements, design, develop and test the above software 
+using Agile methods. Feel free to design the software as long as it satisfies the basic 
+requirements, define the SCOPE properly.  
+
+2.3 AI-Assisted Development 
+To prevent over-reliance on AI, 
+the following constraints apply: 
+• Live Data Collection: AI cannot generate user-specific data patterns – you must 
+gather real data. 请给出相应的数据搜集渠道（但是我们已经设计好了csv表，相应字段也设计了）
+• Manual Data Cleaning and Validation: AI assistance is allowed, but the team must 
+need to manually check for missing information, inconsistency, and inappropriate 
+categorisation, etc. 
+• Context-Specific Constraints: AI may struggle with domain-specific rules – you 
+must implement real-world constraints (e.g. AI may count a WeChat Red Packet as a 
+personal income where it is in fact a gift money and not a regular income.) 
+• Oral Spot-Check: During the vivas, you will need to answer questions like “Why did 
+AI make this recommendation?”, “How did you modify AI’s solution?”, etc, to 
+demonstrate your understanding.
