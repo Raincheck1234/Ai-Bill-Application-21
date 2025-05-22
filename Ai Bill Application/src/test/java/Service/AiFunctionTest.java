@@ -1,9 +1,8 @@
 package Service;
 
-import DAO.CsvTransactionDao;
+import DAO.Impl.CsvTransactionDao;
 import model.Transaction;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import Service.AIservice.AITransactionService;
 
 import java.io.IOException;

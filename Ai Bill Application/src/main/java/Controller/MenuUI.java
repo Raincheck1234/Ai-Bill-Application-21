@@ -1,190 +1,244 @@
 package Controller;
 
 import Constants.ConfigConstants;
-import DAO.CsvTransactionDao;
+// Remove import DAO.CsvTransactionDao;
 
 import Service.Impl.TransactionServiceImpl;
-
-import Service.Impl.TransactionServiceImpl;
-
-import Utils.CacheUtil;
+import Service.TransactionService;
+import Utils.CacheManager;
 import model.Transaction;
+import model.User;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
-import java.util.Vector;
+import java.util.Vector; // Still used for table row data structure
 import javax.swing.table.DefaultTableModel;
 
-import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
-import static Constants.ConfigConstants.CSV_PATH;
+// Remove static imports related to CSV_PATH
 
 public class MenuUI {
-    private static final String FILE_PATH = CSV_PATH;
-    private static DefaultTableModel tableModel;
-    private static Vector<Vector<String>> allData = new Vector<>();
-    private static TransactionServiceImpl transactionService = new TransactionServiceImpl(new CsvTransactionDao());
-    private JTable table;  // 把table定义为静态字段
-    private HistogramPanelContainer histogramPanelContainer; // 添加 HistogramPanelContainer 实例
-    private JPanel rightPanel; // 右边的面板，用于显示搜索和表格界面或 AI 界面
-    private CardLayout cardLayout; // 用于管理界面切换的布局
+    private final User currentUser;
+    private final TransactionService transactionService;
 
-    public MenuUI(){
+    // Make tableModel an instance field
+    private DefaultTableModel tableModel;
+    // Remove the static or instance allData field: private Vector<Vector<String>> allData = new Vector<>();
+
+    // Add instance fields for search input components (for Question 2 & 3)
+    private JTextField searchTransactionTimeField;
+    private JTextField searchTransactionTypeField;
+    private JTextField searchCounterpartyField;
+    private JTextField searchCommodityField;
+    private JComboBox<String> searchInOutComboBox;
+    private JTextField searchPaymentMethodField;
+    private JButton searchButton; // Keep reference to the search button
+
+    private JTable table;
+    private HistogramPanelContainer histogramPanelContainer;
+    private JPanel rightPanel;
+    private CardLayout cardLayout;
+
+    // Constructor now accepts the authenticated User and their TransactionService instance
+    public MenuUI(User authenticatedUser, TransactionService transactionService){
+        this.currentUser = authenticatedUser;
+        this.transactionService = transactionService; // Inject the user-specific service
+
+        // Initialize table model (now non-static)
         String[] columnNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注", "Modify", "Delete"};
-        tableModel = new DefaultTableModel(columnNames, 0);
-        table = new JTable(tableModel);
+        this.tableModel = new DefaultTableModel(columnNames, 0);
+        this.table = new JTable(this.tableModel);
 
-        histogramPanelContainer = new HistogramPanelContainer(); // 初始化 HistogramPanelContainer
-        cardLayout = new CardLayout(); // 初始化 CardLayout
-        rightPanel = new JPanel(cardLayout); // 初始化 rightPanel
+        this.histogramPanelContainer = new HistogramPanelContainer();
+        this.cardLayout = new CardLayout();
+        this.rightPanel = new JPanel(this.cardLayout);
+
+        // DEBUG: Print user info
+        System.out.println("MenuUI initialized for user: " + currentUser.getUsername());
+        System.out.println("Using transaction file: " + currentUser.getTransactionFilePath());
+
+        // Data loading will be called in createMainPanel() after UI setup
     }
 
     public JPanel createMainPanel() {
-        // 主面板，使用 BorderLayout
+        // Main panel, use BorderLayout
         JPanel mainPanel = new JPanel(new BorderLayout());
 
-        // 左边的面板，包含 Menu 和 AI 按钮
+        // Left panel with Menu and AI buttons
         JPanel leftPanel = createLeftPanel();
         mainPanel.add(leftPanel, BorderLayout.WEST);
 
-        // 右边的面板，用于显示搜索和表格界面或 AI 界面
+        // Right panel for table or AI view
         setupRightPanel();
         mainPanel.add(rightPanel, BorderLayout.CENTER);
+
+        // Load the user's data and display initial view (only income)
+        loadCSVDataForCurrentUser("收入"); // Load and display only income initially
 
         return mainPanel;
     }
 
-    // 创建左边的面板，包含 Menu 和 AI 按钮
+    // Method to load CSV data for the current user with optional initial filter
+    // This replaces the old loadCSVDataForCurrentUser() method
+    public void loadCSVDataForCurrentUser(String initialInOutFilter) {
+        this.tableModel.setRowCount(0); // Clear the table model
+
+        try {
+            // Get all transactions for the current user using the injected service
+            List<Transaction> transactions = transactionService.getAllTransactions();
+            System.out.println("Loaded total " + transactions.size() + " transactions from service for user " + currentUser.getUsername());
+
+            // Filter transactions based on the initialInOutFilter
+            List<Transaction> filteredTransactions = new java.util.ArrayList<>();
+            if (initialInOutFilter == null || initialInOutFilter.trim().isEmpty()) {
+                // If no filter specified, add all transactions
+                filteredTransactions.addAll(transactions);
+            } else {
+                // Filter by the specified 收/支 type
+                String filter = initialInOutFilter.trim();
+                filteredTransactions = transactions.stream()
+                        .filter(t -> t.getInOut() != null && (t.getInOut().equalsIgnoreCase(filter) ||
+                                (filter.equalsIgnoreCase("收入") && t.getInOut().equalsIgnoreCase("收")) ||
+                                (filter.equalsIgnoreCase("支出") && t.getInOut().equalsIgnoreCase("支")) ))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+
+
+            // Add filtered transactions to the table model
+            for (Transaction transaction : filteredTransactions) {
+                Vector<String> row = createRowFromTransaction(transaction);
+                this.tableModel.addRow(row);
+            }
+            System.out.println("Displayed " + filteredTransactions.size() + " transactions in the table.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "加载用户交易数据失败！", "错误", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method to create the left panel (Menu/AI buttons) - no changes needed here // [cite: 274]
     private JPanel createLeftPanel() {
-        JPanel leftPanel = new JPanel(new GridLayout(2, 1));
-        JButton menuButton = new JButton("Menu");
-        JButton aiButton = new JButton("AI");
+        JPanel leftPanel = new JPanel(new GridLayout(2, 1)); // [cite: 384]
+        JButton menuButton = new JButton("Menu"); // [cite: 385]
+        JButton aiButton = new JButton("AI"); // [cite: 385]
 
-        leftPanel.add(menuButton);
-        leftPanel.add(aiButton);
-
-        // 为 Menu 按钮添加 ActionListener
+        leftPanel.add(menuButton); // [cite: 385]
+        leftPanel.add(aiButton); // [cite: 386]
+        // 为 Menu 按钮添加 ActionListener // [cite: 386]
         menuButton.addActionListener(e -> {
-            cardLayout.show(rightPanel, "Table"); // 切换到表格界面
+            cardLayout.show(rightPanel, "Table"); // 切换到表格界面 // [cite: 386]
         });
-
-        // 为 AI 按钮添加 ActionListener
+        // 为 AI 按钮添加 ActionListener // [cite: 387]
         aiButton.addActionListener(e -> {
-            cardLayout.show(rightPanel, "Histogram"); // 切换到直方图界面
+            cardLayout.show(rightPanel, "Histogram"); // 切换到直方图界面 // [cite: 387]
         });
-
-        return leftPanel;
+        return leftPanel; // [cite: 388]
     }
 
-    // 设置右边的面板，包含搜索和表格界面或 AI 界面
+
+    // Method to set up the right panel (Table/Histogram) - no changes needed here // [cite: 275]
     private void setupRightPanel() {
-        // 创建搜索和表格的面板
-        JPanel tablePanel = createTablePanel();
-
-        // 将表格面板和直方图面板添加到 rightPanel
-        rightPanel.add(tablePanel, "Table");
-        rightPanel.add(histogramPanelContainer, "Histogram");
+        // 创建搜索和表格的面板 // [cite: 388]
+        JPanel tablePanel = createTablePanel(); // [cite: 389]
+        // 将表格面板和直方图面板添加到 rightPanel // [cite: 389]
+        rightPanel.add(tablePanel, "Table"); // [cite: 389]
+        rightPanel.add(histogramPanelContainer, "Histogram"); // [cite: 390]
     }
 
-    // 创建搜索和表格的面板
+    // Method to create the table panel - update button editors/renderers to use 'this' MenuUI instance
     private JPanel createTablePanel() {
         JPanel tablePanel = new JPanel(new BorderLayout());
 
-        // 创建输入面板
-        JPanel inputPanel = createInputPanel();
+        JPanel inputPanel = createInputPanel(); // This method now initializes search fields
         tablePanel.add(inputPanel, BorderLayout.NORTH);
 
-        // 创建表格的滚动面板
-        JScrollPane tableScrollPane = new JScrollPane(table);
+        JScrollPane tableScrollPane = new JScrollPane(this.table);
         tableScrollPane.setPreferredSize(new Dimension(1000, 250));
-        table.setRowHeight(30); // 设置表格的行高
+        this.table.setRowHeight(30);
 
         tablePanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        // 为 Modify 列设置渲染器和编辑器
-        table.getColumnModel().getColumn(11).setCellRenderer(new ButtonRenderer());
-        table.getColumnModel().getColumn(11).setCellEditor(new ButtonEditor(this));
+        // Set cell renderers and editors - pass 'this' MenuUI instance
+        this.table.getColumnModel().getColumn(11).setCellRenderer(new ButtonRenderer());
+        this.table.getColumnModel().getColumn(11).setCellEditor(new ButtonEditor(this));
 
-        // 为 Delete 列设置渲染器和编辑器
-        table.getColumnModel().getColumn(12).setCellRenderer(new ButtonRenderer());
-        table.getColumnModel().getColumn(12).setCellEditor(new ButtonEditor(this));
+        this.table.getColumnModel().getColumn(12).setCellRenderer(new ButtonRenderer());
+        this.table.getColumnModel().getColumn(12).setCellEditor(new ButtonEditor(this));
 
-        // 加载 CSV 数据
-        loadCSVData(FILE_PATH);
+        // Data loading is now called in createMainPanel()
 
         return tablePanel;
     }
 
-    // 创建输入面板
+    // Method to create input panel - Capture references to search fields and button (for Question 2 & 3)
     private JPanel createInputPanel() {
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
-        // 创建输入字段
-        JTextField transactionTimeField = new JTextField(10); // 交易时间输入框
-        JTextField transactionTypeField = new JTextField(10); // 交易类型输入框
-        JTextField counterpartyField = new JTextField(10);    // 交易对方输入框
-        JTextField commodityField = new JTextField(10);      // 商品输入框
-        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"}); // 收/支下拉框
-        JTextField paymentMethodField = new JTextField(10);  // 支付方式输入框
+        // Create input fields and capture references
+        searchTransactionTimeField = new JTextField(10); // 交易时间输入框
+        searchTransactionTypeField = new JTextField(10); // 交易类型输入框
+        searchCounterpartyField = new JTextField(10);    // 交易对方输入框
+        searchCommodityField = new JTextField(10);      // 商品输入框
+        searchInOutComboBox = new JComboBox<>(new String[]{"", "收入", "支出"}); // Add empty option for "any"
+        searchPaymentMethodField = new JTextField(10);  // 支付方式输入框
 
-        // 添加标签和输入字段到输入面板
+        // Add labels and input fields
         inputPanel.add(new JLabel("交易时间:"));
-        inputPanel.add(transactionTimeField);
+        inputPanel.add(searchTransactionTimeField);
         inputPanel.add(new JLabel("交易类型:"));
-        inputPanel.add(transactionTypeField);
+        inputPanel.add(searchTransactionTypeField);
         inputPanel.add(new JLabel("交易对方:"));
-        inputPanel.add(counterpartyField);
+        inputPanel.add(searchCounterpartyField);
         inputPanel.add(new JLabel("商品:"));
-        inputPanel.add(commodityField);
+        inputPanel.add(searchCommodityField);
         inputPanel.add(new JLabel("收/支:"));
-        inputPanel.add(inOutComboBox);
+        inputPanel.add(searchInOutComboBox);
         inputPanel.add(new JLabel("支付方式:"));
-        inputPanel.add(paymentMethodField);
+        inputPanel.add(searchPaymentMethodField);
 
-        // 创建 Search 和 Add 按钮
-        JButton searchButton = new JButton("Search");
+        // Create Search and Add buttons and capture reference to search button
+        searchButton = new JButton("Search");
         JButton addButton = new JButton("Add");
 
-        // 将按钮添加到输入面板
+        // Add buttons
         inputPanel.add(searchButton);
         inputPanel.add(addButton);
 
-        // 为 Search 按钮添加 ActionListener
+        // Add ActionListener for Search button
         searchButton.addActionListener(e -> {
-            // 获取输入字段的值
+            // Call searchData with current values from the input fields
             searchData(
-                    transactionTimeField.getText().trim(),
-                    transactionTypeField.getText().trim(),
-                    counterpartyField.getText().trim(),
-                    commodityField.getText().trim(),
-                    (String) inOutComboBox.getSelectedItem(),
-                    paymentMethodField.getText().trim()
+                    searchTransactionTimeField.getText().trim(),
+                    searchTransactionTypeField.getText().trim(),
+                    searchCounterpartyField.getText().trim(),
+                    searchCommodityField.getText().trim(),
+                    (String) searchInOutComboBox.getSelectedItem(),
+                    searchPaymentMethodField.getText().trim()
             );
         });
 
-        // 为 Add 按钮添加 ActionListener
+        // Add ActionListener for Add button
         addButton.addActionListener(e -> {
-            // 弹出对话框，输入交易信息
             showAddTransactionDialog();
         });
 
         return inputPanel;
     }
 
-    // 弹出对话框，输入交易信息
+    // Method to show add transaction dialog - update to use injected service
     private void showAddTransactionDialog() {
-        // 创建对话框
+        // ... existing code to create dialog and fields ...
         JDialog addDialog = new JDialog();
         addDialog.setTitle("添加交易");
-        addDialog.setLayout(new GridLayout(12, 2)); // 11 个字段 + 1 个按钮行
+        addDialog.setLayout(new GridLayout(12, 2));
 
-        // 创建输入字段
         JTextField transactionTimeField = new JTextField();
         JTextField transactionTypeField = new JTextField();
         JTextField counterpartyField = new JTextField();
         JTextField commodityField = new JTextField();
-        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"});
+        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"}); // Or maybe allow empty for "other"?
         JTextField paymentAmountField = new JTextField();
         JTextField paymentMethodField = new JTextField();
         JTextField currentStatusField = new JTextField();
@@ -192,275 +246,329 @@ public class MenuUI {
         JTextField merchantNumberField = new JTextField();
         JTextField remarksField = new JTextField();
 
-        // 添加标签和输入字段到对话框
-        addDialog.add(new JLabel("交易时间:"));
-        addDialog.add(transactionTimeField);
-        addDialog.add(new JLabel("交易类型:"));
-        addDialog.add(transactionTypeField);
-        addDialog.add(new JLabel("交易对方:"));
-        addDialog.add(counterpartyField);
-        addDialog.add(new JLabel("商品:"));
-        addDialog.add(commodityField);
-        addDialog.add(new JLabel("收/支:"));
-        addDialog.add(inOutComboBox);
-        addDialog.add(new JLabel("金额(元):"));
-        addDialog.add(paymentAmountField);
-        addDialog.add(new JLabel("支付方式:"));
-        addDialog.add(paymentMethodField);
-        addDialog.add(new JLabel("当前状态:"));
-        addDialog.add(currentStatusField);
-        addDialog.add(new JLabel("交易单号:"));
-        addDialog.add(orderNumberField);
-        addDialog.add(new JLabel("商户单号:"));
-        addDialog.add(merchantNumberField);
-        addDialog.add(new JLabel("备注:"));
-        addDialog.add(remarksField);
+        addDialog.add(new JLabel("交易时间:")); addDialog.add(transactionTimeField);
+        addDialog.add(new JLabel("交易类型:")); addDialog.add(transactionTypeField);
+        addDialog.add(new JLabel("交易对方:")); addDialog.add(counterpartyField);
+        addDialog.add(new JLabel("商品:")); addDialog.add(commodityField);
+        addDialog.add(new JLabel("收/支:")); addDialog.add(inOutComboBox);
+        addDialog.add(new JLabel("金额(元):")); addDialog.add(paymentAmountField);
+        addDialog.add(new JLabel("支付方式:")); addDialog.add(paymentMethodField);
+        addDialog.add(new JLabel("当前状态:")); addDialog.add(currentStatusField);
+        addDialog.add(new JLabel("交易单号:")); addDialog.add(orderNumberField);
+        addDialog.add(new JLabel("商户单号:")); addDialog.add(merchantNumberField);
+        addDialog.add(new JLabel("备注:")); addDialog.add(remarksField);
 
-        // 添加确认按钮
+
+        // Add confirm button
         JButton confirmButton = new JButton("确认");
         confirmButton.addActionListener(e -> {
-            // 获取输入字段的值，若为空则设置为默认值
-            String transactionTime = emptyIfNull(transactionTimeField.getText().trim());
-            String transactionType = emptyIfNull(transactionTypeField.getText().trim());
-            String counterparty = emptyIfNull(counterpartyField.getText().trim());
-            String commodity = emptyIfNull(commodityField.getText().trim());
-            String inOut = (String) inOutComboBox.getSelectedItem();
             String paymentAmountText = paymentAmountField.getText().trim();
-            double paymentAmount = paymentAmountText.isEmpty() ? 0.0 : Double.parseDouble(paymentAmountText); // 处理空字符串
-            String paymentMethod = emptyIfNull(paymentMethodField.getText().trim());
-            String currentStatus = emptyIfNull(currentStatusField.getText().trim());
-            String orderNumber = emptyIfNull(orderNumberField.getText().trim());
-            String merchantNumber = emptyIfNull(merchantNumberField.getText().trim());
-            String remarks = emptyIfNull(remarksField.getText().trim());
+            double paymentAmount = 0.0;
+            if (!paymentAmountText.isEmpty()) {
+                try {
+                    paymentAmount = Double.parseDouble(paymentAmountText);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(addDialog, "金额格式不正确！请输入数字。", "输入错误", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
 
-            // 创建 Transaction 对象
             Transaction newTransaction = new Transaction(
-                    transactionTime,
-                    transactionType,
-                    counterparty,
-                    commodity,
-                    inOut,
+                    emptyIfNull(transactionTimeField.getText().trim()),
+                    emptyIfNull(transactionTypeField.getText().trim()),
+                    emptyIfNull(counterpartyField.getText().trim()),
+                    emptyIfNull(commodityField.getText().trim()),
+                    (String) inOutComboBox.getSelectedItem(),
                     paymentAmount,
-                    paymentMethod,
-                    currentStatus,
-                    orderNumber,
-                    merchantNumber,
-                    remarks
+                    emptyIfNull(paymentMethodField.getText().trim()),
+                    emptyIfNull(currentStatusField.getText().trim()),
+                    emptyIfNull(orderNumberField.getText().trim()), // Ensure order number is provided
+                    emptyIfNull(merchantNumberField.getText().trim()),
+                    emptyIfNull(remarksField.getText().trim())
             );
 
+            if (newTransaction.getOrderNumber().isEmpty()) {
+                JOptionPane.showMessageDialog(addDialog, "交易单号不能为空！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             try {
-                // 调用 TransactionServiceImpl 的 addTransaction 方法
                 transactionService.addTransaction(newTransaction);
 
-                // 重新加载 CSV 数据以更新表格
-                loadCSVData(TRANSACTION_CAFFEINE_KEY);
+                // After adding, decide what to display.
+                // Option 1: Reload the default (income only) view:
+                // loadCSVDataForCurrentUser("收入");
+                // Option 2: Reload all data:
+                // loadCSVDataForCurrentUser("");
+                // Option 3: Reload the *current* search/filter view (more complex, requires storing current criteria)
+                // Let's choose Option 2 for simplicity - show all data after adding a new transaction.
+                // The user can then filter if needed.
+                loadCSVDataForCurrentUser(""); // Load all data after adding
 
-                // 关闭对话框
+                // Also clear search fields after adding
+                clearSearchFields();
+
+
                 addDialog.dispose();
-
                 JOptionPane.showMessageDialog(null, "交易添加成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+
             } catch (IOException ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "交易添加失败！", "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "交易添加失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         addDialog.add(confirmButton);
-
-        // 设置对话框大小并显示
         addDialog.setSize(400, 300);
-        addDialog.setModal(true); // 设置为模态对话框
+        addDialog.setModal(true);
         addDialog.setVisible(true);
     }
 
-    // 加载 CSV 数据
-    public void loadCSVData(String caffeineKey) {
-        allData.clear();
-        tableModel.setRowCount(0);
 
-        CacheUtil<String, List<Transaction>, Exception> cache = transactionService.cache;
+    // Method to search data - update to clear tableModel only (remove allData usage)
+    public void searchData(String query1, String query2, String query3, String query4, String query6, String query5) { // Renamed query params for clarity
+        System.out.println("Searching with criteria: time='" + query1 + "', type='" + query2 + "', counterparty='" + query3 + "', commodity='" + query4 + "', inOut='" + query6 + "', paymentMethod='" + query5 + "'");
+        this.tableModel.setRowCount(0); // Clear the table model
 
-//        CsvTransactionDao csvTransactionDao = new CsvTransactionDao();
-
-        List<Transaction> transactions = cache.get(caffeineKey);
-        for (Transaction transaction : transactions) {
-            Vector<String> row = createRowFromTransaction(transaction);
-            allData.add(row);
-            tableModel.addRow(row);
-        }
-    }
-
-    // 搜索数据
-    public void searchData(String query1, String query2, String query3, String query4, String query6, String query5) {
-        tableModel.setRowCount(0);
-        Transaction searchCriteria = new Transaction(query1, query2, query3, query4, query6, 0, query5, "", "", "", "");
+        // Create search criteria Transaction object
+        Transaction searchCriteria = new Transaction(
+                query1, query2, query3, query4, query6,
+                0, // paymentAmount not used in search criteria from UI
+                query5,
+                "", "", "", ""
+        );
 
         try {
+            // Use the injected transactionService instance
             List<Transaction> transactions = transactionService.searchTransaction(searchCriteria);
+            System.out.println("Search results count: " + transactions.size());
             for (Transaction transaction : transactions) {
                 Vector<String> row = createRowFromTransaction(transaction);
-                tableModel.addRow(row);
+                this.tableModel.addRow(row);
             }
+
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "查询失败！", "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "查询失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // 从 Transaction 对象创建表格行
+    // Method to create table row from Transaction object - no changes needed here
     private Vector<String> createRowFromTransaction(Transaction transaction) {
         Vector<String> row = new Vector<>();
-        row.add(transaction.getTransactionTime());
-        row.add(transaction.getTransactionType());
-        row.add(transaction.getCounterparty());
-        row.add(transaction.getCommodity());
-        row.add(transaction.getInOut());
-        row.add(String.valueOf(transaction.getPaymentAmount()));
-        row.add(transaction.getPaymentMethod());
-        row.add(transaction.getCurrentStatus());
-        row.add(transaction.getOrderNumber());
-        row.add(transaction.getMerchantNumber());
-        row.add(transaction.getRemarks());
-        row.add("Modify"); // Modify 按钮
-        row.add("Delete"); // 添加 Delete 按钮
+        row.add(emptyIfNull(transaction.getTransactionTime()));
+        row.add(emptyIfNull(transaction.getTransactionType()));
+        row.add(emptyIfNull(transaction.getCounterparty()));
+        row.add(emptyIfNull(transaction.getCommodity()));
+        row.add(emptyIfNull(transaction.getInOut()));
+        row.add(String.valueOf(transaction.getPaymentAmount())); // Keep as String for table
+        row.add(emptyIfNull(transaction.getPaymentMethod()));
+        row.add(emptyIfNull(transaction.getCurrentStatus()));
+        row.add(emptyIfNull(transaction.getOrderNumber()));
+        row.add(emptyIfNull(transaction.getMerchantNumber()));
+        row.add(emptyIfNull(transaction.getRemarks()));
+        row.add("Modify"); // Modify button text
+        row.add("Delete"); // Delete button text
         return row;
     }
 
-    // 删除行
+
+    // Method to delete row - get data from tableModel (remove allData usage)
     public void deleteRow(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < allData.size()) {
-            String orderNumber = allData.get(rowIndex).get(8).trim();
-            System.out.println("尝试删除的交易单号: " + orderNumber); // 打印交易单号
+        System.out.println("尝试删除行: " + rowIndex + " for user " + currentUser.getUsername());
+        if (rowIndex >= 0 && rowIndex < this.tableModel.getRowCount()) { // Use tableModel row count
+
+            // Get the order number directly from the displayed table row
+            String orderNumber = (String) this.tableModel.getValueAt(rowIndex, 8); // OrderNumber is at index 8
+            if (orderNumber == null || orderNumber.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "无法删除：交易单号为空！", "错误", JOptionPane.ERROR_MESSAGE);
+                System.err.println("Attempted to delete row " + rowIndex + " but order number is null or empty.");
+                return; // Cannot delete without an order number
+            }
+            orderNumber = orderNumber.trim();
+            System.out.println("Deleting transaction with order number: " + orderNumber);
 
             try {
-                if (transactionService.deleteTransaction(orderNumber)) {
-                    allData.remove(rowIndex);
-                    tableModel.removeRow(rowIndex);
+                // Use the injected transactionService instance
+                boolean deleted = transactionService.deleteTransaction(orderNumber);
+
+                if (deleted) {
+                    // Data is removed from CSV and cache invalidated by service.
+                    // Update the UI model directly by removing the row.
+                    this.tableModel.removeRow(rowIndex); // Remove the row from the displayed table
+
+
                     JOptionPane.showMessageDialog(null, "删除成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+                    System.out.println("Deleted row " + rowIndex + " with order number " + orderNumber + " from UI.");
+
+                    // After delete, refresh the view. Let's reload the *current* search/filter view.
+                    // Get the current search criteria from the UI fields and re-apply search.
+                    triggerCurrentSearch();
+
                 } else {
-                    JOptionPane.showMessageDialog(null, "删除失败：未找到对应的交易单号", "错误", JOptionPane.ERROR_MESSAGE);
+                    // This case means the service said it wasn't deleted (likely not found)
+                    JOptionPane.showMessageDialog(null, "删除失败：未找到对应的交易单号 " + orderNumber, "错误", JOptionPane.ERROR_MESSAGE);
+                    System.err.println("Delete failed: order number " + orderNumber + " not found by service.");
                 }
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "删除失败！", "错误", JOptionPane.ERROR_MESSAGE);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+                JOptionPane.showMessageDialog(null, "删除失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                System.err.println("Error during deletion for order number " + orderNumber);
             }
+        } else {
+            System.err.println("Attempted to delete row with invalid index: " + rowIndex + ". Table row count: " + this.tableModel.getRowCount());
         }
     }
 
-    // 编辑行
+    // Method to edit row - get data from tableModel and update display after edit (remove allData usage)
     public void editRow(int rowIndex) {
-        System.out.println("编辑行: " + rowIndex);
-        if (rowIndex >= 0 && rowIndex < allData.size()) {
-            Vector<String> rowData = allData.get(rowIndex);
+        System.out.println("编辑行: " + rowIndex + " for user " + currentUser.getUsername());
+        if (rowIndex >= 0 && rowIndex < this.tableModel.getRowCount()) { // Use tableModel row count
 
-            // 创建一个面板用于显示编辑字段
-            JPanel panel = new JPanel(new GridLayout(rowData.size() - 2, 2)); // 排除最后两列
+            // Get the data for the displayed row directly from the table model
+            Vector<String> rowData = new Vector<>();
+            // Get data for all columns that correspond to Transaction fields (up to index 10)
+            for (int i = 0; i <= 10; i++) { // Columns 0 to 10 are Transaction fields
+                Object value = this.tableModel.getValueAt(rowIndex, i);
+                rowData.add(value != null ? value.toString() : "");
+            }
+            System.out.println("Retrieved row data from table model for editing: " + rowData);
 
-            // 创建字段数组，用于存储用户输入的值
-            JTextField[] fields = new JTextField[rowData.size() - 2]; // 排除最后两列
+            // Get the original order number, which is the key for update
+            String originalOrderNumber = rowData.get(8).trim(); // Index 8 is OrderNumber
+            if (originalOrderNumber.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "无法编辑：交易单号为空！", "错误", JOptionPane.ERROR_MESSAGE);
+                System.err.println("Attempted to edit row " + rowIndex + " but order number is empty.");
+                return; // Cannot edit without an order number
+            }
 
-            // 遍历 rowData，跳过最后两列（"Modify" 和 "Delete"）
-            for (int i = 0; i < rowData.size() - 2; i++) {
-                panel.add(new JLabel(tableModel.getColumnName(i))); // 添加列名标签
-                fields[i] = new JTextField(rowData.get(i)); // 添加输入字段
+
+            // Create a panel for edit fields
+            JPanel panel = new JPanel(new GridLayout(11, 2)); // 11 Transaction fields
+
+            // Create fields array, populate panel and fields
+            JTextField[] fields = new JTextField[11]; // 11 fields for Transaction data
+            String[] fieldNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"};
+
+            for (int i = 0; i < fieldNames.length; i++) {
+                panel.add(new JLabel(fieldNames[i] + ":")); // Add label
+                fields[i] = new JTextField(rowData.get(i)); // Set field value from row data
                 panel.add(fields[i]);
             }
 
-            // 弹出对话框，让用户修改数据
-            int result = JOptionPane.showConfirmDialog(null, panel, "修改交易信息", JOptionPane.OK_CANCEL_OPTION);
+            // Disable editing the order number field if it's the primary key and shouldn't be changed
+            // If you decide OrderNumber is immutable via edit:
+            fields[8].setEditable(false); // Disable editing OrderNumber field
+
+
+            // Show the dialog
+            int result = JOptionPane.showConfirmDialog(null, panel, "修改交易信息 (订单号: " + originalOrderNumber + ")", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
             if (result == JOptionPane.OK_OPTION) {
-                // 用户点击了确认按钮，更新交易信息
-                Transaction transaction = new Transaction(
+                // User clicked OK, get updated values from fields
+
+                // Handle paymentAmount parsing carefully
+                double paymentAmount = safeParseDouble(fields[5].getText().trim()); // 金额(元)
+
+                // Create a Transaction object with updated values
+                // Use the original order number as the key for the update operation
+                Transaction updatedTransaction = new Transaction(
                         fields[0].getText().trim(), // 交易时间
                         fields[1].getText().trim(), // 交易类型
                         fields[2].getText().trim(), // 交易对方
                         fields[3].getText().trim(), // 商品
                         fields[4].getText().trim(), // 收/支
-                        Double.parseDouble(fields[5].getText().trim()), // 金额(元)
+                        paymentAmount,
                         fields[6].getText().trim(), // 支付方式
                         fields[7].getText().trim(), // 当前状态
-                        fields[8].getText().trim(), // 交易单号
+                        originalOrderNumber, // Use the ORIGINAL order number as the identifier for update
                         fields[9].getText().trim(), // 商户单号
                         fields[10].getText().trim() // 备注
                 );
 
                 try {
-                    // 调用 TransactionServiceImpl 的 changeTransaction 方法更新交易
-                    transactionService.changeTransaction(transaction);
+                    // Use the injected transactionService instance to change the transaction
+                    transactionService.changeTransaction(updatedTransaction);
 
-                    // 重新加载 CSV 数据以更新表格
-                    loadCSVData(TRANSACTION_CAFFEINE_KEY);
+                    // *** IMPORTANT CHANGE FOR QUESTION 2 ***
+                    // After successful edit, update the search fields and trigger search
+                    System.out.println("Edit successful. Preparing to refresh display filtered by InOut: " + updatedTransaction.getInOut());
+                    // Clear all search text fields
+                    clearSearchFields();
+                    // Set the InOut dropdown to the updated value
+                    searchInOutComboBox.setSelectedItem(updatedTransaction.getInOut());
+                    // Trigger the search based on the updated criteria
+                    triggerCurrentSearch();
+
 
                     JOptionPane.showMessageDialog(null, "修改成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+                    System.out.println("Edited row " + rowIndex + " for order number " + originalOrderNumber + " and refreshed display.");
+
+                } catch (IllegalArgumentException e) {
+                    JOptionPane.showMessageDialog(null, "修改失败！\n" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "修改失败！", "错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "修改失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                    System.err.println("Error during editing for order number " + originalOrderNumber);
                 }
+            } else {
+                System.out.println("Edit dialog cancelled.");
             }
+        } else {
+            System.err.println("Attempted to edit row with invalid index: " + rowIndex + ". Table row count: " + this.tableModel.getRowCount());
         }
     }
 
-    /**
-     * 查找对话框中的输入字段
-     *
-     * @param dialog 对话框
-     * @param index  输入字段的索引
-     * @return 输入字段
-     */
-    /**
-     * 查找容器中的输入字段
-     *
-     * @param container 容器（可以是 JPanel 或 JDialog）
-     * @param index     输入字段的索引
-     * @return 输入字段
-     */
-    private JTextField findTextField(Container container, int index) {
-        int count = 0;
-        for (Component component : container.getComponents()) {
-            if (component instanceof JTextField) {
-                if (count == index) {
-                    return (JTextField) component;
-                }
-                count++;
-            }
+    // Helper method to safely parse double, return 0.0 on error
+    private double safeParseDouble(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return 0.0;
         }
-        return null;
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            System.err.println("Failed to parse double from string: '" + value + "'");
+            // Consider showing a warning message to the user here
+            return 0.0;
+        }
     }
 
-    /**
-     * 查找对话框中的下拉框
-     *
-     * @param dialog 对话框
-     * @return 下拉框
-     */
-    /**
-     * 查找容器中的下拉框
-     *
-     * @param container 容器（可以是 JPanel 或 JDialog）
-     * @return 下拉框
-     */
-    private JComboBox<String> findComboBox(Container container) {
-        for (Component component : container.getComponents()) {
-            if (component instanceof JComboBox) {
-                return (JComboBox<String>) component;
-            }
-        }
-        return null;
+    // Helper method to clear all search input fields
+    private void clearSearchFields() {
+        searchTransactionTimeField.setText("");
+        searchTransactionTypeField.setText("");
+        searchCounterpartyField.setText("");
+        searchCommodityField.setText("");
+        searchInOutComboBox.setSelectedItem(""); // Set to the empty option
+        searchPaymentMethodField.setText("");
+        System.out.println("Cleared search fields.");
     }
 
+    // Helper method to trigger search based on current search field values
+    private void triggerCurrentSearch() {
+        searchData(
+                searchTransactionTimeField.getText().trim(),
+                searchTransactionTypeField.getText().trim(),
+                searchCounterpartyField.getText().trim(),
+                searchCommodityField.getText().trim(),
+                (String) searchInOutComboBox.getSelectedItem(),
+                searchPaymentMethodField.getText().trim()
+        );
+        System.out.println("Triggered search with current field values.");
+    }
+
+
     /**
-     * 如果字段为 null，则返回空文本
-     *
-     * @param value 字段值
-     * @return 非 null 的字段值
+     * If field is null, return empty string.
+     * @param value Field value
+     * @return Non-null field value
      */
     private String emptyIfNull(String value) {
         return value == null ? "" : value;
     }
 
-    // 添加此方法以便测试时可以获取table
+    // Keep getTable() for testing
     public JTable getTable() {
         return table;
     }

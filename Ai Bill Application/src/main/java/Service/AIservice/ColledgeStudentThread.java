@@ -18,6 +18,8 @@ public class ColledgeStudentThread implements Runnable{
             collegeStudentNeeds.generateBudget(filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

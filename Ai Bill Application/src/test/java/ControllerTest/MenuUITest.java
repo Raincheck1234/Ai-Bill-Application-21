@@ -1,7 +1,6 @@
 package ControllerTest;
 
-import Controller.HistogramExample;
-import Controller.HistogramPanelContainer;
+import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,9 +13,7 @@ import Controller.MenuUI;
 
 import Service.Impl.TransactionServiceImpl;
 
-import Service.Impl.TransactionServiceImpl;
-
-import DAO.CsvTransactionDao;
+import DAO.Impl.CsvTransactionDao;
 
 public class MenuUITest {
 
@@ -24,10 +21,10 @@ public class MenuUITest {
 
     @BeforeEach
     public void setUp() {
-        menuUI = new MenuUI();
+//        menuUI = new MenuUI(new User());
 
         // 手动初始化 TransactionServiceImpl 的 csvTransactionDao
-        TransactionServiceImpl.csvTransactionDao = new CsvTransactionDao();
+//        TransactionServiceImpl.csvTransactionDao = new CsvTransactionDao();
     }
 
     @Test

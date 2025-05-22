@@ -8,6 +8,14 @@ import java.util.List;
 public interface TransactionService {
 
     /**
+     * Gets all transactions for the current user.
+     * @return List of all transactions.
+     * @throws Exception If data retrieval fails (e.g., IO error, cache issue).
+     */
+    List<Transaction> getAllTransactions() throws Exception; // Added this method
+
+
+    /**
      * 新增交易
      * @param transaction
      */
@@ -16,19 +24,22 @@ public interface TransactionService {
     /**
      * 修改交易
      * @param transaction
+     * @throws Exception If modification fails.
      */
     void changeTransaction(Transaction transaction) throws Exception;
 
     /**
      * 根据订单号删除交易
      * @param orderNumber
+     * @return true if deletion was successful, false if transaction not found.
+     * @throws Exception If deletion fails (e.g., IO error).
      */
-    boolean deleteTransaction(String orderNumber) throws Exception;
+    boolean deleteTransaction(String orderNumber) throws Exception; // Changed return type to boolean
 
     /**
      * 根据用户输入信息查询交易
-     * @param transaction
-     * @return
+     * @param transaction Search criteria.
+     * @return List of matched transactions.
      */
     List<Transaction> searchTransaction(Transaction transaction);
 

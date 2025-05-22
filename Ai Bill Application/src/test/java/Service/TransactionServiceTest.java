@@ -1,6 +1,6 @@
 package Service;
 
-import DAO.CsvTransactionDao;
+import DAO.Impl.CsvTransactionDao;
 import Service.Impl.TransactionServiceImpl;
 import model.Transaction;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,9 +14,9 @@ class TransactionServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 初始化 DAO 和 Service
-        CsvTransactionDao csvTransactionDao = new CsvTransactionDao();
-        transactionService = new TransactionServiceImpl(csvTransactionDao);
+//        // 初始化 DAO 和 Service
+//        CsvTransactionDao csvTransactionDao = new CsvTransactionDao();
+//        transactionService = new TransactionServiceImpl(csvTransactionDao);
     }
 
     @Test

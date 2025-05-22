@@ -1,9 +1,10 @@
 package Service.Impl;
 
-import Constants.ConfigConstants;
-import DAO.CsvTransactionDao;
+import Constants.CaffeineKeys; // Import CaffeineKeys
+import DAO.TransactionDao; // Import the interface
+import DAO.Impl.CsvTransactionDao; // Import the implementation
 import Service.TransactionService;
-import Utils.CacheUtil;
+import Utils.CacheManager; // Import the new CacheManager
 import model.Transaction;
 
 import java.io.IOException;
@@ -11,213 +12,395 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors; // Needed for search
 
-import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
-import static Constants.ConfigConstants.CSV_PATH;
+// Remove static field
+// public static CsvTransactionDao csvTransactionDao;
+
+// Remove direct CacheUtil instance
+// public final CacheUtil<String, List<Transaction>, Exception> cache;
 
 public class TransactionServiceImpl implements TransactionService {
-    public static CsvTransactionDao csvTransactionDao;
+
+    private final String currentUserTransactionFilePath; // Store the user's file path
+    // TransactionDao instance needed to load data if cache misses
+    private final TransactionDao transactionDao;
 
     /**
-     * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
+     * Constructor now accepts the user's transaction file path.
+     *
+     * @param currentUserTransactionFilePath The file path for the current user's transactions.
      */
-    public final CacheUtil<String, List<Transaction>, Exception> cache;
+    public TransactionServiceImpl(String currentUserTransactionFilePath) {
+        this.currentUserTransactionFilePath = currentUserTransactionFilePath;
+        // Create a DAO instance for this service instance.
+        this.transactionDao = new CsvTransactionDao(); // One DAO instance per service instance
+        System.out.println("TransactionServiceImpl initialized for file: " + currentUserTransactionFilePath);
+        // Cache is managed by CacheManager, not directly by this instance.
+    }
 
-    /**
-     * 通过构造函数注入路径和csvTransactionDao
-     * @param csvTransactionDao
-     * @throws IOException
-     */
-    public TransactionServiceImpl(CsvTransactionDao csvTransactionDao)  {
-        // 1. 注入Dao层接口
-        TransactionServiceImpl.csvTransactionDao = csvTransactionDao;
-        // 2. 初始化CacheUtil
-        this.cache = new CacheUtil<String, List<Transaction>, Exception>(
-                key -> {
-                    try {
-                        return csvTransactionDao.loadFromCSV(CSV_PATH);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }, // 定义缓存未命中的执行逻辑
-                1, 10, 1
-        );
+    @Override // Implement the new interface method
+    public List<Transaction> getAllTransactions() throws Exception {
+        // Simply call the internal method that uses the cache
+        return getAllTransactionsForCurrentUser();
     }
 
     /**
-     * 从transactions缓存中读取transactions如果没有则从csv文件中找
-     * @return
-     * @throws IOException
+     * Gets all transactions for the current user from the cache (loading if necessary).
+     * Made protected or public if needed by subclasses, but private is fine for now.
+     * @return List of transactions.
+     * @throws Exception If an error occurs during loading.
      */
-    private List<Transaction> getAllTransactions() throws Exception {
-        return cache.get(TRANSACTION_CAFFEINE_KEY);
+    private List<Transaction> getAllTransactionsForCurrentUser() throws Exception { // Kept as private or change if needed
+        // Get transactions using the CacheManager for the current user's file
+        return CacheManager.getTransactions(currentUserTransactionFilePath, transactionDao);
     }
 
 
+//    /**
+//     * Gets all transactions for the current user from the cache (loading if necessary).
+//     *
+//     * @return List of transactions.
+//     * @throws Exception If an error occurs during loading.
+//     */
+//    private List<Transaction> getAllTransactionsForCurrentUser() throws Exception {
+//        // Get transactions using the CacheManager for the current user's file
+//        return CacheManager.getTransactions(currentUserTransactionFilePath, transactionDao);
+//    }
+
+
     /**
-     * 新增交易
-     * @param transaction
+     * Add transaction for the current user.
+     *
+     * @param transaction The new transaction to add.
      */
     @Override
     public void addTransaction(Transaction transaction) throws IOException {
-        // 设置交易时间为当前时间
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-        String currentTime = now.format(formatter);
-        transaction.setTransactionTime(currentTime);
+        // Set transaction time to current time if not already set
+        if (transaction.getTransactionTime() == null || transaction.getTransactionTime().isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            // Using a flexible format, match parseDateTime in AITransactionService
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            String currentTime = now.format(formatter);
+            transaction.setTransactionTime(currentTime);
+        }
 
-        // 调用 DAO 层方法添加交易
-        csvTransactionDao.addTransaction(CSV_PATH, transaction);
+        try {
+            // Call DAO layer to add transaction to the user's specific file
+            transactionDao.addTransaction(currentUserTransactionFilePath, transaction);
+
+            // After adding, invalidate the cache for this user's file
+            // Or, ideally, reload the data and put the new list into the cache.
+            // Invalidation is simpler for now, forcing a reload on next get.
+            CacheManager.invalidateTransactionCache(currentUserTransactionFilePath);
+            System.out.println("Transaction added and cache invalidated for " + currentUserTransactionFilePath);
+
+        } catch (IOException e) {
+            System.err.println("Error adding transaction for user file: " + currentUserTransactionFilePath);
+            e.printStackTrace();
+            throw e; // Re-throw
+        }
     }
 
+    /**
+     * Change transaction information for the current user.
+     *
+     * @param updatedTransaction The transaction object with updated information.
+     */
     @Override
     public void changeTransaction(Transaction updatedTransaction) throws Exception {
-        // 1. 加载所有交易记录 先加载 caffeine存储的缓存
-        List<Transaction> allTransactions = getAllTransactions();
+        try {
+            // Load existing transactions (from cache/file)
+            List<Transaction> allTransactions = getAllTransactionsForCurrentUser();
 
-        // 2. 查找并修改目标交易
-        boolean found = false;
-        for (int i = 0; i < allTransactions.size(); i++) {
-            Transaction t = allTransactions.get(i);
-            // 根据交易单号匹配记录（唯一标识）
-            if (t.getOrderNumber().equals(updatedTransaction.getOrderNumber())) {
-                // 3. 更新非空字段
-                updateTransactionFields(t, updatedTransaction);
-                found = true;
-                break;
+            // Find and update the target transaction in the list
+            boolean foundAndUpdatedInMemory = false;
+            List<Transaction> updatedList = new ArrayList<>(allTransactions.size()); // Create a new list or modify in place
+            for (Transaction t : allTransactions) {
+                if (t.getOrderNumber().trim().equals(updatedTransaction.getOrderNumber().trim())) {
+                    // Found the transaction, apply updates
+                    updateTransactionFields(t, updatedTransaction); // Helper method to apply updates
+                    updatedList.add(t); // Add the modified transaction
+                    foundAndUpdatedInMemory = true;
+                    System.out.println("Transaction with order number " + updatedTransaction.getOrderNumber() + " found and updated in memory.");
+                } else {
+                    updatedList.add(t); // Add unchanged transactions
+                }
             }
+
+
+            if (!foundAndUpdatedInMemory) {
+                throw new IllegalArgumentException("未找到交易单号: " + updatedTransaction.getOrderNumber() + " 在文件 " + currentUserTransactionFilePath + " 中");
+            }
+
+            // Write the entire updated list back to the CSV file
+            transactionDao.writeTransactionsToCSV(currentUserTransactionFilePath, updatedList);
+            System.out.println("Updated transaction with order number " + updatedTransaction.getOrderNumber() + " and wrote back to file.");
+
+            // Update the cache with the modified list
+            CacheManager.putTransactions(currentUserTransactionFilePath, updatedList, transactionDao);
+            System.out.println("Cache updated with the modified transaction list for " + currentUserTransactionFilePath);
+
+        } catch (IOException e) {
+            System.err.println("Error changing transaction for user file: " + currentUserTransactionFilePath);
+            e.printStackTrace();
+            throw e;
+        } catch (Exception e) { // Catch exception from getAllTransactionsForCurrentUser
+            System.err.println("Error loading transactions for change operation: " + currentUserTransactionFilePath);
+            e.printStackTrace();
+            throw e;
         }
-        if (!found) {
-            throw new IllegalArgumentException("未找到交易单号: " + updatedTransaction.getOrderNumber());
-        }
-        // 使用事务将写后数据写回csv文件
-        csvTransactionDao.writeTransactionsToCSV(CSV_PATH, allTransactions);
-        // 修改后使缓存失效 （删缓存）
-        cache.invalidate("transactions");
     }
 
     /**
-     *  辅助方法：更新非空字段
-     * @param target
-     * @param source
+     * Helper method: Updates non-empty fields from source to target.
      */
     private void updateTransactionFields(Transaction target, Transaction source) {
-        if (source.getTransactionTime() != null && !source.getTransactionTime().isEmpty()) {
-            target.setTransactionTime(source.getTransactionTime());
+        // Assuming orderNumber is the key and shouldn't be updated this way
+        // Add checks for null and empty strings before updating
+        if (source.getTransactionTime() != null && !source.getTransactionTime().trim().isEmpty()) {
+            target.setTransactionTime(source.getTransactionTime().trim());
         }
-        if (source.getTransactionType() != null && !source.getTransactionType().isEmpty()) {
-            target.setTransactionType(source.getTransactionType());
+        if (source.getTransactionType() != null && !source.getTransactionType().trim().isEmpty()) {
+            target.setTransactionType(source.getTransactionType().trim());
         }
-        if (source.getCounterparty() != null && !source.getCounterparty().isEmpty()) {
-            target.setCounterparty(source.getCounterparty());
+        if (source.getCounterparty() != null && !source.getCounterparty().trim().isEmpty()) {
+            target.setCounterparty(source.getCounterparty().trim());
         }
-        if (source.getCommodity() != null && !source.getCommodity().isEmpty()) {
-            target.setCommodity(source.getCommodity());
+        if (source.getCommodity() != null && !source.getCommodity().trim().isEmpty()) {
+            target.setCommodity(source.getCommodity().trim());
         }
-        if (source.getInOut() != null && !source.getInOut().isEmpty()) {
-            target.setInOut(source.getInOut());
+        // Handle InOut specifically if it's from a ComboBox with predefined options
+        if (source.getInOut() != null && !source.getInOut().trim().isEmpty()) {
+            String inOut = source.getInOut().trim();
+            if (inOut.equals("收入") || inOut.equals("支出") || inOut.equals("支") || inOut.equals("收")) { // Be flexible with input
+                target.setInOut(inOut);
+            } else {
+                System.err.println("Warning: Invalid value for 收/支: " + source.getInOut() + ". Keeping original.");
+                // Optionally throw an IllegalArgumentException
+            }
         }
-        if (source.getPaymentAmount() != 0.0) { // 假设金额为0表示未修改
-            target.setPaymentAmount(source.getPaymentAmount());
+        // Handle paymentAmount - 0.0 might be a valid amount, check if it was explicitly set
+        // A better approach for primitive types is to check if the source object
+        // represents a "partial update" and how unset primitives are marked.
+        // For simplicity here, let's assume 0.0 *is* a valid amount that can be set.
+        // If you need to differentiate "not set" from "set to 0.0", the source object
+        // would need flags or use wrapper types (Double) and check for null.
+        // Let's refine this: Only update if the source amount is NOT 0.0, or if the source object signals it's a full update.
+        // Assuming the UI passes a new Transaction object where primitive 0.0 means 'not updated'.
+        // This is a common pattern but needs careful handling.
+        // If the UI explicitly allows setting 0.0, this logic needs adjustment.
+        // For now, let's assume 0.0 is treated as 'no update' UNLESS the original transaction amount was also 0.0.
+        // A safer way: If the user edited the amount field in the dialog, we *should* update it, even to 0.0.
+        // The MenuUI's editRow extracts values into fields, so we can assume the value from fields[5].getText()
+        // represents the user's intended new value. The Double.parseDouble already happened in MenuUI.
+        // So, if the source object has a non-zero amount, update. What if the user wants to set it to 0?
+        // The current dialog doesn't distinguish. Let's assume for now that any double value from the dialog
+        // should be applied. This might need refinement based on UI behavior.
+        target.setPaymentAmount(source.getPaymentAmount()); // Simply update the amount
+
+
+        if (source.getPaymentMethod() != null && !source.getPaymentMethod().trim().isEmpty()) {
+            target.setPaymentMethod(source.getPaymentMethod().trim());
         }
-        if (source.getPaymentMethod() != null && !source.getPaymentMethod().isEmpty()) {
-            target.setPaymentMethod(source.getPaymentMethod());
+        if (source.getCurrentStatus() != null && !source.getCurrentStatus().trim().isEmpty()) {
+            target.setCurrentStatus(source.getCurrentStatus().trim());
         }
-        if (source.getCurrentStatus() != null && !source.getCurrentStatus().isEmpty()) {
-            target.setCurrentStatus(source.getCurrentStatus());
+        // OrderNumber is typically the key, updating it is risky and often disallowed.
+        // If allowed, need to ensure uniqueness and handle file operations carefully.
+        // Let's assume OrderNumber should NOT be changed via this method.
+        // if (source.getOrderNumber() != null && !source.getOrderNumber().trim().isEmpty()) {
+        //     target.setOrderNumber(source.getOrderNumber().trim()); // Potential issue if new ON conflicts
+        // }
+        if (source.getMerchantNumber() != null && !source.getMerchantNumber().trim().isEmpty()) {
+            target.setMerchantNumber(source.getMerchantNumber().trim());
         }
-        if (source.getMerchantNumber() != null && !source.getMerchantNumber().isEmpty()) {
-            target.setMerchantNumber(source.getMerchantNumber());
+        if (source.getRemarks() != null && !source.getRemarks().trim().isEmpty()) {
+            target.setRemarks(source.getRemarks().trim());
         }
-        if (source.getRemarks() != null && !source.getRemarks().isEmpty()) {
-            target.setRemarks(source.getRemarks());
-        }
+        System.out.println("Applied updates to transaction: " + target.getOrderNumber());
     }
 
+
     /**
-     * 根据订单号删除交易 (若成功则返回true)
-     * @param orderNumber
+     * Delete transaction for the current user by order number.
+     *
+     * @param orderNumber The unique order number of the transaction to delete.
+     * @return true if deletion was successful.
+     * @throws Exception If an error occurs or transaction is not found.
      */
     @Override
     public boolean deleteTransaction(String orderNumber) throws Exception {
-        boolean result = csvTransactionDao.deleteTransaction(CSV_PATH, orderNumber);
-        if (!result) {
-            throw new Exception("未找到交易单号: " + orderNumber); // 或记录日志
+        try {
+            // Call DAO layer to delete transaction from the user's specific file
+            boolean deleted = transactionDao.deleteTransaction(currentUserTransactionFilePath, orderNumber);
+
+            if (deleted) {
+                // After deleting, invalidate the cache for this user's file
+                CacheManager.invalidateTransactionCache(currentUserTransactionFilePath);
+                System.out.println("Transaction with order number " + orderNumber + " deleted and cache invalidated for " + currentUserTransactionFilePath);
+            } else {
+                // If DAO returns false, it means the order number was not found.
+                System.out.println("Transaction with order number " + orderNumber + " not found for deletion in " + currentUserTransactionFilePath);
+            }
+            return deleted; // Return true if deletion occurred, false if not found
+
+        } catch (IOException e) {
+            System.err.println("Error deleting transaction for user file: " + currentUserTransactionFilePath);
+            e.printStackTrace();
+            throw e; // Re-throw
         }
-        cache.invalidate("transactions");
-        return result;
+        // No need for explicit "未找到交易单号" exception here if DAO returns false,
+        // MenuUI can check the boolean result and show a message.
     }
 
     /**
-     * 按照查询条件查询交易信息
-     * @param searchCriteria
-     * @return
+     * Search transactions for the current user based on criteria.
+     *
+     * @param searchCriteria The Transaction object containing search criteria.
+     * @return List of matched transactions.
      */
     @Override
     public List<Transaction> searchTransaction(Transaction searchCriteria) {
         try {
-            // 1. 读取所有交易记录 首先读取caffeine
-            List<Transaction> allTransactions = getAllTransactions();
+            // 1. Get all transactions for the current user (from cache/file)
+            List<Transaction> allTransactions = getAllTransactionsForCurrentUser();
+            System.out.println("Searching through " + allTransactions.size() + " transactions for user " + currentUserTransactionFilePath);
 
-            // 2. 动态模糊匹配
-            List<Transaction> matched = new ArrayList<>();
-            for (Transaction t : allTransactions) {
-                if (matchesCriteria(t, searchCriteria)) {
-                    matched.add(t);
+
+            // 2. Filter transactions based on criteria
+            // Use stream().filter() for conciseness and potential parallelism (though unlikely needed here)
+            List<Transaction> matched = allTransactions.stream()
+                    .filter(t -> matchesCriteria(t, searchCriteria))
+                    .collect(Collectors.toList());
+            System.out.println("Found " + matched.size() + " matching transactions.");
+
+
+            // 3. Sort matched transactions by time, newest first
+            matched.sort((t1, t2) -> {
+                // Safely parse and compare dates, fall back to string comparison if parsing fails
+                LocalDateTime time1 = parseDateTimeSafe(t1.getTransactionTime());
+                LocalDateTime time2 = parseDateTimeSafe(t2.getTransactionTime());
+
+                if (time1 != null && time2 != null) {
+                    return time2.compareTo(time1); // Newest first
+                } else if (time1 == null && time2 == null) {
+                    return 0; // Both unparseable, treat as equal
+                } else if (time1 == null) {
+                    return 1; // Unparseable times come later
+                } else { // time2 == null
+                    return -1; // Unparseable times come later
                 }
-            }
-
-            // 3. 按交易时间倒序排序
-            matched.sort((t1, t2) -> compareTransactionTime(t2.getTransactionTime(), t1.getTransactionTime()));
+            });
+            System.out.println("Matched transactions sorted.");
 
             return matched;
-        } catch (IOException e) {
+        } catch (Exception e) { // Catch exception from getAllTransactionsForCurrentUser
+            System.err.println("Error during search operation for user file: " + currentUserTransactionFilePath);
             e.printStackTrace();
-            return List.of(); // 实际应用中应处理异常
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            // Depending on UI, you might want to return an empty list or propagate the exception
+            // For search, returning empty list and logging error is often user-friendly.
+            return List.of();
         }
     }
 
-
     /**
-     * 辅助方法:判断单个交易记录是否匹配条件
-     * @param transaction
-     * @param criteria
-     * @return
+     * Helper method: Checks if a single transaction matches the search criteria.
      */
     private boolean matchesCriteria(Transaction transaction, Transaction criteria) {
-        return (criteria.getTransactionTime() == null || containsIgnoreCase(transaction.getTransactionTime(), criteria.getTransactionTime()))
-                && (criteria.getTransactionType() == null || containsIgnoreCase(transaction.getTransactionType(), criteria.getTransactionType()))
-                && (criteria.getCounterparty() == null || containsIgnoreCase(transaction.getCounterparty(), criteria.getCounterparty()))
-                && (criteria.getCommodity() == null || containsIgnoreCase(transaction.getCommodity(), criteria.getCommodity()))
-                && (criteria.getInOut() == null || containsIgnoreCase(transaction.getInOut(), criteria.getInOut()))
-                && (criteria.getPaymentMethod() == null || containsIgnoreCase(transaction.getPaymentMethod(), criteria.getPaymentMethod()));
+        // Criteria fields are implicitly ANDed. Null/empty criteria fields match everything.
+        return containsIgnoreCase(transaction.getTransactionTime(), criteria.getTransactionTime())
+                && containsIgnoreCase(transaction.getTransactionType(), criteria.getTransactionType())
+                && containsIgnoreCase(transaction.getCounterparty(), criteria.getCounterparty())
+                && containsIgnoreCase(transaction.getCommodity(), criteria.getCommodity())
+                && matchesInOutCriteria(transaction.getInOut(), criteria.getInOut()) // Specific check for In/Out
+                && containsIgnoreCase(transaction.getPaymentMethod(), criteria.getPaymentMethod());
+        // Note: paymentAmount is not used as a search criterion in MenuUI's search panel currently.
+        // If needed, add logic here, e.g., checking if criteria.getPaymentAmount() is set
+        // and if transaction.getPaymentAmount() falls within a range or matches exactly.
     }
 
     /**
-     * 辅助方法：字符串模糊匹配（空条件视为匹配）
-     * @param source
-     * @param target
-     * @return
+     * Helper method: Fuzzy match string, ignoring case and trimming whitespace.
+     * An empty/null target criteria matches everything.
      */
     private boolean containsIgnoreCase(String source, String target) {
-        if (target == null || target.trim().isEmpty()) return true; // 空条件不参与筛选
-        if (source == null) return false;
-        return source.toLowerCase().contains(target.toLowerCase().trim());
+        if (target == null || target.trim().isEmpty()) {
+            return true; // Empty criteria matches everything
+        }
+        if (source == null) {
+            return false; // Source is null, cannot contain non-empty target
+        }
+        return source.trim().toLowerCase().contains(target.trim().toLowerCase());
     }
 
     /**
-     * 辅助方法：安全的时间比较（处理 null 值）
-     * @param time1
-     * @param time2
-     * @return
+     * Helper method: Matches In/Out criteria. Handles cases like "收入" vs "收", "支出" vs "支".
+     * An empty/null target criteria matches everything.
      */
-    private int compareTransactionTime(String time1, String time2) {
-        if (time1 == null && time2 == null) return 0;
-        if (time1 == null) return -1;
-        if (time2 == null) return 1;
-        return time2.compareTo(time1); // 倒序排序
+    private boolean matchesInOutCriteria(String source, String target) {
+        if (target == null || target.trim().isEmpty()) {
+            return true; // Empty criteria matches everything
+        }
+        if (source == null) {
+            return false; // Source is null
+        }
+        String sourceTrimmed = source.trim();
+        String targetTrimmed = target.trim();
+
+        if (targetTrimmed.equalsIgnoreCase("收入") || targetTrimmed.equalsIgnoreCase("收")) {
+            return sourceTrimmed.equalsIgnoreCase("收入") || sourceTrimmed.equalsIgnoreCase("收");
+        }
+        if (targetTrimmed.equalsIgnoreCase("支出") || targetTrimmed.equalsIgnoreCase("支")) {
+            return sourceTrimmed.equalsIgnoreCase("支出") || sourceTrimmed.equalsIgnoreCase("支");
+        }
+        // If target is something else, do a simple contains check
+        return sourceTrimmed.toLowerCase().contains(targetTrimmed.toLowerCase());
     }
 
+
+    /**
+     * Helper method: Safely parses a time string into LocalDateTime.
+     * Returns null if parsing fails.
+     * Should match the formats used in AITransactionService.parseDateTime.
+     */
+    private LocalDateTime parseDateTimeSafe(String timeStr) {
+        if (timeStr == null || timeStr.trim().isEmpty()) return null;
+
+        // 中文空格等统一清理
+        timeStr = timeStr.trim().replaceAll("\\s+", " ");
+
+        // If only date is present, append 00:00
+        if (timeStr.matches("\\d{4}/\\d{1,2}/\\d{1,2}")) {
+            timeStr += " 00:00";
+        } else if (timeStr.matches("\\d{4}-\\d{1,2}-\\d{1,2}")) {
+            timeStr += " 00:00:00"; // Assuming yyyy-MM-dd uses seconds format
+        }
+
+
+        // Try parsing with multiple formats
+        List<String> patterns = List.of(
+                "yyyy/M/d H:mm", "yyyy/M/d HH:mm",
+                "yyyy/MM/d H:mm", "yyyy/MM/d HH:mm",
+                "yyyy/M/dd H:mm", "yyyy/M/dd HH:mm",
+                "yyyy/MM/dd H:mm", "yyyy/MM/dd HH:mm",
+                "yyyy/MM/dd HH:mm:ss", // Added seconds format
+                "yyyy-MM-dd HH:mm:ss", // Added dash format
+                "yyyy/MM/dd" // Added date only format (already handled by adding 00:00)
+        );
+
+        for (String pattern : patterns) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                return LocalDateTime.parse(timeStr, formatter);
+            } catch (Exception ignored) {
+                // Ignore parsing errors for this pattern and try the next
+            }
+        }
+        System.err.println("Failed to parse date string: " + timeStr);
+        return null; // Return null if no pattern matches
+    }
+
+    // Consider adding getTransactionByOrderNumber method if needed by service layer
+    // public Transaction getTransactionByOrderNumber(String orderNumber) throws Exception { ... }
 }

@@ -199,7 +199,7 @@ Key methods:
 #### Usage Example (Using Functional Methods)
 
 ```java
-import DAO.CsvTransactionDao; // Assuming TransactionDao interface exists but is not used directly here due to stub methods
+import DAO.Impl.CsvTransactionDao; // Assuming TransactionDao interface exists but is not used directly here due to stub methods
 import model.Transaction;
 import java.io.IOException;
 import java.util.List;
