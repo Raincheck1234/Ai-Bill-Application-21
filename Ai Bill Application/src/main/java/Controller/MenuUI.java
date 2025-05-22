@@ -26,12 +26,11 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
     private final User currentUser;
     private final TransactionService transactionService;
-    private final SummaryStatisticService summaryStatisticService; // Add service for statistics
-    private final AITransactionService aiTransactionService; // Add AI service instance
-    private final CollegeStudentNeeds collegeStudentNeeds; // Add CollegeStudentNeeds instance
+    private final SummaryStatisticService summaryStatisticService;
+    private final AITransactionService aiTransactionService;
+    private final CollegeStudentNeeds collegeStudentNeeds;
 
     private DefaultTableModel tableModel;
-    // Removed allData field
 
     // Fields for search input components
     private JTextField searchTransactionTimeField;
@@ -43,60 +42,60 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
     private JButton searchButton;
 
     private JTable table;
-    // private HistogramPanelContainer histogramPanelContainer; // Replaced by specific AI panel
+    // REMOVED: private HistogramPanelContainer histogramPanelContainer; // No longer needed
 
     private JPanel rightPanel;
     private CardLayout cardLayout;
 
-    // UI components for AI panel
+    // UI components for AI panel (existing)
     private JTextArea aiResultArea;
-    private JTextField aiStartTimeField; // Still used by general analysis
-    private JTextField aiEndTimeField; // Still used by general analysis
-    private JButton aiAnalyzeButton; // General analysis button
-    private JButton aiBudgetButton; // College Student Budget
-    private JButton aiTipsButton; // College Student Tips
-    // Add new buttons for AI personal summaries
+    private JTextField aiStartTimeField;
+    private JTextField aiEndTimeField;
+    private JButton aiAnalyzeButton;
+    private JButton aiBudgetButton;
+    private JButton aiTipsButton;
     private JButton aiPersonalSummaryButton;
     private JButton aiSavingsGoalsButton;
     private JButton aiPersonalSavingTipsButton;
-    // Add College Student Needs buttons if needed
 
 
-
-    // UI components for Admin Stats panel
+    // UI components for Admin Stats panel (existing)
     private JTextArea adminStatsArea;
     private JButton generateStatsButton;
     private JButton refreshDisplayButton;
 
+    // New panel for Visualization
+    private VisualizationPanel visualizationPanel; // Add instance field
 
-    // Constructor now accepts all necessary service instances
+
+    // Constructor now accepts all necessary service instances (same as before)
     public MenuUI(User authenticatedUser, TransactionService transactionService,
                   SummaryStatisticService summaryStatisticService,
-                  AITransactionService aiTransactionService, // Inject AI services
-                  CollegeStudentNeeds collegeStudentNeeds) { // Inject CollegeStudentNeeds
+                  AITransactionService aiTransactionService,
+                  CollegeStudentNeeds collegeStudentNeeds) {
 
         this.currentUser = authenticatedUser;
         this.transactionService = transactionService;
         this.summaryStatisticService = summaryStatisticService;
-        this.aiTransactionService = aiTransactionService; // Assign injected instance
-        this.collegeStudentNeeds = collegeStudentNeeds; // Assign injected instance
+        this.aiTransactionService = aiTransactionService;
+        this.collegeStudentNeeds = collegeStudentNeeds;
 
-        // Initialize table model
+        // Initialize table model (same as before)
         String[] columnNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注", "Modify", "Delete"};
         this.tableModel = new DefaultTableModel(columnNames, 0);
         this.table = new JTable(this.tableModel);
 
-        // Initialize the main panel layout
+        // Initialize the main panel layout (same as before)
         setLayout(new BorderLayout());
 
-        // Add the left panel
+        // Add the left panel (will be modified)
         add(createLeftPanel(), BorderLayout.WEST);
 
-        // Add the right panel (which uses CardLayout)
+        // Add the right panel (will be modified)
         setupRightPanel();
         add(rightPanel, BorderLayout.CENTER);
 
-        // Initial data load is done in createMainPanel
+        // Initial data load is done in createMainPanel (same as before)
         // loadCSVDataForCurrentUser("收入");
 
         System.out.println("MenuUI initialized for user: " + currentUser.getUsername() + " (" + currentUser.getRole() + ")");
@@ -143,73 +142,78 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         }
     }
 
-    // Method to create the left panel (Menu/AI/Admin buttons)
+    // Method to create the left panel (Menu/AI/Admin/Visualization buttons) - MODIFIED
     private JPanel createLeftPanel() {
         JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS)); // Use BoxLayout for vertical alignment
-        leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add some padding
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JButton menuButton = new JButton("交易列表"); // More descriptive text
+        JButton menuButton = new JButton("交易列表");
         JButton aiButton = new JButton("AI分析");
-        JButton adminButton = new JButton("管理员统计"); // Admin button
+        JButton adminButton = new JButton("管理员统计");
+        JButton visualizationButton = new JButton("可视化"); // NEW Visualization button
 
-        // Set consistent size for buttons (optional, but good UI practice)
+        // Set consistent size for buttons
         Dimension buttonSize = new Dimension(150, 40);
         menuButton.setMaximumSize(buttonSize);
         aiButton.setMaximumSize(buttonSize);
         adminButton.setMaximumSize(buttonSize);
+        visualizationButton.setMaximumSize(buttonSize); // Set size for new button
 
-        menuButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center align buttons
+
+        menuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         aiButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         adminButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        visualizationButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Align new button
 
 
         leftPanel.add(menuButton);
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add vertical spacing
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         leftPanel.add(aiButton);
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add vertical spacing
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Add Admin button only if the user is admin
+        // Add Admin button only if the user is admin (same as before)
         if ("admin".equalsIgnoreCase(currentUser.getRole())) {
-            adminButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             leftPanel.add(adminButton);
-            leftPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add vertical spacing
-            System.out.println("Admin user logged in, showing Admin button.");
-        } else {
-            System.out.println("Regular user logged in, hiding Admin button.");
+            leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
 
+        // Add Visualization button (visible for all users)
+        leftPanel.add(visualizationButton); // Add the visualization button
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Add action listeners
+
+        // Add action listeners (existing for Menu, AI, Admin)
         menuButton.addActionListener(e -> {
-            cardLayout.show(rightPanel, "Table"); // Switch to table view
-            // Reload the default view (income only) when switching back to Menu
-            loadCSVDataForCurrentUser("收入"); // Or "" for all data, depending on desired behavior
-            // Let's keep it consistent with initial load: show income only.
+            cardLayout.show(rightPanel, "Table");
+            loadCSVDataForCurrentUser("收入");
         });
 
         aiButton.addActionListener(e -> {
-            cardLayout.show(rightPanel, "AI"); // Switch to AI view
-            // Optional: Clear previous AI results or load default prompts here
+            cardLayout.show(rightPanel, "AI");
         });
 
-        // Add listener for Admin button (only visible for admin)
         if ("admin".equalsIgnoreCase(currentUser.getRole())) {
             adminButton.addActionListener(e -> {
-                cardLayout.show(rightPanel, "AdminStats"); // Switch to Admin view
-                // When switching to Admin view, immediately load and display stats
-                displaySummaryStatistics();
+                cardLayout.show(rightPanel, "AdminStats");
+                displaySummaryStatistics(); // Refresh stats display when switching
             });
         }
 
+        // Add action listener for Visualization button - NEW
+        visualizationButton.addActionListener(e -> {
+            cardLayout.show(rightPanel, "Visualization"); // Switch to visualization view
+            // Optional: Trigger initial chart load or setup in VisualizationPanel
+            // visualizationPanel.loadAndDisplayCharts(); // Needs a method in VisualizationPanel
+        });
 
-        // Add some vertical glue to push buttons to the top
+
         leftPanel.add(Box.createVerticalGlue());
 
         return leftPanel;
     }
 
-    // Method to set up the right panel, adding different views
+    // Method to set up the right panel, adding different views - MODIFIED
     private void setupRightPanel() {
         this.cardLayout = new CardLayout();
         this.rightPanel = new JPanel(this.cardLayout);
@@ -218,13 +222,15 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         JPanel tablePanel = createTablePanel(); // Table view
         JPanel aiPanel = createAIPanel(); // AI view
         JPanel adminStatsPanel = createAdminStatsPanel(); // Admin stats view
+        this.visualizationPanel = new VisualizationPanel(this.transactionService); // NEW: Create VisualizationPanel, inject TransactionService
+
 
         rightPanel.add(tablePanel, "Table");
         rightPanel.add(aiPanel, "AI");
-        // Only add admin panel if the user is admin (although CardLayout handles non-existent cards gracefully)
         if ("admin".equalsIgnoreCase(currentUser.getRole())) {
             rightPanel.add(adminStatsPanel, "AdminStats");
         }
+        rightPanel.add(visualizationPanel, "Visualization"); // NEW: Add Visualization panel
 
 
         // Set the initially visible card (Table view)
