@@ -1,19 +1,20 @@
 package Service.Impl;
 
-import Constants.CaffeineKeys; // Import CaffeineKeys
+import Constants.StandardCategories;
 import DAO.TransactionDao; // Import the interface
 import DAO.Impl.CsvTransactionDao; // Import the implementation
 import Service.TransactionService;
 import Utils.CacheManager; // Import the new CacheManager
+import model.MonthlySummary;
 import model.Transaction;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors; // Needed for search
 
 // Remove static field
@@ -494,6 +495,105 @@ public class TransactionServiceImpl implements TransactionService {
         return null; // Return null if no pattern matches
     }
 
-    // Consider adding getTransactionByOrderNumber method if needed by service layer
-    // public Transaction getTransactionByOrderNumber(String orderNumber) throws Exception { ... }
+    /**
+     * Aggregates transactions for the current user by month and standard category.
+     *
+     * @return A map where keys are month identifiers (e.g., "YYYY-MM") and values are MonthlySummary objects.
+     * @throws Exception If an error occurs during data retrieval.
+     */
+    @Override // Implement the new interface method
+    public Map<String, MonthlySummary> getMonthlyTransactionSummary() throws Exception {
+        System.out.println("Generating monthly transaction summary for user file: " + currentUserTransactionFilePath);
+        List<Transaction> allTransactions;
+        try {
+            // 1. Get all transactions for the current user (from cache/file)
+            allTransactions = getAllTransactions(); // Uses CacheManager
+            System.out.println("Retrieved " + allTransactions.size() + " transactions for summary.");
+
+        } catch (Exception e) {
+            System.err.println("Error retrieving transactions for summary generation.");
+            e.printStackTrace();
+            throw new Exception("获取交易数据失败！", e);
+        }
+
+        // 2. Aggregate transactions by month and category
+        Map<String, MonthlySummary> monthlySummaries = new HashMap<>();
+        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy-MM"); // Format for month identifier
+
+
+        for (Transaction t : allTransactions) {
+            if (t.getTransactionTime() == null || t.getTransactionTime().trim().isEmpty()) {
+                System.err.println("Skipping transaction with no time for summary aggregation: " + t.getOrderNumber());
+                continue; // Skip transactions with no time
+            }
+
+            // Safely parse the transaction date to get the month
+            LocalDate date = parseDateFromTransactionTimeSafe(t.getTransactionTime()); // Use a robust date parser
+            if (date == null) {
+                System.err.println("Skipping transaction with unparseable date for summary aggregation: " + t.getTransactionTime() + " - " + t.getOrderNumber());
+                continue; // Skip transactions with invalid date
+            }
+
+            // Get month identifier (e.g., "2025-03")
+            String monthIdentifier = YearMonth.from(date).format(monthFormatter);
+
+            // Get or create the MonthlySummary object for this month
+            monthlySummaries.putIfAbsent(monthIdentifier, new MonthlySummary(monthIdentifier));
+            MonthlySummary currentMonthSummary = monthlySummaries.get(monthIdentifier);
+
+            // Add transaction amount to the summary based on type (Income/Expense)
+            if (t.getInOut() != null) {
+                String inOut = t.getInOut().trim();
+                if (inOut.equals("收入") || inOut.equals("收")) {
+                    currentMonthSummary.addIncome(t.getPaymentAmount());
+                } else if (inOut.equals("支出") || inOut.equals("支")) {
+                    // Get the standard category for the expense
+                    String rawType = t.getTransactionType();
+                    // Use the helper to map to a standard category, defaulting to "其他支出" if no direct standard match
+                    String standardCategory = StandardCategories.getStandardCategory(rawType);
+                    // For aggregation, we might want to map any non-standard expense type to "其他支出"
+                    String effectiveExpenseCategoryForSummary = StandardCategories.isStandardExpenseCategory(standardCategory) ? standardCategory : "其他支出";
+
+                    currentMonthSummary.addExpense(t.getPaymentAmount(), effectiveExpenseCategoryForSummary);
+                }
+                // Ignore special types (like Transfer, Red Packet) for simple income/expense summary, or handle them separately if needed
+            }
+        }
+        System.out.println("Generated summary for " + monthlySummaries.size() + " months.");
+
+        return monthlySummaries; // Return the map of monthly summaries
+    }
+
+    // Helper method to parse date from transaction time string safely
+    // This should be consistent across all services/DAOs that parse dates.
+    // Let's use a consistent, robust parser.
+    // This method is similar to parseDateTimeSafe in this class and parseDateFromTransactionTime in SummaryStatisticService.
+    // Consider extracting this to a shared Util class if many places need it.
+    // For now, keep a consistent copy.
+    private LocalDate parseDateFromTransactionTimeSafe(String timeStr) {
+        if (timeStr == null || timeStr.trim().isEmpty()) return null;
+
+        // Clean whitespace and replace potential hyphens with slashes if the expected format is slash-separated
+        String datePart = timeStr.split(" ")[0]; // Get the date part
+
+        datePart = datePart.trim().replace('-', '/').replaceAll("\\s+", "");
+
+
+        // Try parsing with multiple slash formats
+        List<String> patterns = List.of(
+                "yyyy/M/d", "yyyy/MM/d", "yyyy/M/dd", "yyyy/MM/dd",
+                "yyyy-MM-dd" // Add dash format just in case
+        );
+
+        for (String pattern : patterns) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                return LocalDate.parse(datePart, formatter);
+            } catch (Exception ignored) {
+                // Ignore parsing errors for this pattern
+            }
+        }
+        System.err.println("TransactionServiceImpl: Failed to parse date part '" + datePart + "' from transaction time: " + timeStr);
+        return null; // Return null if no pattern matches
+    }
 }
