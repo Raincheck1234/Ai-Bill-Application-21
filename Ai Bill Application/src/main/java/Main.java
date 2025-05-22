@@ -1,13 +1,16 @@
 import javax.swing.*;
 
 import Controller.MenuUI;
-import DAO.Impl.CsvTransactionDao; // Use Impl package
 import DAO.Impl.CsvTransactionDao;
-import DAO.Impl.CsvUserDao; // Use Impl package
 import DAO.Impl.CsvUserDao;
+import DAO.Impl.CsvSummaryStatisticDao; // Import SummaryStatisticDao implementation
 import DAO.UserDao;
+import DAO.TransactionDao; // Import interfaces
+import DAO.SummaryStatisticDao;
 import Interceptor.Login.LoginDialog;
 import Service.Impl.TransactionServiceImpl;
+import Service.Impl.SummaryStatisticService; // Import SummaryStatisticService
+import Service.TransactionService; // Import interface
 import Service.User.UserService;
 import model.User;
 import Constants.ConfigConstants;
@@ -16,14 +19,21 @@ public class Main {
     public static void main(String[] args) {
         // Ensure ConfigConstants is loaded first
         String usersCsvPath = ConfigConstants.USERS_CSV_PATH;
+        String summaryCsvPath = ConfigConstants.SUMMARY_CSV_PATH; // Get summary path
         System.out.println("Attempting to load users from: " + usersCsvPath);
+        System.out.println("Summary statistics will be saved to: " + summaryCsvPath);
 
-        // Initialize User Service (DAO for users is needed)
+
+        // Initialize DAOs
         UserDao userDao = new CsvUserDao(usersCsvPath); // Pass the user CSV path
-        UserService userService = new UserService(userDao);
+        TransactionDao transactionDao = new CsvTransactionDao(); // Needs to be available for CacheManager loader
+        SummaryStatisticDao summaryStatisticDao = new CsvSummaryStatisticDao(); // Pass the summary CSV path if needed by its constructor (CsvSummaryStatisticDao doesn't need path in constructor)
 
-        // Transaction Service DAO (instance created within TransactionServiceImpl)
-        // Remove the static initialization line: TransactionServiceImpl.csvTransactionDao = new CsvTransactionDao();
+
+        // Initialize Services
+        UserService userService = new UserService(userDao);
+        // TransactionServiceImpl is initialized per user in MenuUI
+        SummaryStatisticService summaryStatisticService = new SummaryStatisticService(userDao, transactionDao, summaryStatisticDao); // Initialize SummaryStatisticService
 
 
         // In the event dispatch thread (EDT) start GUI
@@ -38,15 +48,17 @@ public class Main {
                 System.out.println("User's transaction file: " + authenticatedUser.getTransactionFilePath());
 
                 // Initialize TransactionServiceImpl *for the logged-in user*
-                // Pass the user's transaction file path to the service constructor
-                TransactionServiceImpl transactionServiceForCurrentUser = new TransactionServiceImpl(authenticatedUser.getTransactionFilePath());
+                TransactionService transactionServiceForCurrentUser = new TransactionServiceImpl(authenticatedUser.getTransactionFilePath());
 
-                // Pass the authenticated user AND their specific transaction service to MenuUI
-                // Modify MenuUI constructor again to accept TransactionServiceImpl
-                MenuUI menuUI = new MenuUI(authenticatedUser, transactionServiceForCurrentUser); // Modify MenuUI constructor
+                // Pass the authenticated user, their transaction service, AND the summary statistic service to MenuUI
+                MenuUI menuUI = new MenuUI(authenticatedUser, transactionServiceForCurrentUser, summaryStatisticService); // Modify MenuUI constructor
 
-                JPanel mainPanel = menuUI.createMainPanel();
-                showMainUI(mainPanel);
+                JFrame frame = new JFrame("交易管理系统 - " + authenticatedUser.getUsername()); // Include username in title
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setSize(1200, 600);
+                frame.setLocationRelativeTo(null);
+                frame.add(menuUI.createMainPanel()); // Add the main panel from MenuUI
+                frame.setVisible(true);
             } else {
                 System.out.println("Login failed or cancelled. Exiting.");
                 System.exit(0);
@@ -54,15 +66,6 @@ public class Main {
         });
     }
 
-    /**
-     * Displays the main application window.
-     */
-    private static void showMainUI(JPanel panel) {
-        JFrame frame = new JFrame("交易管理系统");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1200, 600);
-        frame.setLocationRelativeTo(null);
-        frame.add(panel);
-        frame.setVisible(true);
-    }
+    // showMainUI is no longer needed as we build the frame directly in main
+    // private static void showMainUI(JPanel panel) { ... }
 }
