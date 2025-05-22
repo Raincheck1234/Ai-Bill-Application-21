@@ -43,6 +43,14 @@ public interface TransactionService {
      */
     List<Transaction> searchTransaction(Transaction transaction);
 
-
+    /**
+     * Imports transactions from a given CSV file path into the current user's transactions.
+     *
+     * @param userFilePath The file path for the current user's transactions (target).
+     * @param importFilePath The file path of the CSV to import from (source).
+     * @return The number of transactions successfully imported.
+     * @throws Exception If an error occurs during reading, parsing, or saving.
+     */
+    int importTransactionsFromCsv(String userFilePath, String importFilePath) throws Exception; // Added this method
 
 }

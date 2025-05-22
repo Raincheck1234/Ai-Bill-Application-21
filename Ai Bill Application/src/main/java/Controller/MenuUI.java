@@ -247,11 +247,11 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         return tablePanel;
     }
 
-    // Method to create input panel - same as before, capturing references
+    // Inside MenuUI class
     private JPanel createInputPanel() {
-        // ... existing implementation, capture search field references ...
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
+        // Create input fields and capture references (existing code)
         searchTransactionTimeField = new JTextField(10);
         searchTransactionTypeField = new JTextField(10);
         searchCounterpartyField = new JTextField(10);
@@ -259,6 +259,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         searchInOutComboBox = new JComboBox<>(new String[]{"", "收入", "支出"});
         searchPaymentMethodField = new JTextField(10);
 
+        // Add labels and input fields (existing code)
         inputPanel.add(new JLabel("交易时间:")); inputPanel.add(searchTransactionTimeField);
         inputPanel.add(new JLabel("交易类型:")); inputPanel.add(searchTransactionTypeField);
         inputPanel.add(new JLabel("交易对方:")); inputPanel.add(searchCounterpartyField);
@@ -266,17 +267,79 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         inputPanel.add(new JLabel("收/支:")); inputPanel.add(searchInOutComboBox);
         inputPanel.add(new JLabel("支付方式:")); inputPanel.add(searchPaymentMethodField);
 
+        // Create Search, Add, and Import buttons
         searchButton = new JButton("Search");
         JButton addButton = new JButton("Add");
+        JButton importButton = new JButton("导入 CSV"); // 新增导入按钮
 
+        // Add buttons
         inputPanel.add(searchButton);
         inputPanel.add(addButton);
+        inputPanel.add(importButton); // 添加导入按钮
 
+        // Add ActionListeners (existing code for Search and Add)
         searchButton.addActionListener(e -> triggerCurrentSearch());
-
         addButton.addActionListener(e -> showAddTransactionDialog());
 
+        // Add ActionListener for Import button
+        importButton.addActionListener(e -> {
+            showImportDialog(); // Call a new method to handle import
+        });
+
         return inputPanel;
+    }
+
+    // Inside MenuUI class
+    private void showImportDialog() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("选择要导入的CSV文件");
+        // Optional: Add file filter for .csv files
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
+
+        int userSelection = fileChooser.showOpenDialog(this); // Show dialog relative to MenuUI panel
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            java.io.File fileToImport = fileChooser.getSelectedFile();
+            String filePath = fileToImport.getAbsolutePath();
+            System.out.println("用户选择了导入文件: " + filePath);
+
+            // Display "Importing..." message and disable button (optional UI feedback)
+            // This needs a status area, maybe in the main panel or a separate progress dialog.
+            // For simplicity now, we'll just show messages.
+
+            // Run import in a background thread
+            // Need to pass the file path and the current user's file path to the service
+            new Thread(() -> {
+                String message;
+                try {
+                    // Call the service method to handle the import logic
+                    int importedCount = transactionService.importTransactionsFromCsv(currentUser.getTransactionFilePath(), filePath);
+
+                    message = "成功导入 " + importedCount + " 条交易记录。";
+                    System.out.println(message);
+
+                    // Update UI on EDT after successful import
+                    String finalMessage = message;
+                    SwingUtilities.invokeLater(() -> {
+                        loadCSVDataForCurrentUser(""); // Reload all data to show imported items
+                        clearSearchFields(); // Clear search fields after reload
+                        JOptionPane.showMessageDialog(this, finalMessage, "导入成功", JOptionPane.INFORMATION_MESSAGE);
+                    });
+
+                } catch (Exception ex) { // Catch exceptions from the service layer
+                    message = "导入失败！\n" + ex.getMessage();
+                    System.err.println("CSV Import failed: " + ex.getMessage());
+                    ex.printStackTrace();
+                    // Update UI on EDT with error message
+                    String finalMessage1 = message;
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(this, finalMessage1, "导入错误", JOptionPane.ERROR_MESSAGE);
+                    });
+                }
+            }).start();
+        } else {
+            System.out.println("用户取消了文件选择。");
+        }
     }
 
     // Method to show add transaction dialog - updated for AI integration

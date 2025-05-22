@@ -7,11 +7,13 @@ import Service.TransactionService;
 import Utils.CacheManager; // Import the new CacheManager
 import model.Transaction;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors; // Needed for search
 
 // Remove static field
@@ -43,6 +45,97 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Transaction> getAllTransactions() throws Exception {
         // Simply call the internal method that uses the cache
         return getAllTransactionsForCurrentUser();
+    }
+
+    /**
+     * Imports transactions from a given CSV file path into the current user's transactions.
+     * Reads the import file, merges with existing data, and saves back.
+     *
+     * @param userFilePath The file path for the current user's transactions (target).
+     * @param importFilePath The file path of the CSV to import from (source).
+     * @return The number of transactions successfully imported.
+     * @throws Exception If an error occurs during reading, parsing, or saving.
+     */
+    @Override // Implement the new interface method
+    public int importTransactionsFromCsv(String userFilePath, String importFilePath) throws Exception {
+        System.out.println("Starting import from " + importFilePath + " to user file " + userFilePath);
+        List<Transaction> existingTransactions;
+        List<Transaction> transactionsToImport;
+
+        try {
+            // 1. Load existing transactions for the current user (from cache/file)
+            // Use the method that uses the CacheManager
+            existingTransactions = getAllTransactions(); // Already uses CacheManager
+
+            // 2. Read and parse transactions from the import file
+            // Use the DAO's loadFromCSV method with the import file path
+            // Need a *separate* DAO instance or method call that targets the import file
+            TransactionDao importDao = new CsvTransactionDao(); // Create a temporary DAO for reading the import file
+            transactionsToImport = importDao.loadFromCSV(importFilePath); // Load from the selected file
+            System.out.println("Read " + transactionsToImport.size() + " transactions from import file.");
+
+        } catch (IOException e) {
+            System.err.println("Error loading files during import process.");
+            e.printStackTrace();
+            throw new Exception("读取交易数据失败！", e); // Wrap and re-throw
+        }
+
+        // 3. Merge imported transactions with existing ones
+        // Simple merge: add all imported transactions.
+        // Handle potential duplicates: check if order number exists.
+        // If order numbers are not guaranteed unique in imported file or against existing,
+        // consider generating new unique IDs for imported items if their ON is empty or conflicts.
+        List<Transaction> mergedTransactions = new ArrayList<>(existingTransactions);
+        int importedCount = 0;
+
+        for (Transaction importedTx : transactionsToImport) {
+            // Basic Check: Ensure imported transaction has an order number or generate one
+            if (importedTx.getOrderNumber() == null || importedTx.getOrderNumber().trim().isEmpty()) {
+                // Generate a unique ID for transactions without one
+                String uniqueId = "IMPORT_" + UUID.randomUUID().toString();
+                importedTx.setOrderNumber(uniqueId);
+                System.out.println("Generated unique order number for imported transaction: " + uniqueId);
+            } else {
+                // Check for potential duplicate order number against existing transactions
+                boolean duplicate = existingTransactions.stream()
+                        .anyMatch(t -> t.getOrderNumber().trim().equals(importedTx.getOrderNumber().trim()));
+                if (duplicate) {
+                    System.err.println("Skipping imported transaction due to duplicate order number: " + importedTx.getOrderNumber());
+                    // Decide: skip, overwrite, or generate new ID. Skipping for now.
+                    JOptionPane.showMessageDialog(null, "发现重复交易单号: " + importedTx.getOrderNumber() + ", 已跳过。", "导入警告", JOptionPane.WARNING_MESSAGE);
+                    continue; // Skip this duplicate transaction
+                }
+            }
+
+            // Add the transaction to the merged list
+            mergedTransactions.add(importedTx);
+            importedCount++;
+        }
+        System.out.println("Merged transactions. Total after merge: " + mergedTransactions.size() + ". Successfully imported count: " + importedCount);
+
+
+        // 4. Save the merged list back to the current user's file
+        try {
+            // Use the DAO instance associated with this service (which knows the user's file implicitly via CacheManager interactions, but writeAllStatistics needs the path explicitly)
+            // The transactionDao field is initialized as CsvTransactionDao, which has writeAllStatistics.
+            transactionDao.writeTransactionsToCSV(userFilePath, mergedTransactions);
+            System.out.println("Saved merged transactions to user file: " + userFilePath);
+
+            // 5. Invalidate or update the cache for the current user's file
+            // Invalidation is simpler: forces CacheManager to reload from the updated file next time.
+            CacheManager.invalidateTransactionCache(userFilePath);
+            System.out.println("Cache invalidated for user file: " + userFilePath);
+
+
+        } catch (IOException e) {
+            System.err.println("Error saving merged transactions after import.");
+            e.printStackTrace();
+            // Consider leaving the original file untouched on save failure
+            throw new Exception("保存导入的交易数据失败！", e); // Wrap and re-throw
+        }
+
+        System.out.println("Import process finished.");
+        return importedCount; // Return the count of transactions actually added
     }
 
     /**
