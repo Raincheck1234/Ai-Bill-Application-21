@@ -7,7 +7,9 @@ package Service.AIservice;
 
 import DAO.TransactionDao; // Use the interface
 import DAO.Impl.CsvTransactionDao; // Use the implementation to create instance for loader
+import Service.TransactionService;
 import Utils.CacheManager; // Import CacheManager
+import model.MonthlySummary;
 import model.Transaction; // Import Transaction
 
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
@@ -36,20 +38,16 @@ public class AITransactionService {
             .apiKey(API_KEY) // Ensure API_KEY is loaded
             .build();
 
-    // Remove direct DAO instance
-    // private final CsvTransactionDao transactionDao = new CsvTransactionDao();
+    // Need access to TransactionService to get monthly summaries
+    private final TransactionService transactionService; // Inject TransactionService
 
-    // Remove direct CacheUtil instance
-    // private final CacheUtil<String, List<Transaction>, Exception> cache;
 
     /**
-     * Constructor no longer initializes DAO or Cache directly.
-     * DAO and Cache are accessed via CacheManager.
+     * Constructor now accepts TransactionService instance.
      */
-    public AITransactionService() {
-        // No initialization needed here related to DAO or Cache
-        // The DAO and CacheManager are used in the methods that need data access.
-        // System.out.println("AITransactionService initialized.");
+    public AITransactionService(TransactionService transactionService) {
+        this.transactionService = transactionService; // Inject the service
+        System.out.println("AITransactionService initialized with TransactionService.");
     }
 
     /**
@@ -277,5 +275,170 @@ public class AITransactionService {
         // A better approach is `executor.shutdown()` after submitting, but manage the executor lifecycle elsewhere.
     }
 
-    // Helper methods like parseDateTime (kept above)
+    /**
+     * Generates a personal consumption summary based on monthly data.
+     * @param userFilePath The path to the user's transaction CSV file. (Might not be strictly needed if service handles context)
+     * @return AI analysis result as a String.
+     */
+    public String generatePersonalSummary(String userFilePath) {
+        try {
+            // Get monthly summary data from TransactionService
+            // Note: TransactionService already operates on the current user's data implicitly if passed correctly.
+            // We might not need userFilePath explicitly in this method signature if the service instance is user-specific.
+            // Let's assume the injected transactionService is already scoped to the current user.
+            Map<String, MonthlySummary> summaries = transactionService.getMonthlyTransactionSummary();
+            System.out.println("AI Service: Retrieved " + summaries.size() + " months of summary data.");
+
+            if (summaries.isEmpty()) {
+                return "没有找到足够的交易数据来生成个人消费总结。";
+            }
+
+            // Format the summary data for the AI prompt
+            StringBuilder summaryPromptBuilder = new StringBuilder();
+            summaryPromptBuilder.append("请根据以下月度消费总结数据，生成一份个人消费习惯总结，分析主要开销类别、月度变化趋势，并评估我的消费健康度：\n\n");
+
+            // Sort months chronologically for better trend analysis by AI
+            List<String> sortedMonths = new ArrayList<>(summaries.keySet());
+            Collections.sort(sortedMonths);
+
+            for (String month : sortedMonths) {
+                MonthlySummary ms = summaries.get(month);
+                summaryPromptBuilder.append("--- ").append(ms.getMonthIdentifier()).append(" ---\n");
+                summaryPromptBuilder.append("  总收入: ").append(String.format("%.2f", ms.getTotalIncome())).append("元\n");
+                summaryPromptBuilder.append("  总支出: ").append(String.format("%.2f", ms.getTotalExpense())).append("元\n");
+                summaryPromptBuilder.append("  支出明细:\n");
+                if (ms.getExpenseByCategory().isEmpty()) {
+                    summaryPromptBuilder.append("    (无支出)\n");
+                } else {
+                    // Sort categories by amount descending for AI to easily see major categories
+                    ms.getExpenseByCategory().entrySet().stream()
+                            .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                            .forEach(entry ->
+                                    summaryPromptBuilder.append(String.format("    %s: %.2f元\n", entry.getKey(), entry.getValue()))
+                            );
+                }
+                summaryPromptBuilder.append("\n"); // Add space between months
+            }
+
+            String aiPrompt = summaryPromptBuilder.toString();
+            System.out.println("AI Service: Sending personal summary prompt to AI. Prompt length: " + aiPrompt.length());
+
+            return askAi(aiPrompt); // Call the generic AI method
+        } catch (Exception e) {
+            System.err.println("AI Service: Failed to generate personal summary.");
+            e.printStackTrace();
+            return "生成个人消费总结失败: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Generates suggestions for savings goals based on monthly data.
+     * @param userFilePath The path to the user's transaction CSV file. (Might not be strictly needed)
+     * @return AI suggestions as a String.
+     */
+    public String suggestSavingsGoals(String userFilePath) {
+        try {
+            Map<String, MonthlySummary> summaries = transactionService.getMonthlyTransactionSummary();
+            System.out.println("AI Service: Retrieved " + summaries.size() + " months of summary data for savings goal suggestion.");
+
+            if (summaries.isEmpty()) {
+                return "没有找到足够的交易数据来建议储蓄目标。";
+            }
+
+            StringBuilder promptBuilder = new StringBuilder();
+            promptBuilder.append("请根据以下月度收支总结数据，为我这个消费习惯提供一些合理的储蓄目标建议：\n\n");
+
+            List<String> sortedMonths = new ArrayList<>(summaries.keySet());
+            Collections.sort(sortedMonths);
+
+            for (String month : sortedMonths) {
+                MonthlySummary ms = summaries.get(month);
+                promptBuilder.append("--- ").append(ms.getMonthIdentifier()).append(" ---\n");
+                promptBuilder.append("  总收入: ").append(String.format("%.2f", ms.getTotalIncome())).append("元\n");
+                promptBuilder.append("  总支出: ").append(String.format("%.2f", ms.getTotalExpense())).append("元\n");
+                double net = ms.getTotalIncome() - ms.getTotalExpense();
+                promptBuilder.append("  月度净收支: ").append(String.format("%.2f", net)).append("元\n");
+                promptBuilder.append("\n");
+            }
+
+            String aiPrompt = promptBuilder.toString();
+            System.out.println("AI Service: Sending savings goals prompt to AI. Prompt length: " + aiPrompt.length());
+
+            return askAi(aiPrompt);
+        } catch (Exception e) {
+            System.err.println("AI Service: Failed to suggest savings goals.");
+            e.printStackTrace();
+            return "建议储蓄目标失败: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Generates personalized cost-cutting recommendations based on monthly data.
+     * @param userFilePath The path to the user's transaction CSV file. (Might not be strictly needed)
+     * @return AI recommendations as a String.
+     */
+    public String givePersonalSavingTips(String userFilePath) {
+        try {
+            Map<String, MonthlySummary> summaries = transactionService.getMonthlyTransactionSummary();
+            System.out.println("AI Service: Retrieved " + summaries.size() + " months of summary data for saving tips.");
+
+            if (summaries.isEmpty()) {
+                return "没有找到足够的交易数据来提供个性化节约建议。";
+            }
+
+            StringBuilder promptBuilder = new StringBuilder();
+            promptBuilder.append("请根据以下月度消费总结数据，为我提供一些针对性的节约开销建议：\n\n");
+
+            List<String> sortedMonths = new ArrayList<>(summaries.keySet());
+            Collections.sort(sortedMonths);
+
+            for (String month : sortedMonths) {
+                MonthlySummary ms = summaries.get(month);
+                promptBuilder.append("--- ").append(ms.getMonthIdentifier()).append(" ---\n");
+                promptBuilder.append("  总支出: ").append(String.format("%.2f", ms.getTotalExpense())).append("元\n");
+                promptBuilder.append("  支出明细:\n");
+                if (ms.getExpenseByCategory().isEmpty()) {
+                    promptBuilder.append("    (无支出)\n");
+                } else {
+                    // Sort categories by amount descending
+                    ms.getExpenseByCategory().entrySet().stream()
+                            .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                            .forEach(entry ->
+                                    promptBuilder.append(String.format("    %s: %.2f元\n", entry.getKey(), entry.getValue()))
+                            );
+                }
+                promptBuilder.append("\n");
+            }
+
+            String aiPrompt = promptBuilder.toString();
+            System.out.println("AI Service: Sending personal saving tips prompt to AI. Prompt length: " + aiPrompt.length());
+
+            return askAi(aiPrompt);
+        } catch (Exception e) {
+            System.err.println("AI Service: Failed to give personal saving tips.");
+            e.printStackTrace();
+            return "生成个性化节约建议失败: " + e.getMessage();
+        }
+    }
+
+
+    // ... Keep other methods like analyzeTransactions, formatTransactions, parseDateTime, askAi ...
+
+    // The existing CollegeStudentNeeds class also has budget and tips methods.
+    // We need to decide: should AITransactionService offer general AI for anyone,
+    // and CollegeStudentNeeds offer student-specific prompts/logic?
+    // Or should AITransactionService be the main AI interaction point,
+    // and CollegeStudentNeeds just holds student-specific logic/prompts used by AITransactionService?
+    // Given the project structure, it might be better to keep student logic in CollegeStudentNeeds
+    // and call it from MenuUI or a wrapper service.
+    // Let's adjust: generatePersonalSummary, suggestSavingsGoals, givePersonalSavingTips will use monthly summary.
+    // CollegeStudentNeeds.generateBudget and generateTipsForSaving can remain using their current logic
+    // (budget uses weekly expenses, tips is generic for now).
+    // The prompt for CollegeStudentNeeds.generateBudget might need to be updated to use the monthly summary data too for better context.
+    // Let's refine CollegeStudentNeeds methods in the next step.
+
+    // For now, the three new methods above will use the monthly summary.
+    // The existing analyzeTransactions method in AITransactionService and the methods in CollegeStudentNeeds remain as is for now,
+    // but their usage in UI might change slightly.
+
 }

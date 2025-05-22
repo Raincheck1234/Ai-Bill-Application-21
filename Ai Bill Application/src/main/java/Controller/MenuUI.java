@@ -50,12 +50,17 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
     // UI components for AI panel
     private JTextArea aiResultArea;
-    private JTextField aiStartTimeField;
-    private JTextField aiEndTimeField;
-    private JButton aiAnalyzeButton;
+    private JTextField aiStartTimeField; // Still used by general analysis
+    private JTextField aiEndTimeField; // Still used by general analysis
+    private JButton aiAnalyzeButton; // General analysis button
+    private JButton aiBudgetButton; // College Student Budget
+    private JButton aiTipsButton; // College Student Tips
+    // Add new buttons for AI personal summaries
+    private JButton aiPersonalSummaryButton;
+    private JButton aiSavingsGoalsButton;
+    private JButton aiPersonalSavingTipsButton;
     // Add College Student Needs buttons if needed
-    private JButton aiBudgetButton;
-    private JButton aiTipsButton;
+
 
 
     // UI components for Admin Stats panel
@@ -64,13 +69,17 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
     private JButton refreshDisplayButton;
 
 
-    // Constructor now accepts User, TransactionService, and SummaryStatisticService
-    public MenuUI(User authenticatedUser, TransactionService transactionService, SummaryStatisticService summaryStatisticService){
+    // Constructor now accepts all necessary service instances
+    public MenuUI(User authenticatedUser, TransactionService transactionService,
+                  SummaryStatisticService summaryStatisticService,
+                  AITransactionService aiTransactionService, // Inject AI services
+                  CollegeStudentNeeds collegeStudentNeeds) { // Inject CollegeStudentNeeds
+
         this.currentUser = authenticatedUser;
         this.transactionService = transactionService;
-        this.summaryStatisticService = summaryStatisticService; // Save the service
-        this.aiTransactionService = new AITransactionService(); // Initialize AI services
-        this.collegeStudentNeeds = new CollegeStudentNeeds(); // Initialize CollegeStudentNeeds
+        this.summaryStatisticService = summaryStatisticService;
+        this.aiTransactionService = aiTransactionService; // Assign injected instance
+        this.collegeStudentNeeds = collegeStudentNeeds; // Assign injected instance
 
         // Initialize table model
         String[] columnNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注", "Modify", "Delete"};
@@ -78,7 +87,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         this.table = new JTable(this.tableModel);
 
         // Initialize the main panel layout
-        setLayout(new BorderLayout()); // MenuUI itself is the main panel
+        setLayout(new BorderLayout());
 
         // Add the left panel
         add(createLeftPanel(), BorderLayout.WEST);
@@ -87,15 +96,17 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         setupRightPanel();
         add(rightPanel, BorderLayout.CENTER);
 
-
-        // Load the user's data and display initial view (only income)
-        // loadCSVDataForCurrentUser("收入"); // Initial load happens after setupRightPanel in createMainPanel
+        // Initial data load is done in createMainPanel
+        // loadCSVDataForCurrentUser("收入");
 
         System.out.println("MenuUI initialized for user: " + currentUser.getUsername() + " (" + currentUser.getRole() + ")");
     }
 
-    // createMainPanel method is no longer needed if MenuUI itself is the main JPanel
-     public JPanel createMainPanel() { return this; }
+    public JPanel createMainPanel() {
+        // MenuUI itself is the main panel, just add the initial data
+        loadCSVDataForCurrentUser("收入"); // Load and display only income initially
+        return this; // Return itself
+    }
 
 
     // Method to load CSV data for the current user with optional initial filter
@@ -670,61 +681,130 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         }
     }
 
-    // Inside MenuUI class
+    // Method to create the AI panel - UPDATED
     private JPanel createAIPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Top panel for AI request and parameters
-        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        JTextField userRequestField = new JTextField(40); // Input field for general AI request
-        aiStartTimeField = new JTextField(10); // Start time for AI analysis
-        aiEndTimeField = new JTextField(10); // End time for AI analysis
-        aiAnalyzeButton = new JButton("通用分析"); // Renamed button for clarity
+        // Panel for General AI Analysis
+        JPanel generalAnalysisPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        JTextField userRequestField = new JTextField(40);
+        aiStartTimeField = new JTextField(10);
+        aiEndTimeField = new JTextField(10);
+        aiAnalyzeButton = new JButton("通用分析 (按原始数据)"); // Clarify this uses raw data
 
 
-        inputPanel.add(new JLabel("AI通用分析要求:")); // Label for general analysis
-        inputPanel.add(userRequestField);
-        inputPanel.add(new JLabel("时间范围 (yyyy/MM/dd HH:mm):")); // Combine time range label
-        inputPanel.add(new JLabel("从:")); inputPanel.add(aiStartTimeField);
-        inputPanel.add(new JLabel("到:")); inputPanel.add(aiEndTimeField);
-        inputPanel.add(aiAnalyzeButton);
+        generalAnalysisPanel.add(new JLabel("通用分析要求:"));
+        generalAnalysisPanel.add(userRequestField);
+        generalAnalysisPanel.add(new JLabel("时间范围 (yyyy/MM/dd HH:mm): 从:"));
+        generalAnalysisPanel.add(aiStartTimeField);
+        generalAnalysisPanel.add(new JLabel("到:"));
+        generalAnalysisPanel.add(aiEndTimeField);
+        generalAnalysisPanel.add(aiAnalyzeButton);
 
 
-        panel.add(inputPanel, BorderLayout.NORTH);
+        // Panel for Summary-Based AI Analysis (NEW)
+        JPanel summaryAnalysisPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        aiPersonalSummaryButton = new JButton("个人消费总结"); // New button
+        aiSavingsGoalsButton = new JButton("储蓄目标建议"); // New button
+        aiPersonalSavingTipsButton = new JButton("个性化节约建议"); // New button
+
+        summaryAnalysisPanel.add(new JLabel("基于月度总结分析:"));
+        summaryAnalysisPanel.add(aiPersonalSummaryButton);
+        summaryAnalysisPanel.add(aiSavingsGoalsButton);
+        summaryAnalysisPanel.add(aiPersonalSavingTipsButton);
 
 
-        // Center area for displaying AI results
-        // Use a JScrollPane containing a JTextPane or JEditorPane for potentially richer text formatting later
-        aiResultArea = new JTextArea(); // Keep JTextArea for simplicity now
+        // Panel for College Student Needs buttons (existing)
+        JPanel csButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10)); // Align left for consistency
+        aiBudgetButton = new JButton("预算建议 (学生)"); // Clarify this is student-specific
+        aiTipsButton = new JButton("省钱技巧 (学生)"); // Clarify this is student-specific
+        csButtonsPanel.add(new JLabel("大学生专属功能:"));
+        csButtonsPanel.add(aiBudgetButton);
+        csButtonsPanel.add(aiTipsButton);
+
+
+        // Combine all control panels in a box layout
+        JPanel topControlPanel = new JPanel();
+        topControlPanel.setLayout(new BoxLayout(topControlPanel, BoxLayout.Y_AXIS));
+        topControlPanel.add(generalAnalysisPanel);
+        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing
+        topControlPanel.add(summaryAnalysisPanel); // Add new panel
+        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing
+        topControlPanel.add(csButtonsPanel); // Add existing CS panel
+        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing
+
+
+        panel.add(topControlPanel, BorderLayout.NORTH);
+
+        // Center area for displaying AI results - same as before
+        aiResultArea = new JTextArea();
         aiResultArea.setFont(new Font("微软雅黑", Font.PLAIN, 14));
         aiResultArea.setLineWrap(true);
         aiResultArea.setWrapStyleWord(true);
         aiResultArea.setEditable(false);
-        // Add some initial instructions
         aiResultArea.setText("欢迎使用AI个人财务分析功能。\n\n" +
                 "您可以尝试以下操作：\n" +
-                "1. 在上方输入框提出通用分析要求（例如：\"分析我上个月的消费结构\"），并选择时间范围，点击\"通用分析\"。\n" +
-                "2. 点击\"预算建议\"按钮，获取基于您历史支出的周预算范围建议。\n" +
-                "3. 点击\"省钱技巧\"按钮，获取普适性的省钱建议。\n");
+                "1. 在上方输入框提出通用分析要求（基于原始数据，可指定时间范围），点击\"通用分析\"。\n" +
+                "2. 点击\"个人消费总结\"，获取基于您月度收支汇总的详细总结。\n" +
+                "3. 点击\"储蓄目标建议\"，获取基于您收支情况的储蓄建议。\n" +
+                "4. 点击\"个性化节约建议\"，获取基于您消费类别的节约建议。\n" +
+                "5. 大学生用户可点击\"预算建议\"和\"省钱技巧\"获取专属建议。\n");
 
 
         JScrollPane resultScrollPane = new JScrollPane(aiResultArea);
         panel.add(resultScrollPane, BorderLayout.CENTER);
 
 
-        // Panel for College Student Needs buttons (预算建议, 省钱技巧)
-        JPanel csButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5)); // Centered with more horizontal gap
-        aiBudgetButton = new JButton("预算建议"); // Assign to instance field
-        aiTipsButton = new JButton("省钱技巧"); // Assign to instance field
-        // Optional: Add other buttons like "AI 总结本月消费" etc. if you implement specific prompts
+        // --- Add Action Listeners for NEW Buttons ---
+
+        aiPersonalSummaryButton.addActionListener(e -> {
+            aiResultArea.setText("--- 个人消费总结生成中 ---\n\n正在根据您的月度消费数据生成总结，请稍候...\n");
+            setAIButtonsEnabled(false);
+
+            new Thread(() -> {
+                String result = aiTransactionService.generatePersonalSummary(currentUser.getTransactionFilePath()); // Call the new method
+
+                SwingUtilities.invokeLater(() -> {
+                    aiResultArea.setText("--- 个人消费总结 ---\n\n" + result);
+                    setAIButtonsEnabled(true);
+                });
+            }).start();
+        });
+
+        aiSavingsGoalsButton.addActionListener(e -> {
+            aiResultArea.setText("--- 储蓄目标建议生成中 ---\n\n正在根据您的收支情况生成储蓄目标建议，请稍候...\n");
+            setAIButtonsEnabled(false);
+
+            new Thread(() -> {
+                String result = aiTransactionService.suggestSavingsGoals(currentUser.getTransactionFilePath()); // Call the new method
+
+                SwingUtilities.invokeLater(() -> {
+                    aiResultArea.setText("--- 储蓄目标建议 ---\n\n" + result);
+                    setAIButtonsEnabled(true);
+                });
+            }).start();
+        });
+
+        aiPersonalSavingTipsButton.addActionListener(e -> {
+            aiResultArea.setText("--- 个性化节约建议生成中 ---\n\n正在根据您的消费类别生成节约建议，请稍候...\n");
+            setAIButtonsEnabled(false);
+
+            new Thread(() -> {
+                String result = aiTransactionService.givePersonalSavingTips(currentUser.getTransactionFilePath()); // Call the new method
+
+                SwingUtilities.invokeLater(() -> {
+                    aiResultArea.setText("--- 个性化节约建议 ---\n\n" + result);
+                    setAIButtonsEnabled(true);
+                });
+            }).start();
+        });
 
 
-        csButtonsPanel.add(aiBudgetButton);
-        csButtonsPanel.add(aiTipsButton);
+        // --- Action Listeners for EXISTING Buttons (UPDATE PROMPTS/HEADERS) ---
+        // Update existing listeners to use better headers/messages
 
-
-        // Add action listener for the Analyze button
+        // General Analyze Button
         aiAnalyzeButton.addActionListener(e -> {
             String userRequest = userRequestField.getText().trim();
             String startTimeStr = aiStartTimeField.getText().trim();
@@ -734,40 +814,34 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                 JOptionPane.showMessageDialog(this, "请输入AI通用分析要求。", "输入提示", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            // Time range validation - allow empty for "all time" or "default range" based on AI service
-            // Currently, analyzeTransactions handles empty end time as "now", empty start time is invalid.
             if (startTimeStr.isEmpty() && !endTimeStr.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "请至少输入分析的开始时间。", "输入提示", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            // Optional: Add format validation for start/end time fields
 
 
-            aiResultArea.setText("正在进行AI通用分析，请稍候...\n");
-            setAIButtonsEnabled(false); // Disable all AI buttons
+            aiResultArea.setText("--- 通用分析生成中 ---\n\n" + "正在进行AI通用分析，请稍候...\n");
+            setAIButtonsEnabled(false);
 
-            // Run AI analysis in a background thread
+
             new Thread(() -> {
                 String result = aiTransactionService.analyzeTransactions(userRequest, currentUser.getTransactionFilePath(), startTimeStr, endTimeStr);
 
-                // Update the UI on the Event Dispatch Thread (EDT)
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 通用分析结果 ---\n\n" + result); // Add header to clarify result type
-                    setAIButtonsEnabled(true); // Re-enable the button
+                    aiResultArea.setText("--- 通用分析结果 ---\n\n" + result);
+                    setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
-        // Add action listener for Budget button
+        // College Student Budget Button
         aiBudgetButton.addActionListener(e -> {
-            aiResultArea.setText("--- 预算建议生成中 ---\n\n正在根据您的历史支出生成预算建议，请稍候...\n");
-            setAIButtonsEnabled(false); // Disable all AI buttons
-
+            aiResultArea.setText("--- 大学生预算建议生成中 ---\n\n正在根据您的历史支出生成预算建议，请稍候...\n");
+            setAIButtonsEnabled(false);
 
             new Thread(() -> {
                 String resultMessage;
                 try {
-                    // Use the injected CollegeStudentNeeds instance
                     double[] budgetRange = collegeStudentNeeds.generateBudget(currentUser.getTransactionFilePath());
                     if (budgetRange != null && budgetRange.length == 2 && budgetRange[0] != -1) {
                         resultMessage = String.format("根据您的消费记录，下周的建议预算范围是: [%.2f元, %.2f元]", budgetRange[0], budgetRange[1]);
@@ -786,23 +860,23 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
                 String finalResultMessage = resultMessage;
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 预算建议 ---\n\n" + finalResultMessage); // Add header
-                    setAIButtonsEnabled(true); // Re-enable buttons
+                    aiResultArea.setText("--- 大学生预算建议 ---\n\n" + finalResultMessage);
+                    setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
-        // Add action listener for Tips button
+        // College Student Tips Button
         aiTipsButton.addActionListener(e -> {
-            aiResultArea.setText("--- 省钱技巧生成中 ---\n\n正在生成普适性省钱技巧，请稍候...\n");
-            setAIButtonsEnabled(false); // Disable all AI buttons
-
+            aiResultArea.setText("--- 大学生省钱技巧生成中 ---\n\n正在生成省钱技巧，请稍候...\n");
+            setAIButtonsEnabled(false);
 
             new Thread(() -> {
                 String resultMessage;
                 try {
-                    // Use the injected CollegeStudentNeeds instance
-                    resultMessage = collegeStudentNeeds.generateTipsForSaving();
+                    // Call the CollegeStudentNeeds method (now uses monthly summary)
+                    resultMessage = collegeStudentNeeds.generateTipsForSaving(currentUser.getTransactionFilePath());
+
                 } catch (Exception ex) {
                     resultMessage = "生成省钱技巧失败！\n" + ex.getMessage();
                     System.err.println("Error generating AI tips:");
@@ -811,38 +885,25 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
                 String finalResultMessage = resultMessage;
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 省钱技巧 ---\n\n" + finalResultMessage); // Add header
-                    setAIButtonsEnabled(true); // Re-enable buttons
+                    aiResultArea.setText("--- 大学生省钱技巧 ---\n\n" + finalResultMessage);
+                    setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
 
-        // Add the College Student buttons panel below the general analysis inputs
-        JPanel csPanelWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Align left
-        csPanelWrapper.add(new JLabel("大学生专属功能:")); // Label for this section
-        csPanelWrapper.add(csButtonsPanel); // Add the buttons panel here
-
-
-        // Combine input panel and CS buttons panel in a box or nested panel
-        JPanel topControlPanel = new JPanel();
-        topControlPanel.setLayout(new BoxLayout(topControlPanel, BoxLayout.Y_AXIS));
-        topControlPanel.add(inputPanel);
-        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing
-        topControlPanel.add(csPanelWrapper);
-
-        panel.add(topControlPanel, BorderLayout.NORTH); // Add the combined panel to the top
-
-
         return panel;
     }
 
-    // Helper method to enable/disable all AI related buttons
+    // Helper method to enable/disable all AI related buttons - UPDATED
     private void setAIButtonsEnabled(boolean enabled) {
         if (aiAnalyzeButton != null) aiAnalyzeButton.setEnabled(enabled);
         if (aiBudgetButton != null) aiBudgetButton.setEnabled(enabled);
         if (aiTipsButton != null) aiTipsButton.setEnabled(enabled);
-        // Add any other AI-related buttons here
+        // Enable/disable new buttons
+        if (aiPersonalSummaryButton != null) aiPersonalSummaryButton.setEnabled(enabled);
+        if (aiSavingsGoalsButton != null) aiSavingsGoalsButton.setEnabled(enabled);
+        if (aiPersonalSavingTipsButton != null) aiPersonalSavingTipsButton.setEnabled(enabled);
     }
 
 
