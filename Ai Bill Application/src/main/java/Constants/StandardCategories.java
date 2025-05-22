@@ -3,6 +3,7 @@ package Constants;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections; // For immutable lists
+import java.util.stream.Collectors;
 
 public final class StandardCategories {
     private StandardCategories() {} // Prevent instantiation
@@ -37,6 +38,15 @@ public final class StandardCategories {
             "红包" // WeChat/Alipay Red Packets - often social, not regular income/expense
             // Add other special types as needed, e.g., Refund, Credit Card Repayment
     ));
+
+    /**
+     * Generates a comma-separated string of all standard categories for AI prompts.
+     * @return String like "餐饮,食品杂货,服饰,..."
+     */
+    public static String getAllCategoriesString() {
+        return ALL_KNOWN_TYPES.stream()
+                .collect(Collectors.joining(","));
+    }
 
     // All Known Transaction Types (combination of all the above + potentially user-defined ones initially)
     // This list might be used for dropdowns in UI, etc.

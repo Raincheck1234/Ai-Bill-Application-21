@@ -1,6 +1,7 @@
 package Service.AIservice;
 
 // ... existing imports ...
+import Constants.StandardCategories;
 import DAO.TransactionDao;
 import DAO.Impl.CsvTransactionDao;
 import Service.Impl.TransactionServiceImpl;
@@ -28,8 +29,10 @@ public class CollegeStudentNeeds {
     private final String requestBudge="我是一名预算有限的大学生，请根据下面我给出的历史周花费和月度收支总结，帮助我给下周预算范围，必须以[最低预算，最高预算],的方式给出回答，不能有多余的回复。";
     private final String requestTips="我是一名预算有限的大学生，请结合下面我给出的月度消费总结数据，为我推荐一些有针对性的省钱方法。"; // Refined prompt
     // Add the missing constant:
-    private final String requestRecognition = "下面我将给你一些账单的信息，请推测这个账单是什么方面的消费: "; // <-- Add this line
-
+    private final String requestRecognition =
+            "请根据以下账单信息推测最合适的交易类型。返回的类型必须精确匹配以下列表中的一个条目：\n" +
+                    StandardCategories.getAllCategoriesString() + "\n" + // Include the list of valid categories
+                    "如果无法确定，请返回 '其他支出' 或 '其他收入'（取决于收支方向）。只返回类型字符串，不要包含额外文本或解释。账单信息：";
     // AITransactionService is used for asking AI, can be an instance or created on demand
     // private final AITransactionService aiService = new AITransactionService(); // This instance won't have injected TransactionService
 
