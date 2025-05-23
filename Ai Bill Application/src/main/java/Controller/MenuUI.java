@@ -923,9 +923,9 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
         // Panel for College Student Needs buttons (existing)
         JPanel csButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10)); // Align left for consistency
-        aiBudgetButton = new JButton("预算建议 (学生)"); // Clarify this is student-specific
-        aiTipsButton = new JButton("省钱技巧 (学生)"); // Clarify this is student-specific
-        csButtonsPanel.add(new JLabel("大学生专属功能:"));
+        aiBudgetButton = new JButton("预算建议"); // Clarify this is student-specific
+        aiTipsButton = new JButton("省钱技巧"); // Clarify this is student-specific
+        csButtonsPanel.add(new JLabel("专属功能:"));
         csButtonsPanel.add(aiBudgetButton);
         csButtonsPanel.add(aiTipsButton);
 
@@ -955,7 +955,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                 "2. 点击\"个人消费总结\"，获取基于您月度收支汇总的详细总结。\n" +
                 "3. 点击\"储蓄目标建议\"，获取基于您收支情况的储蓄建议。\n" +
                 "4. 点击\"个性化节约建议\"，获取基于您消费类别的节约建议。\n" +
-                "5. 大学生用户可点击\"预算建议\"和\"省钱技巧\"获取专属建议。\n");
+                "5. 用户可点击\"预算建议\"和\"省钱技巧\"获取专属建议。\n");
 
 
         JScrollPane resultScrollPane = new JScrollPane(aiResultArea);
@@ -1042,7 +1042,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
         // College Student Budget Button
         aiBudgetButton.addActionListener(e -> {
-            aiResultArea.setText("--- 大学生预算建议生成中 ---\n\n正在根据您的历史支出生成预算建议，请稍候...\n");
+            aiResultArea.setText("--- 预算建议生成中 ---\n\n正在根据您的历史支出生成预算建议，请稍候...\n");
             setAIButtonsEnabled(false);
 
             new Thread(() -> {
@@ -1066,7 +1066,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
                 String finalResultMessage = resultMessage;
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 大学生预算建议 ---\n\n" + finalResultMessage);
+                    aiResultArea.setText("--- 预算建议 ---\n\n" + finalResultMessage);
                     setAIButtonsEnabled(true);
                 });
             }).start();
@@ -1074,7 +1074,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
         // College Student Tips Button
         aiTipsButton.addActionListener(e -> {
-            aiResultArea.setText("--- 大学生省钱技巧生成中 ---\n\n正在生成省钱技巧，请稍候...\n");
+            aiResultArea.setText("--- 省钱技巧生成中 ---\n\n正在生成省钱技巧，请稍候...\n");
             setAIButtonsEnabled(false);
 
             new Thread(() -> {
@@ -1091,7 +1091,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
                 String finalResultMessage = resultMessage;
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 大学生省钱技巧 ---\n\n" + finalResultMessage);
+                    aiResultArea.setText("--- 省钱技巧 ---\n\n" + finalResultMessage);
                     setAIButtonsEnabled(true);
                 });
             }).start();
