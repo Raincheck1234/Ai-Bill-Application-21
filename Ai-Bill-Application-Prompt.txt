@@ -3,6 +3,3442 @@ Project Path: Ai-Bill-Application-Group21
 Source Tree:
 
 ```txt
+软工
+├── Ai-Bill-Application-Group21
+│   ├── Ai Bill Application
+│   │   ├── HistogramPanelContainer.java
+│   │   ├── pom.xml
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   ├── Constants
+│   │       │   │   │   ├── CaffeineKeys.java
+│   │       │   │   │   ├── ConfigConstants.java
+│   │       │   │   │   └── StandardCategories.java
+│   │       │   │   ├── Controller
+│   │       │   │   │   ├── ButtonEditor.java
+│   │       │   │   │   ├── ButtonRenderer.java
+│   │       │   │   │   ├── HistogramExample.java
+│   │       │   │   │   ├── HistogramPanelContainer.java
+│   │       │   │   │   ├── MenuUI.java
+│   │       │   │   │   └── VisualizationPanel.java
+│   │       │   │   ├── DAO
+│   │       │   │   │   ├── Impl
+│   │       │   │   │   │   ├── CsvSummaryStatisticDao.java
+│   │       │   │   │   │   ├── CsvTransactionDao.java
+│   │       │   │   │   │   └── CsvUserDao.java
+│   │       │   │   │   ├── SummaryStatisticDao.java
+│   │       │   │   │   ├── TransactionDao.java
+│   │       │   │   │   └── UserDao.java
+│   │       │   │   ├── Interceptor
+│   │       │   │   │   └── Login
+│   │       │   │   │       └── LoginDialog.java
+│   │       │   │   ├── Main.java
+│   │       │   │   ├── Service
+│   │       │   │   │   ├── AIservice
+│   │       │   │   │   │   ├── AIAnalyzerThread.java
+│   │       │   │   │   │   ├── AITransactionService.java
+│   │       │   │   │   │   ├── ColledgeStudentThread.java
+│   │       │   │   │   │   └── CollegeStudentNeeds.java
+│   │       │   │   │   ├── Impl
+│   │       │   │   │   │   ├── SummaryStatisticService.java
+│   │       │   │   │   │   └── TransactionServiceImpl.java
+│   │       │   │   │   ├── TransactionService.java
+│   │       │   │   │   ├── User
+│   │       │   │   │   │   └── UserService.java
+│   │       │   │   │   └── deepseek
+│   │       │   │   │       └── ChatCompletionsExample.java
+│   │       │   │   ├── Utils
+│   │       │   │   │   ├── CacheManager.java
+│   │       │   │   │   └── CacheUtil.java
+│   │       │   │   └── model
+│   │       │   │       ├── MonthlySummary.java
+│   │       │   │       ├── SummaryStatistic.java
+│   │       │   │       ├── Transaction.java
+│   │       │   │       └── User.java
+│   │       │   └── resources
+│   │       │       ├── CSVForm
+│   │       │       │   ├── stats
+│   │       │       │   │   └── summary_statistics.csv
+│   │       │       │   ├── transactions
+│   │       │       │   │   ├── admin_transactions.csv
+│   │       │       │   │   ├── user1_transactions.csv
+│   │       │       │   │   └── user2_transactions.csv
+│   │       │       │   └── users
+│   │       │       │       └── users.csv
+│   │       │       └── config.properties
+│   │       └── test
+│   │           ├── java
+│   │           │   ├── ControllerTest
+│   │           │   │   ├── AITest.java
+│   │           │   │   └── MenuUITest.java
+│   │           │   ├── DAOTest
+│   │           │   │   └── CsvTransactionDaoTest.java
+│   │           │   └── Service
+│   │           │       ├── AIAnalyzerThreadTest.java
+│   │           │       ├── AIserviceTest.java
+│   │           │       ├── AiFunctionTest.java
+│   │           │       ├── CacheTest.java
+│   │           │       ├── CollegeStudentNeedsTest.java
+│   │           │       └── TransactionServiceTest.java
+│   │           └── resources
+│   │               └── CSVForm
+│   │                   ├── transactions
+│   │                   │   ├── admin_transactions.csv
+│   │                   │   ├── user1_transactions.csv
+│   │                   │   └── user2_transactions.csv
+│   │                   └── users
+│   │                       └── users.csv
+│   ├── Ai-Bill-Application-Prompt.txt
+│   ├── README.md
+│   ├── README.txt
+│   ├── img.png
+│   ├── 开发文档.docx
+│   └── 项目要求.txt
+├── Ai-Bill-Application-Group21 - 副本
+│   ├── Ai Bill Application
+│   │   ├── HistogramPanelContainer.java
+│   │   ├── pom.xml
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   ├── Constants
+│   │       │   │   │   ├── CaffeineKeys.java
+│   │       │   │   │   └── ConfigConstants.java
+│   │       │   │   ├── Controller
+│   │       │   │   │   ├── ButtonEditor.java
+│   │       │   │   │   ├── ButtonRenderer.java
+│   │       │   │   │   ├── HistogramExample.java
+│   │       │   │   │   ├── HistogramPanelContainer.java
+│   │       │   │   │   └── MenuUI.java
+│   │       │   │   ├── DAO
+│   │       │   │   │   ├── CsvTransactionDao.java
+│   │       │   │   │   └── TransactionDao.java
+│   │       │   │   ├── Interceptor
+│   │       │   │   │   └── Login
+│   │       │   │   │       ├── LoginDialog.java
+│   │       │   │   │       └── UserService.java
+│   │       │   │   ├── Main.java
+│   │       │   │   ├── Service
+│   │       │   │   │   ├── AIservice
+│   │       │   │   │   │   ├── AIAnalyzerThread.java
+│   │       │   │   │   │   ├── AITransactionService.java
+│   │       │   │   │   │   ├── ColledgeStudentThread.java
+│   │       │   │   │   │   └── CollegeStudentNeeds.java
+│   │       │   │   │   ├── Impl
+│   │       │   │   │   │   └── TransactionServiceImpl.java
+│   │       │   │   │   ├── TransactionService.java
+│   │       │   │   │   └── deepseek
+│   │       │   │   │       └── ChatCompletionsExample.java
+│   │       │   │   ├── Utils
+│   │       │   │   │   └── CacheUtil.java
+│   │       │   │   └── model
+│   │       │   │       └── Transaction.java
+│   │       │   └── resources
+│   │       │       ├── CSVForm
+│   │       │       │   └── 0001.csv
+│   │       │       └── config.properties
+│   │       └── test
+│   │           ├── java
+│   │           │   ├── ControllerTest
+│   │           │   │   ├── AITest.java
+│   │           │   │   └── MenuUITest.java
+│   │           │   ├── DAOTest
+│   │           │   │   └── CsvTransactionDaoTest.java
+│   │           │   └── Service
+│   │           │       ├── AIAnalyzerThreadTest.java
+│   │           │       ├── AIserviceTest.java
+│   │           │       ├── AiFunctionTest.java
+│   │           │       ├── CacheTest.java
+│   │           │       ├── CollegeStudentNeedsTest.java
+│   │           │       └── TransactionServiceTest.java
+│   │           └── resources
+│   ├── Ai-Bill-Application-Prompt.txt
+│   ├── README.md
+│   ├── README.txt
+│   ├── img.png
+│   └── 项目要求.txt
+├── Lab5,6-Demostration-Vid.mp4
+├── Labs
+│   └── lab6
+├── Submission
+│   ├── Labs
+│   │   ├── lab5
+│   │   │   ├── lab5.iml
+│   │   │   ├── out
+│   │   │   │   └── production
+│   │   │   │       └── lab5
+│   │   │   │           ├── lab5.iml
+│   │   │   │           ├── src
+│   │   │   │           │   ├── main
+│   │   │   │           │   │   └── java
+│   │   │   │           │   │       └── DegreeClassifier.class
+│   │   │   │           │   └── test
+│   │   │   │           │       └── java
+│   │   │   │           │           └── DegreeClassifierTest.class
+│   │   │   │           └── untitled
+│   │   │   ├── src
+│   │   │   │   ├── main
+│   │   │   │   │   └── java
+│   │   │   │   │       └── DegreeClassifier.java
+│   │   │   │   └── test
+│   │   │   │       └── java
+│   │   │   │           └── DegreeClassifierTest.java
+│   │   │   └── untitled
+│   │   └── lab6
+│   │       ├── lab6.iml
+│   │       ├── out
+│   │       │   └── production
+│   │       │       └── lab6
+│   │       │           ├── lab6.iml
+│   │       │           └── src
+│   │       │               ├── main
+│   │       │               │   └── java
+│   │       │               │       └── DegreeClassifier.class
+│   │       │               └── test
+│   │       │                   └── java
+│   │       │                       └── DegreeClassifierTest.class
+│   │       └── src
+│   │           ├── main
+│   │           │   └── java
+│   │           │       └── DegreeClassifier.java
+│   │           └── test
+│   │               └── java
+│   │                   └── DegreeClassifierTest.java
+│   └── Submission(Test & Production)
+│       ├── Production
+│       │   ├── DegreeClassifierLab5.java
+│       │   └── DegreeClassifierLab6.java
+│       └── Test
+│           ├── DegreeClassifierTestLab5.java
+│           └── DegreeClassifierTestLab6.java
+├── Submission.zip
+├── UI.png
+└── 大代码
+    ├── MenuUI-post.txt
+    └── MenuUI-pre.txt
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\HistogramPanelContainer.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import java.awt.*;
+
+// 直方图面板容器
+public class HistogramPanelContainer extends JPanel {
+    private HistogramPanel histogramPanel;
+    private JTextArea textArea;
+    private JSplitPane splitPane;
+    private boolean isHistogramVisible = true;
+    private boolean isTextVisible = true;
+
+    public HistogramPanelContainer() {
+        setLayout(new BorderLayout(10, 10));
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton btnShowHistogram = new JButton("显示直方图");
+        JButton btnShowText1 = new JButton("显示文本 1");
+        JButton btnShowText2 = new JButton("显示文本 2");
+
+        buttonPanel.add(btnShowHistogram);
+        buttonPanel.add(btnShowText1);
+        buttonPanel.add(btnShowText2);
+        add(buttonPanel, BorderLayout.NORTH);
+
+        textArea = new JTextArea();
+        textArea.setFont(new Font("微软雅黑", Font.PLAIN, 18));
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        JScrollPane textScrollPane = new JScrollPane(textArea);
+
+        histogramPanel = new HistogramPanel();
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, textScrollPane, histogramPanel);
+        splitPane.setResizeWeight(0.5);
+        add(splitPane, BorderLayout.CENTER);
+
+        btnShowHistogram.addActionListener(e -> toggleHistogram());
+        btnShowText1.addActionListener(e -> toggleText("这是一段非常长的文本..."));
+        btnShowText2.addActionListener(e -> toggleText("222222222222222"));
+    }
+
+    private void toggleHistogram() {
+        if (isHistogramVisible) {
+            histogramPanel.setVisible(false);
+        } else {
+            showHistogram();
+            histogramPanel.setVisible(true);
+        }
+        isHistogramVisible = !isHistogramVisible;
+        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(isHistogramVisible ? 0.5 : 0.0));
+    }
+
+    private void toggleText(String text) {
+        if (isTextVisible) {
+            textArea.setText("");
+        } else {
+            textArea.setText(text);
+        }
+        isTextVisible = !isTextVisible;
+    }
+
+
+
+    private void showHistogram() {
+        int[] data = DataGenerator.generateData(1000, 100);
+        Histogram histogram = new Histogram(data, 10);
+        histogramPanel.updateData(histogram.computeFrequency());
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\pom.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>Ai-bill</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- CSV 解析核心库 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+        <!-- 文件操作工具 -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.15.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 断言增强库 -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.24.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.volcengine</groupId>
+            <artifactId>volcengine-java-sdk-ark-runtime</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <!-- pom.xml -->
+
+
+
+        <!-- JSON 处理 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
+        <!--        caffeine缓存中间件-->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version> <!-- 使用最新版本 -->
+        </dependency>
+
+    </dependencies>
+
+</project>
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Constants\CaffeineKeys.java`:
+
+```java
+package Constants;
+
+public class CaffeineKeys {
+    public static final String TRANSACTION_CAFFEINE_KEY = "transactions";
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Constants\ConfigConstants.java`:
+
+```java
+package Constants;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+/**
+ * 配置常量类（线程安全初始化）
+ */
+public final class ConfigConstants {
+    // 私有构造防止实例化
+    private ConfigConstants() {}
+
+    /**
+     * transactionCSV路径加载逻辑
+     */
+    // CSV路径常量
+    public static final String CSV_PATH;
+    // 静态初始化块（类加载时执行）
+    static {
+        Properties prop = new Properties();
+        try (InputStream input = ConfigConstants.class.getClassLoader()
+                .getResourceAsStream("config.properties")) {
+
+            prop.load(input);
+            CSV_PATH = prop.getProperty("csv.path");
+        } catch (IOException e) {
+            throw new RuntimeException("加载配置文件失败", e); // 转换为运行时异常
+        }
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Controller\ButtonEditor.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
+    private final JPanel panel = new JPanel(new BorderLayout()); // 使用 BorderLayout
+    private final JButton button = new JButton();
+    private int rowIndex;
+    private final MenuUI menuUI;
+
+    public ButtonEditor(MenuUI menuUI) {
+        this.menuUI = menuUI;
+
+        // 设置按钮样式
+        button.setFocusPainted(false); // 移除按钮的焦点边框
+        button.setPreferredSize(new Dimension(80, 30)); // 设置按钮的固定尺寸
+
+        // 添加按钮到面板
+        panel.add(button, BorderLayout.CENTER);
+
+        // 为按钮添加事件监听器
+        button.addActionListener(e -> {
+            System.out.println("按钮点击事件触发: " + button.getText());
+            fireEditingStopped(); // 停止编辑
+            String buttonText = button.getText();
+            if ("Modify".equals(buttonText)) {
+                menuUI.editRow(rowIndex); // 调用 MenuUI 的 editRow 方法
+            } else if ("Delete".equals(buttonText)) {
+                int confirm = JOptionPane.showConfirmDialog(panel, "确定要删除此行吗？", "确认删除", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    menuUI.deleteRow(rowIndex); // 调用 MenuUI 的 deleteRow 方法
+                }
+            }
+        });
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.rowIndex = row; // 更新当前行索引
+        button.setText(value != null ? value.toString() : ""); // 根据单元格的值设置按钮文本
+        return panel;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        return button.getText(); // 返回按钮的当前文本
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Controller\ButtonRenderer.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+
+class ButtonRenderer extends DefaultTableCellRenderer {
+    private final JPanel panel = new JPanel(new BorderLayout()); // 使用 BorderLayout
+    private final JButton button = new JButton();
+
+    public ButtonRenderer() {
+        button.setFocusPainted(false); // 移除按钮的焦点边框
+        button.setPreferredSize(new Dimension(80, 30)); // 设置按钮的固定尺寸
+        panel.add(button, BorderLayout.CENTER); // 将按钮添加到面板中心
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        // 根据单元格的值设置按钮文本
+        button.setText(value != null ? value.toString() : "");
+        return panel;
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Controller\HistogramExample.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Random;
+
+// 数据生成类
+class DataGenerator {
+    public static int[] generateData(int numberOfDataPoints, int maxValue) {
+        Random random = new Random();
+        int[] data = new int[numberOfDataPoints];
+        for (int i = 0; i < numberOfDataPoints; i++) {
+            data[i] = random.nextInt(maxValue);
+        }
+        return data;
+    }
+}
+
+// 直方图计算类
+class Histogram {
+    private int binSize;
+    private int[] data;
+
+    public Histogram(int[] data, int binSize) {
+        this.data = data;
+        this.binSize = binSize;
+    }
+
+    public HashMap<Integer, Integer> computeFrequency() {
+        HashMap<Integer, Integer> frequencyMap = new HashMap<>();
+        for (int number : data) {
+            int bin = number / binSize;
+            frequencyMap.put(bin, frequencyMap.getOrDefault(bin, 0) + 1);
+        }
+        return frequencyMap;
+    }
+}
+
+// 直方图 GUI 绘制类
+class HistogramPanel extends JPanel {
+    HashMap<Integer, Integer> frequencyMap;
+
+    public HistogramPanel() {
+        this.frequencyMap = new HashMap<>();
+    }
+
+    public void updateData(HashMap<Integer, Integer> frequencyMap) {
+        this.frequencyMap = frequencyMap;
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        int barWidth = 40;
+        int gap = 10;
+        int maxFrequency = frequencyMap.values().stream().mapToInt(v -> v).max().orElse(1);
+
+        int index = 0;
+        for (Integer key : frequencyMap.keySet()) {
+            int height = (int) ((frequencyMap.get(key) / (double) maxFrequency) * getHeight());
+            g.setColor(Color.BLUE);
+            g.fillRect(index * (barWidth + gap), getHeight() - height, barWidth, height);
+            g.setColor(Color.BLACK);
+            g.drawRect(index * (barWidth + gap), getHeight() - height, barWidth, height);
+            g.drawString("Bin " + key, index * (barWidth + gap) + 5, getHeight() - 5);
+            index++;
+        }
+    }
+}
+
+
+// 主窗口类
+public class HistogramExample {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("数据分析界面");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(800, 600);
+            frame.add(new HistogramPanelContainer());
+            frame.setVisible(true);
+        });
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Controller\HistogramPanelContainer.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import java.awt.*;
+
+// 直方图面板容器
+public class HistogramPanelContainer extends JPanel {
+    private HistogramPanel histogramPanel;
+    private JTextArea textArea;
+    private JSplitPane splitPane;
+    private boolean isHistogramVisible = true;
+    private boolean isTextVisible = true;
+
+    public HistogramPanelContainer() {
+        setLayout(new BorderLayout(10, 10));
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton btnShowHistogram = new JButton("显示直方图");
+        JButton btnShowText1 = new JButton("显示文本 1");
+        JButton btnShowText2 = new JButton("显示文本 2");
+
+        buttonPanel.add(btnShowHistogram);
+        buttonPanel.add(btnShowText1);
+        buttonPanel.add(btnShowText2);
+        add(buttonPanel, BorderLayout.NORTH);
+
+        textArea = new JTextArea();
+        textArea.setFont(new Font("微软雅黑", Font.PLAIN, 18));
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        JScrollPane textScrollPane = new JScrollPane(textArea);
+
+        histogramPanel = new HistogramPanel();
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, textScrollPane, histogramPanel);
+        splitPane.setResizeWeight(0.5);
+        add(splitPane, BorderLayout.CENTER);
+
+        btnShowHistogram.addActionListener(e -> toggleHistogram());
+        btnShowText1.addActionListener(e -> toggleText("这是一段非常长的文本..."));
+        btnShowText2.addActionListener(e -> toggleText("222222222222222"));
+    }
+
+    private void toggleHistogram() {
+        if (isHistogramVisible) {
+            histogramPanel.setVisible(false);
+        } else {
+            showHistogram();
+            histogramPanel.setVisible(true);
+        }
+        isHistogramVisible = !isHistogramVisible;
+        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(isHistogramVisible ? 0.5 : 0.0));
+    }
+
+    private void toggleText(String text) {
+        if (isTextVisible) {
+            textArea.setText("");
+        } else {
+            textArea.setText(text);
+        }
+        isTextVisible = !isTextVisible;
+    }
+
+
+
+    private void showHistogram() {
+        int[] data = DataGenerator.generateData(1000, 100);
+        Histogram histogram = new Histogram(data, 10);
+        histogramPanel.updateData(histogram.computeFrequency());
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Controller\MenuUI.java`:
+
+```java
+package Controller;
+
+import Constants.ConfigConstants;
+import DAO.CsvTransactionDao;
+
+import Service.Impl.TransactionServiceImpl;
+
+import Service.Impl.TransactionServiceImpl;
+
+import Utils.CacheUtil;
+import model.Transaction;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.table.DefaultTableModel;
+
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
+
+public class MenuUI {
+    private static final String FILE_PATH = CSV_PATH;
+    private static DefaultTableModel tableModel;
+    private static Vector<Vector<String>> allData = new Vector<>();
+    private static TransactionServiceImpl transactionService = new TransactionServiceImpl(new CsvTransactionDao());
+    private JTable table;  // 把table定义为静态字段
+    private HistogramPanelContainer histogramPanelContainer; // 添加 HistogramPanelContainer 实例
+    private JPanel rightPanel; // 右边的面板，用于显示搜索和表格界面或 AI 界面
+    private CardLayout cardLayout; // 用于管理界面切换的布局
+
+    public MenuUI(){
+        String[] columnNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注", "Modify", "Delete"};
+        tableModel = new DefaultTableModel(columnNames, 0);
+        table = new JTable(tableModel);
+
+        histogramPanelContainer = new HistogramPanelContainer(); // 初始化 HistogramPanelContainer
+        cardLayout = new CardLayout(); // 初始化 CardLayout
+        rightPanel = new JPanel(cardLayout); // 初始化 rightPanel
+    }
+
+    public JPanel createMainPanel() {
+        // 主面板，使用 BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
+
+        // 左边的面板，包含 Menu 和 AI 按钮
+        JPanel leftPanel = createLeftPanel();
+        mainPanel.add(leftPanel, BorderLayout.WEST);
+
+        // 右边的面板，用于显示搜索和表格界面或 AI 界面
+        setupRightPanel();
+        mainPanel.add(rightPanel, BorderLayout.CENTER);
+
+        return mainPanel;
+    }
+
+    // 创建左边的面板，包含 Menu 和 AI 按钮
+    private JPanel createLeftPanel() {
+        JPanel leftPanel = new JPanel(new GridLayout(2, 1));
+        JButton menuButton = new JButton("Menu");
+        JButton aiButton = new JButton("AI");
+
+        leftPanel.add(menuButton);
+        leftPanel.add(aiButton);
+
+        // 为 Menu 按钮添加 ActionListener
+        menuButton.addActionListener(e -> {
+            cardLayout.show(rightPanel, "Table"); // 切换到表格界面
+        });
+
+        // 为 AI 按钮添加 ActionListener
+        aiButton.addActionListener(e -> {
+            cardLayout.show(rightPanel, "Histogram"); // 切换到直方图界面
+        });
+
+        return leftPanel;
+    }
+
+    // 设置右边的面板，包含搜索和表格界面或 AI 界面
+    private void setupRightPanel() {
+        // 创建搜索和表格的面板
+        JPanel tablePanel = createTablePanel();
+
+        // 将表格面板和直方图面板添加到 rightPanel
+        rightPanel.add(tablePanel, "Table");
+        rightPanel.add(histogramPanelContainer, "Histogram");
+    }
+
+    // 创建搜索和表格的面板
+    private JPanel createTablePanel() {
+        JPanel tablePanel = new JPanel(new BorderLayout());
+
+        // 创建输入面板
+        JPanel inputPanel = createInputPanel();
+        tablePanel.add(inputPanel, BorderLayout.NORTH);
+
+        // 创建表格的滚动面板
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setPreferredSize(new Dimension(1000, 250));
+        table.setRowHeight(30); // 设置表格的行高
+
+        tablePanel.add(tableScrollPane, BorderLayout.CENTER);
+
+        // 为 Modify 列设置渲染器和编辑器
+        table.getColumnModel().getColumn(11).setCellRenderer(new ButtonRenderer());
+        table.getColumnModel().getColumn(11).setCellEditor(new ButtonEditor(this));
+
+        // 为 Delete 列设置渲染器和编辑器
+        table.getColumnModel().getColumn(12).setCellRenderer(new ButtonRenderer());
+        table.getColumnModel().getColumn(12).setCellEditor(new ButtonEditor(this));
+
+        // 加载 CSV 数据
+        loadCSVData(FILE_PATH);
+
+        return tablePanel;
+    }
+
+    // 创建输入面板
+    private JPanel createInputPanel() {
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+
+        // 创建输入字段
+        JTextField transactionTimeField = new JTextField(10); // 交易时间输入框
+        JTextField transactionTypeField = new JTextField(10); // 交易类型输入框
+        JTextField counterpartyField = new JTextField(10);    // 交易对方输入框
+        JTextField commodityField = new JTextField(10);      // 商品输入框
+        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"}); // 收/支下拉框
+        JTextField paymentMethodField = new JTextField(10);  // 支付方式输入框
+
+        // 添加标签和输入字段到输入面板
+        inputPanel.add(new JLabel("交易时间:"));
+        inputPanel.add(transactionTimeField);
+        inputPanel.add(new JLabel("交易类型:"));
+        inputPanel.add(transactionTypeField);
+        inputPanel.add(new JLabel("交易对方:"));
+        inputPanel.add(counterpartyField);
+        inputPanel.add(new JLabel("商品:"));
+        inputPanel.add(commodityField);
+        inputPanel.add(new JLabel("收/支:"));
+        inputPanel.add(inOutComboBox);
+        inputPanel.add(new JLabel("支付方式:"));
+        inputPanel.add(paymentMethodField);
+
+        // 创建 Search 和 Add 按钮
+        JButton searchButton = new JButton("Search");
+        JButton addButton = new JButton("Add");
+
+        // 将按钮添加到输入面板
+        inputPanel.add(searchButton);
+        inputPanel.add(addButton);
+
+        // 为 Search 按钮添加 ActionListener
+        searchButton.addActionListener(e -> {
+            // 获取输入字段的值
+            searchData(
+                    transactionTimeField.getText().trim(),
+                    transactionTypeField.getText().trim(),
+                    counterpartyField.getText().trim(),
+                    commodityField.getText().trim(),
+                    (String) inOutComboBox.getSelectedItem(),
+                    paymentMethodField.getText().trim()
+            );
+        });
+
+        // 为 Add 按钮添加 ActionListener
+        addButton.addActionListener(e -> {
+            // 弹出对话框，输入交易信息
+            showAddTransactionDialog();
+        });
+
+        return inputPanel;
+    }
+
+    // 弹出对话框，输入交易信息
+    private void showAddTransactionDialog() {
+        // 创建对话框
+        JDialog addDialog = new JDialog();
+        addDialog.setTitle("添加交易");
+        addDialog.setLayout(new GridLayout(12, 2)); // 11 个字段 + 1 个按钮行
+
+        // 创建输入字段
+        JTextField transactionTimeField = new JTextField();
+        JTextField transactionTypeField = new JTextField();
+        JTextField counterpartyField = new JTextField();
+        JTextField commodityField = new JTextField();
+        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"});
+        JTextField paymentAmountField = new JTextField();
+        JTextField paymentMethodField = new JTextField();
+        JTextField currentStatusField = new JTextField();
+        JTextField orderNumberField = new JTextField();
+        JTextField merchantNumberField = new JTextField();
+        JTextField remarksField = new JTextField();
+
+        // 添加标签和输入字段到对话框
+        addDialog.add(new JLabel("交易时间:"));
+        addDialog.add(transactionTimeField);
+        addDialog.add(new JLabel("交易类型:"));
+        addDialog.add(transactionTypeField);
+        addDialog.add(new JLabel("交易对方:"));
+        addDialog.add(counterpartyField);
+        addDialog.add(new JLabel("商品:"));
+        addDialog.add(commodityField);
+        addDialog.add(new JLabel("收/支:"));
+        addDialog.add(inOutComboBox);
+        addDialog.add(new JLabel("金额(元):"));
+        addDialog.add(paymentAmountField);
+        addDialog.add(new JLabel("支付方式:"));
+        addDialog.add(paymentMethodField);
+        addDialog.add(new JLabel("当前状态:"));
+        addDialog.add(currentStatusField);
+        addDialog.add(new JLabel("交易单号:"));
+        addDialog.add(orderNumberField);
+        addDialog.add(new JLabel("商户单号:"));
+        addDialog.add(merchantNumberField);
+        addDialog.add(new JLabel("备注:"));
+        addDialog.add(remarksField);
+
+        // 添加确认按钮
+        JButton confirmButton = new JButton("确认");
+        confirmButton.addActionListener(e -> {
+            // 获取输入字段的值，若为空则设置为默认值
+            String transactionTime = emptyIfNull(transactionTimeField.getText().trim());
+            String transactionType = emptyIfNull(transactionTypeField.getText().trim());
+            String counterparty = emptyIfNull(counterpartyField.getText().trim());
+            String commodity = emptyIfNull(commodityField.getText().trim());
+            String inOut = (String) inOutComboBox.getSelectedItem();
+            String paymentAmountText = paymentAmountField.getText().trim();
+            double paymentAmount = paymentAmountText.isEmpty() ? 0.0 : Double.parseDouble(paymentAmountText); // 处理空字符串
+            String paymentMethod = emptyIfNull(paymentMethodField.getText().trim());
+            String currentStatus = emptyIfNull(currentStatusField.getText().trim());
+            String orderNumber = emptyIfNull(orderNumberField.getText().trim());
+            String merchantNumber = emptyIfNull(merchantNumberField.getText().trim());
+            String remarks = emptyIfNull(remarksField.getText().trim());
+
+            // 创建 Transaction 对象
+            Transaction newTransaction = new Transaction(
+                    transactionTime,
+                    transactionType,
+                    counterparty,
+                    commodity,
+                    inOut,
+                    paymentAmount,
+                    paymentMethod,
+                    currentStatus,
+                    orderNumber,
+                    merchantNumber,
+                    remarks
+            );
+
+            try {
+                // 调用 TransactionServiceImpl 的 addTransaction 方法
+                transactionService.addTransaction(newTransaction);
+
+                // 重新加载 CSV 数据以更新表格
+                loadCSVData(TRANSACTION_CAFFEINE_KEY);
+
+                // 关闭对话框
+                addDialog.dispose();
+
+                JOptionPane.showMessageDialog(null, "交易添加成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "交易添加失败！", "错误", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        addDialog.add(confirmButton);
+
+        // 设置对话框大小并显示
+        addDialog.setSize(400, 300);
+        addDialog.setModal(true); // 设置为模态对话框
+        addDialog.setVisible(true);
+    }
+
+    // 加载 CSV 数据
+    public void loadCSVData(String caffeineKey) {
+        allData.clear();
+        tableModel.setRowCount(0);
+
+        CacheUtil<String, List<Transaction>, Exception> cache = transactionService.cache;
+
+//        CsvTransactionDao csvTransactionDao = new CsvTransactionDao();
+
+        List<Transaction> transactions = cache.get(caffeineKey);
+        for (Transaction transaction : transactions) {
+            Vector<String> row = createRowFromTransaction(transaction);
+            allData.add(row);
+            tableModel.addRow(row);
+        }
+    }
+
+    // 搜索数据
+    public void searchData(String query1, String query2, String query3, String query4, String query6, String query5) {
+        tableModel.setRowCount(0);
+        Transaction searchCriteria = new Transaction(query1, query2, query3, query4, query6, 0, query5, "", "", "", "");
+
+        try {
+            List<Transaction> transactions = transactionService.searchTransaction(searchCriteria);
+            for (Transaction transaction : transactions) {
+                Vector<String> row = createRowFromTransaction(transaction);
+                tableModel.addRow(row);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "查询失败！", "错误", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // 从 Transaction 对象创建表格行
+    private Vector<String> createRowFromTransaction(Transaction transaction) {
+        Vector<String> row = new Vector<>();
+        row.add(transaction.getTransactionTime());
+        row.add(transaction.getTransactionType());
+        row.add(transaction.getCounterparty());
+        row.add(transaction.getCommodity());
+        row.add(transaction.getInOut());
+        row.add(String.valueOf(transaction.getPaymentAmount()));
+        row.add(transaction.getPaymentMethod());
+        row.add(transaction.getCurrentStatus());
+        row.add(transaction.getOrderNumber());
+        row.add(transaction.getMerchantNumber());
+        row.add(transaction.getRemarks());
+        row.add("Modify"); // Modify 按钮
+        row.add("Delete"); // 添加 Delete 按钮
+        return row;
+    }
+
+    // 删除行
+    public void deleteRow(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < allData.size()) {
+            String orderNumber = allData.get(rowIndex).get(8).trim();
+            System.out.println("尝试删除的交易单号: " + orderNumber); // 打印交易单号
+
+            try {
+                if (transactionService.deleteTransaction(orderNumber)) {
+                    allData.remove(rowIndex);
+                    tableModel.removeRow(rowIndex);
+                    JOptionPane.showMessageDialog(null, "删除成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "删除失败：未找到对应的交易单号", "错误", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "删除失败！", "错误", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    // 编辑行
+    public void editRow(int rowIndex) {
+        System.out.println("编辑行: " + rowIndex);
+        if (rowIndex >= 0 && rowIndex < allData.size()) {
+            Vector<String> rowData = allData.get(rowIndex);
+
+            // 创建一个面板用于显示编辑字段
+            JPanel panel = new JPanel(new GridLayout(rowData.size() - 2, 2)); // 排除最后两列
+
+            // 创建字段数组，用于存储用户输入的值
+            JTextField[] fields = new JTextField[rowData.size() - 2]; // 排除最后两列
+
+            // 遍历 rowData，跳过最后两列（"Modify" 和 "Delete"）
+            for (int i = 0; i < rowData.size() - 2; i++) {
+                panel.add(new JLabel(tableModel.getColumnName(i))); // 添加列名标签
+                fields[i] = new JTextField(rowData .get(i)); // 添加输入字段
+                panel.add(fields[i]);
+            }
+
+            // 弹出对话框，让用户修改数据
+            int result = JOptionPane.showConfirmDialog(null, panel, "修改交易信息", JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                // 用户点击了确认按钮，更新交易信息
+                Transaction transaction = new Transaction(
+                        fields[0].getText().trim(), // 交易时间
+                        fields[1].getText().trim(), // 交易类型
+                        fields[2].getText().trim(), // 交易对方
+                        fields[3].getText().trim(), // 商品
+                        fields[4].getText().trim(), // 收/支
+                        Double.parseDouble(fields[5].getText().trim()), // 金额(元)
+                        fields[6].getText().trim(), // 支付方式
+                        fields[7].getText().trim(), // 当前状态
+                        fields[8].getText().trim(), // 交易单号
+                        fields[9].getText().trim(), // 商户单号
+                        fields[10].getText().trim() // 备注
+                );
+
+                try {
+                    // 调用 TransactionServiceImpl 的 changeTransaction 方法更新交易
+                    transactionService.changeTransaction(transaction);
+
+                    // 重新加载 CSV 数据以更新表格
+                    loadCSVData(TRANSACTION_CAFFEINE_KEY);
+
+                    JOptionPane.showMessageDialog(null, "修改成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "修改失败！", "错误", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
+    /**
+     * 查找对话框中的输入字段
+     *
+     * @param dialog 对话框
+     * @param index  输入字段的索引
+     * @return 输入字段
+     */
+    /**
+     * 查找容器中的输入字段
+     *
+     * @param container 容器（可以是 JPanel 或 JDialog）
+     * @param index     输入字段的索引
+     * @return 输入字段
+     */
+    private JTextField findTextField(Container container, int index) {
+        int count = 0;
+        for (Component component : container.getComponents()) {
+            if (component instanceof JTextField) {
+                if (count == index) {
+                    return (JTextField) component;
+                }
+                count++;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 查找对话框中的下拉框
+     *
+     * @param dialog 对话框
+     * @return 下拉框
+     */
+    /**
+     * 查找容器中的下拉框
+     *
+     * @param container 容器（可以是 JPanel 或 JDialog）
+     * @return 下拉框
+     */
+    private JComboBox<String> findComboBox(Container container) {
+        for (Component component : container.getComponents()) {
+            if (component instanceof JComboBox) {
+                return (JComboBox<String>) component;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 如果字段为 null，则返回空文本
+     *
+     * @param value 字段值
+     * @return 非 null 的字段值
+     */
+    private String emptyIfNull(String value) {
+        return value == null ? "" : value;
+    }
+
+    // 添加此方法以便测试时可以获取table
+    public JTable getTable() {
+        return table;
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\DAO\CsvTransactionDao.java`:
+
+```java
+package DAO;
+
+import Constants.ConfigConstants;
+import model.Transaction;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.input.BOMInputStream;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static Constants.ConfigConstants.CSV_PATH;
+
+public class CsvTransactionDao implements TransactionDao {
+    //避免每次都调用loadFromCSV() 方法
+    private List<Transaction> transactions;
+    private boolean isLoad= false;
+//HEAD 交易时间	交易类型	交易对方	商品	收/支	金额(元)	支付方式	当前状态	交易单号	商户单号	备注
+    //
+    @Override
+    public List<Transaction> loadFromCSV(String filePath) throws IOException {
+        try (
+                Reader reader = new InputStreamReader(
+                        new BOMInputStream(Files.newInputStream(Paths.get(filePath))),
+                        StandardCharsets.UTF_8)) {
+            CSVFormat format = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()    //根据首行的内容设置为表格的头
+                    .withIgnoreHeaderCase(false)  // 禁用忽略大小写
+                    .withTrim(false);             // 禁用自动trim（防止意外空格问题）
+
+            try (CSVParser csvParser = new CSVParser(reader, format)) {
+
+                List<Transaction> transactions = new ArrayList<>();
+                for (CSVRecord record : csvParser) {
+                    Transaction transaction = parseRecord(record);
+                    transactions.add(transaction);
+                }
+                reader.close();
+                this.transactions = transactions;
+                this.isLoad=true;
+                return transactions;
+            }
+        }
+    }
+
+
+    private Transaction parseRecord(CSVRecord record) {
+        return new Transaction(
+                record.get("交易时间"),
+                record.get("交易类型"),
+                record.get("交易对方"),
+                record.get("商品"),
+                record.get("收/支"),
+                Double.parseDouble(record.get("金额(元)").substring(1)),
+                record.get("支付方式"),
+                record.get("当前状态"),
+                record.get("交易单号"),
+                record.get("商户单号"),
+                record.get("备注")
+        );
+    }
+
+    // 根据交易单号删除交易记录
+    public boolean deleteTransaction(String filePath, String orderNumber) throws IOException {
+        if(!isLoad){ loadFromCSV(filePath);}
+
+        List<Transaction> updatedTransactions = transactions.stream()
+                .filter(t -> !t.getOrderNumber().trim().equals(orderNumber))
+                .collect(Collectors.toList());
+
+        if (transactions.size() == updatedTransactions.size()) {
+            return false;
+        }
+
+        writeTransactionsToCSV(filePath, updatedTransactions);
+        return true;
+    }
+
+    // 添加交易
+    public void addTransaction(String filePath, Transaction newTransaction) throws IOException {
+        boolean fileExists = Files.exists(Paths.get(filePath)) && Files.size(Paths.get(filePath)) > 0;
+
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+             CSVPrinter csvPrinter = new CSVPrinter(writer, fileExists ? getCsvFormatWithoutHeader() : getCsvFormatWithHeader(filePath))) {
+
+            csvPrinter.printRecord(
+                    newTransaction.getTransactionTime(),
+                    newTransaction.getTransactionType(),
+                    newTransaction.getCounterparty(),
+                    newTransaction.getCommodity(),
+                    newTransaction.getInOut(),
+                    "¥" + newTransaction.getPaymentAmount(),
+                    newTransaction.getPaymentMethod(),
+                    newTransaction.getCurrentStatus(),
+                    newTransaction.getOrderNumber(),
+                    newTransaction.getMerchantNumber(),
+                    newTransaction.getRemarks()
+            );
+
+            csvPrinter.flush();
+        }
+    }
+
+    // 统一写回 CSV
+    public void writeTransactionsToCSV(String filePath, List<Transaction> transactions) throws IOException {
+        // 1. 创建临时文件（确保与原文件同目录）
+        File targetFile = new File(filePath);
+        File tempFile = File.createTempFile("transaction_temp", ".csv", targetFile.getParentFile());
+
+        // 2. 写入数据到临时文件（使用 try-with-resources 确保资源释放）
+        try (BufferedWriter writer = Files.newBufferedWriter(tempFile.toPath());
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
+                     "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"))) {
+
+            for (Transaction t : transactions) {
+                csvPrinter.printRecord(
+                        t.getTransactionTime(),
+                        t.getTransactionType(),
+                        t.getCounterparty(),
+                        t.getCommodity(),
+                        t.getInOut(),
+                        "¥" + t.getPaymentAmount(),
+                        t.getPaymentMethod(),
+                        t.getCurrentStatus(),
+                        t.getOrderNumber(),
+                        t.getMerchantNumber(),
+                        t.getRemarks()
+                );
+            }
+            csvPrinter.flush(); // 强制刷盘
+        } catch (IOException e) {
+            tempFile.delete(); // 失败时删除临时文件
+            throw e;
+        }
+
+        // 3. 原子性替换原文件
+        Path source = tempFile.toPath();
+        Path target = Paths.get(filePath);
+        try {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.err.println("移动失败原因: " + e.getMessage());
+        }
+    }
+
+//    // 统一写回 CSV
+//    public void writeTransactionsToCSV(String filePath, List<Transaction> transactions) throws IOException {
+//        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath));
+//             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
+//                     "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注")))  {
+//
+//            for (Transaction t : transactions) {
+//                csvPrinter.printRecord(
+//                        t.getTransactionTime(),
+//                        t.getTransactionType(),
+//                        t.getCounterparty(),
+//                        t.getCommodity(),
+//                        t.getInOut(),
+//                        "¥" + t.getPaymentAmount(),
+//                        t.getPaymentMethod(),
+//                        t.getCurrentStatus(),
+//                        t.getOrderNumber(),
+//                        t.getMerchantNumber(),
+//                        t.getRemarks()
+//                );
+//            }
+//        }
+//    }
+
+    // 获取 CSV 格式（包含表头）
+    private CSVFormat getCsvFormatWithHeader(String filePath) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(filePath))) {
+            String headerLine = reader.readLine();
+            if (headerLine == null || headerLine.trim().isEmpty()) {
+                // 如果文件为空或不存在，返回默认表头
+                return CSVFormat.DEFAULT.withHeader(
+                        "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"
+                );
+            }
+            return CSVFormat.DEFAULT.withHeader(headerLine.split(",")).withTrim();
+        }
+    }
+
+    // 获取 CSV 格式（不包含表头）
+    private CSVFormat getCsvFormatWithoutHeader() {
+        return CSVFormat.DEFAULT.withTrim();
+    }
+
+    public boolean changeInformation(String orderNumber, String head, String value,String path) throws IOException{
+        if(isLoad==false){ loadFromCSV(path);}
+        for (int i = 0; i < transactions.size(); i++) {
+            if(transactions.get(i).getOrderNumber().trim().equals(orderNumber)){
+                Transaction newTransaction=transactions.get(i);
+                switch (head){
+                    case "transactionTime" :{
+                        newTransaction.setTransactionTime(value);
+                        break;}
+                    case "transactionType" :{
+                        newTransaction.setTransactionType(value);
+                        break;
+                    }
+                    case "counterparty" :{
+                        newTransaction.setCounterparty(value);
+                        break;
+                    } case "commodity" :{
+                        newTransaction.setCommodity(value);
+                        break;
+                    } case "inOut" :{
+                        newTransaction.setInOut(value);
+                        break;
+                    } case "paymentAmount" :{
+                        newTransaction.setPaymentAmount(Double.parseDouble(value));
+                        break;
+                    } case "paymentMethod" :{
+                        newTransaction.setPaymentMethod(value);
+                        break;
+                    } case "currentStatus" :{
+                        newTransaction.setCurrentStatus(value);
+                        break;
+                    } case "orderNumber" :{
+                        newTransaction.setOrderNumber(value);
+                        break;
+                    } case "merchantNumber" :{
+                        newTransaction.setMerchantNumber(value);
+                        break;
+                    } case "remarks" :{
+                        newTransaction.setRemarks(value);
+                        break;
+                    } default:{
+                        System.err.println("error head");
+                    }
+                }
+
+                boolean flag=deleteTransaction(path,transactions.get(i).getOrderNumber());
+                if(flag) {
+                    addTransaction(path,newTransaction);
+                    System.out.println("success to delete");
+                }
+                else System.err.println("failed to delete");
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public List<Transaction> getAllTransactions() throws IOException {
+        return List.of();
+    }
+
+    @Override
+    public void addTransaction(Transaction transaction) throws IOException {
+
+    }
+
+    @Override
+    public boolean deleteTransaction(String orderNumber) throws IOException {
+        return false;
+    }
+
+    @Override
+    public boolean updateTransaction(String orderNumber, String fieldName, String newValue) throws IOException {
+        return false;
+    }
+
+    @Override
+    public Transaction getTransactionByOrderNumber(String orderNumber) throws IOException {
+        return null;
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\DAO\TransactionDao.java`:
+
+```java
+package DAO;
+
+import model.Transaction;
+
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * Interface for Data Access Object (DAO) operations related to Transactions.
+ * Defines the contract for loading, adding, deleting, and updating transaction data.
+ */
+public interface
+TransactionDao {
+
+    //HEAD 交易时间	交易类型	交易对方	商品	收/支	金额(元)	支付方式	当前状态	交易单号	商户单号	备注
+        //
+    List<Transaction> loadFromCSV(String filePath) throws IOException;
+
+    /**
+     * Loads all transactions from the configured data source.
+     *
+     * @return A list of all transactions.
+     * @throws IOException If an I/O error occurs during loading.
+     */
+    List<Transaction> getAllTransactions() throws IOException;
+
+    /**
+     * Adds a new transaction to the data source.
+     *
+     * @param transaction The new transaction to add.
+     * @throws IOException If an I/O error occurs during saving.
+     */
+    void addTransaction(Transaction transaction) throws IOException;
+
+    /**
+     * Deletes a transaction identified by its order number.
+     *
+     * @param orderNumber The unique order number of the transaction to delete.
+     * @return true if a transaction was found and deleted, false otherwise.
+     * @throws IOException If an I/O error occurs during loading or saving.
+     */
+    boolean deleteTransaction(String orderNumber) throws IOException;
+
+    /**
+     * Updates a specific field of an existing transaction identified by its order number.
+     *
+     * @param orderNumber The unique order number of the transaction to update.
+     * @param fieldName   The name of the field to update (e.g., "transactionType", "paymentAmount").
+     * @param newValue    The new value for the specified field.
+     * @return true if the transaction was found and updated, false otherwise.
+     * @throws IOException             If an I/O error occurs during loading or saving.
+     * @throws NumberFormatException   If updating 'paymentAmount' and newValue is not a valid double.
+     * @throws IllegalArgumentException If the fieldName is invalid.
+     */
+    boolean updateTransaction(String orderNumber, String fieldName, String newValue) throws IOException;
+
+    /**
+     * Retrieves a transaction by its unique order number.
+     * (Optional but often useful)
+     *
+     * @param orderNumber The unique order number.
+     * @return The Transaction object if found, null otherwise.
+     * @throws IOException If an I/O error occurs during loading.
+     */
+    Transaction getTransactionByOrderNumber(String orderNumber) throws IOException;
+
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Interceptor\Login\LoginDialog.java`:
+
+```java
+package Interceptor.Login;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class LoginDialog extends JDialog {
+    private boolean loginSuccessful = false;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+    private UserService userService = new UserService();
+
+    public LoginDialog() {
+        setTitle("用户登录");
+        setLayout(new GridLayout(3, 2));
+        setModal(true);
+        setSize(300, 150);
+
+        // 输入组件
+        usernameField = new JTextField();
+        passwordField = new JPasswordField();
+        JButton loginButton = new JButton("登录");
+        JButton cancelButton = new JButton("取消");
+
+        // 添加组件
+        add(new JLabel("用户名:"));
+        add(usernameField);
+        add(new JLabel("密码:"));
+        add(passwordField);
+        add(loginButton);
+        add(cancelButton);
+
+        // 登录按钮逻辑
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword()).trim();
+
+            if (userService.authenticate(username, password)) {
+                loginSuccessful = true;
+                dispose(); // 关闭对话框
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "用户名或密码错误！",
+                        "登录失败",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                clearFields(); // 登录失败后清空文本框
+            }
+        });
+
+        // 取消按钮逻辑
+        cancelButton.addActionListener(e -> {
+            dispose();
+            System.exit(0);
+        });
+
+        setLocationRelativeTo(null); // 居中显示
+    }
+
+    // 清空文本框的方法
+    private void clearFields() {
+        usernameField.setText("");
+        passwordField.setText("");
+        usernameField.requestFocus(); // 焦点回到用户名输入框
+    }
+
+    public boolean isLoginSuccessful() {
+        return loginSuccessful;
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Interceptor\Login\UserService.java`:
+
+```java
+package Interceptor.Login;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class UserService {
+    // 模拟用户数据库（用户名 -> 密码哈希值）
+    private static final Map<String, String> userDatabase = new HashMap<>();
+
+    public UserService() {
+        // 初始化测试用户（密码为 "admin123" 的 SHA-256 哈希）
+        userDatabase.put("admin", "admin123");
+    }
+
+    public boolean authenticate(String username, String password) {
+        if (username.isEmpty() || password.isEmpty()) return false;
+        String storedHash = userDatabase.get(username);
+        return password.equals(storedHash);
+    }
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Main.java`:
+
+```java
+import javax.swing.*;
+
+import Controller.MenuUI;
+import DAO.CsvTransactionDao;
+import Interceptor.Login.LoginDialog;
+import Service.Impl.TransactionServiceImpl;
+
+public class Main {
+    public static void main(String[] args) {
+        // 初始化服务（依赖注入）
+        TransactionServiceImpl.csvTransactionDao = new CsvTransactionDao();
+
+        // 在事件调度线程中启动 GUI（Swing 规范）
+        SwingUtilities.invokeLater(() -> {
+            // 1. 显示登录对话框
+            LoginDialog loginDialog = new LoginDialog();
+            loginDialog.setVisible(true);
+
+            // 2. 登录成功后再显示主界面
+            if (loginDialog.isLoginSuccessful()) {
+                MenuUI menuUI = new MenuUI();
+                JPanel mainPanel = menuUI.createMainPanel();
+                showMainUI(mainPanel);
+            } else {
+                System.exit(0); // 登录失败退出
+            }
+        });
+    }
+
+    /**
+     * 显示主界面窗口
+     */
+    private static void showMainUI(JPanel panel) {
+        JFrame frame = new JFrame("交易管理系统");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(1200, 600);
+        frame.setLocationRelativeTo(null); // 窗口居中
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Service\AIservice\AIAnalyzerThread.java`:
+
+```java
+package Service.AIservice;
+
+public class AIAnalyzerThread implements Runnable {
+    private final String userRequest;
+    private final String filePath;
+    private final String startTimeStr;
+    private final String endTimeStr;
+
+    public AIAnalyzerThread(String userRequest, String filePath,String startTimeStr, String endTimeStr) {
+        this.userRequest = userRequest;
+        this.filePath = filePath;
+        this.startTimeStr = startTimeStr;
+        this.endTimeStr = endTimeStr;
+    }
+
+    @Override
+    public void run() {
+        String result = new AITransactionService().analyzeTransactions(userRequest, filePath, startTimeStr, endTimeStr);
+        System.out.println("AI分析结果: " + result);
+        // TODO: 如果是UI程序，可用 SwingUtilities.invokeLater() 更新UI组件
+    }
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Service\AIservice\AITransactionService.java`:
+
+```java
+package Service.AIservice;
+import Service.Impl.TransactionServiceImpl;
+import Service.TransactionService;
+import Constants.ConfigConstants;
+import DAO.CsvTransactionDao;
+import Utils.CacheUtil;
+import model.Transaction;
+import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
+import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
+import com.volcengine.ark.runtime.model.completion.chat.ChatMessageRole;
+import com.volcengine.ark.runtime.service.ArkService;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.concurrent.*;
+
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
+
+public class AITransactionService {
+    private static final String API_KEY = System.getenv("ARK_API_KEY");
+    private static final ArkService service = ArkService.builder()
+            .timeout(Duration.ofSeconds(1800))
+            .connectTimeout(Duration.ofSeconds(20))
+            .baseUrl("https://ark.cn-beijing.volces.com/api/v3")
+            .apiKey(API_KEY)
+            .build();
+
+    private final CsvTransactionDao transactionDao = new CsvTransactionDao();
+
+    /**
+     * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
+     */
+    private final CacheUtil<String, List<Transaction>, Exception> cache;
+    /**
+     * 重构构造器初始化Caffeine
+     */
+    public AITransactionService()  {
+        // 1. 注入Dao层接口
+        TransactionServiceImpl.csvTransactionDao = transactionDao;
+        // 2. 初始化CacheUtil
+        this.cache = new CacheUtil<String, List<Transaction>, Exception>(
+                key -> {
+                    try {
+                        return transactionDao.loadFromCSV(CSV_PATH);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, // 定义缓存未命中的执行逻辑
+                1, 10, 1
+        );
+    }
+
+    public String analyzeTransactions(String userRequest, String filePath, String startTimeStr, String endTimeStr) {
+        try {
+            List<Transaction> transactions = cache.get(TRANSACTION_CAFFEINE_KEY);
+            List<String> transactionDetails = formatTransactions(transactions, startTimeStr, endTimeStr);
+
+            String aiPrompt = userRequest + "\n" + "以下是我的账单信息：\n" + String.join("\n", transactionDetails);
+            return askAi(aiPrompt);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "AI分析失败: " + e.getMessage();
+        }
+    }
+
+
+    //private List<String> formatTransactions(List<Transaction> transactions) {
+        //return transactions.stream().map(t -> String.format(
+               // "交易时间: %s, 商品: %s, 收/支: %s, 金额: %.2f元",
+               // t.getTransactionTime(),
+               // t.getCommodity(),
+               // t.getInOut(),
+               // t.getPaymentAmount()
+        //)).collect(Collectors.toList());
+    //}
+
+    public List<String> formatTransactions(List<Transaction> transactions, String startTimeStr, String endTimeStr) {
+        LocalDateTime startTime = parseDateTime(startTimeStr);
+        LocalDateTime endTime = (endTimeStr == null || endTimeStr.isEmpty())
+                ? LocalDateTime.now()
+                : parseDateTime(endTimeStr);
+
+        if (startTime == null) {
+            throw new IllegalArgumentException("起始时间格式不正确");
+        }
+
+        List<Transaction> filtered = transactions.stream()
+                .filter(t -> {
+                    LocalDateTime tTime = parseDateTime(t.getTransactionTime());
+                    return tTime != null && !tTime.isBefore(startTime) && !tTime.isAfter(endTime);
+                })
+                .collect(Collectors.toList());
+
+        Map<String, double[]> grouped = new HashMap<>();
+        for (Transaction t : filtered) {
+            String counterparty = t.getCounterparty();
+            double amount = t.getInOut().equals("支出") ? -t.getPaymentAmount() : t.getPaymentAmount();
+            grouped.putIfAbsent(counterparty, new double[]{0.0, 0});
+            grouped.get(counterparty)[0] += amount;
+            grouped.get(counterparty)[1] += 1;
+        }
+
+        List<String> results = grouped.entrySet().stream()
+                .map(e -> {
+                    String cp = e.getKey();
+                    double net = e.getValue()[0];
+                    int count = (int) e.getValue()[1];
+                    String inOut = net >= 0 ? "收入" : "支出";
+                    return String.format("交易对方: %s, 收/支: %s, 金额: %.2f元，交易次数: %d",
+                            cp, inOut, Math.abs(net), count);
+                })
+                .collect(Collectors.toList());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+        results.add(String.format("交易时间范围：%s - %s",
+                formatter.format(startTime), formatter.format(endTime)));
+
+        return results.isEmpty() ? List.of("该时间段内没有交易记录。") : results;
+    }
+
+
+
+
+    //private LocalDateTime parseDateTime(String timeStr) {
+        // 你可以按实际情况支持不同格式，比如 yyyy/MM/dd HH:mm 或 yyyy-MM-dd HH:mm:ss
+        //List<String> patterns = Arrays.asList("yyyy/MM/dd HH:mm","yyyy/MM/dd H:mm", "yyyy/M/dd H:mm","yyyy/M/dd HH:mm","yyyy/M/d H:mm","yyyy/M/d HH:mm","yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd");
+
+        //for (String pattern : patterns) {
+            //try {
+                //DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                //return LocalDateTime.parse(timeStr, formatter);
+            //} catch (Exception ignored) {}
+        //}
+        //return null;
+    //}
+        private LocalDateTime parseDateTime(String timeStr) {
+            if (timeStr == null || timeStr.trim().isEmpty()) return null;
+
+            // 中文空格等统一清理
+            timeStr = timeStr.trim().replaceAll("\\s+", " ");
+
+            // 如果只有日期，补 00:00
+            if (timeStr.matches("\\d{4}/\\d{1,2}/\\d{1,2}")) {
+                timeStr += " 00:00";
+            }
+
+            // 多种时间格式尝试解析
+            List<String> patterns = Arrays.asList(
+                    "yyyy/M/d H:mm", "yyyy/M/d HH:mm",
+                    "yyyy/MM/d H:mm", "yyyy/MM/d HH:mm",
+                    "yyyy/M/dd H:mm", "yyyy/M/dd HH:mm",
+                    "yyyy/MM/dd H:mm", "yyyy/MM/dd HH:mm",
+                    "yyyy-MM-dd HH:mm:ss",
+                    "yyyy/MM/dd"
+            );
+
+            for (String pattern : patterns) {
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                    return LocalDateTime.parse(timeStr, formatter);
+                } catch (Exception ignored) {}
+            }
+
+            return null;
+        }
+
+
+
+
+
+
+    public String askAi(String prompt) {
+        try {
+            List<ChatMessage> messages = List.of(
+                    ChatMessage.builder().role(ChatMessageRole.USER).content(prompt).build()
+            );
+
+            ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
+                    .model("ep-20250308174053-7pbkq")
+                    .messages(messages)
+                    .build();
+
+            return (String) service.createChatCompletion(chatCompletionRequest)
+                    .getChoices().get(0).getMessage().getContent();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "AI请求失败: " + e.getMessage();
+        }
+    }
+
+    public void runAiInThread(String userRequest, String filePath,String startTimeStr, String endTimeStr) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            String result = analyzeTransactions(userRequest, filePath,startTimeStr, endTimeStr);
+            System.out.println("AI分析结果: " + result);
+        });
+        executor.shutdown();
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Service\AIservice\ColledgeStudentThread.java`:
+
+```java
+package Service.AIservice;
+
+import java.io.IOException;
+
+public class ColledgeStudentThread implements Runnable{
+//    private final int userRequest;
+    private final String filePath;
+    public String budgetRange;
+    public ColledgeStudentThread( String filePath) {
+//        this.userRequest = userRequest;
+        this.filePath = filePath;
+    }
+
+    @Override
+    public void run(){
+        CollegeStudentNeeds collegeStudentNeeds=new CollegeStudentNeeds();
+        try {
+            collegeStudentNeeds.generateBudget(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Service\AIservice\CollegeStudentNeeds.java`:
+
+```java
+package Service.AIservice;
+
+import Constants.ConfigConstants;
+import DAO.CsvTransactionDao;
+import Service.Impl.TransactionServiceImpl;
+import Utils.CacheUtil;
+import model.Transaction;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
+
+public class CollegeStudentNeeds {
+    private final String requestBudge="我是一名预算有限的大学生，请根据下面我给出的花费，帮助我给下周预算范围，必须以[最低预算，最高预算],的方式给出回答，不能有多余的回复。";
+    private final String requestTips="我是一名预算有限的大学生，请给我推荐一些省钱方法。";
+
+    private final String requestRecognition="下面我将给你一些账单的信息，请推测这个账单是什么方面的消费: ";
+    CsvTransactionDao dao;
+
+    /**
+     * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
+     */
+    private final CacheUtil<String, List<Transaction>, Exception> cache;
+
+    public CollegeStudentNeeds() {
+        TransactionServiceImpl.csvTransactionDao = dao;
+        this.cache = new CacheUtil<String, List<Transaction>, Exception>(
+                key -> {
+                    try {
+                        return dao.loadFromCSV(CSV_PATH);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, // 定义缓存未命中的执行逻辑
+                1, 10, 1
+        );
+
+    }
+    public String RecognizeTransaction(Transaction transaction){
+        StringBuilder sb=new StringBuilder();
+        sb.append("交易类型:").append(transaction.getTransactionType()+",").append("交易对方").append(transaction.getCounterparty()+",")
+                .append("商品:").append(transaction.getCommodity()+",").append("收/支:").append(transaction.getInOut()+",")
+                        .append("金额(元):").append(transaction.getPaymentAmount()+",").append("支付方式").append(transaction.getPaymentMethod()+",").append("备注:").append(transaction.getRemarks());
+        return  new AITransactionService().askAi(requestRecognition+sb.toString());
+    }
+
+    public String generateTipsForSaving(){
+        return  new AITransactionService().askAi(requestTips);
+    }
+    //按周统计已有的支出，依靠ai得到下周的预算
+    public double[] generateBudget(String path) throws IOException {
+        List<Transaction> transactions=cache.get(TRANSACTION_CAFFEINE_KEY);
+
+        int size=transactions.size();
+        if(size==0||size==1) return new double[]{-1,-1};
+        int count=1;
+        int base=0;
+        int index=0;//指示首个适合当基准的时间点
+        for (index = 0; index < size; index++) {
+            int data=convertDateToNumber(transactions.get(index).getTransactionTime().split(" ")[0]);
+            if(data>0){
+                base=data;
+                break;
+            }
+        }
+        List<Double> list=new ArrayList<>();
+        double weekConsumption=0;
+        for (int i = 0; i < size; i++) {
+            int data=convertDateToNumber(transactions.get(i).getTransactionTime().split(" ")[0]);
+            if(data<0) continue;
+            if((base-data>=0&&base-data<7)&&transactions.get(i).getInOut().equals("支出")){
+                weekConsumption+=transactions.get(i).getPaymentAmount();
+            }else if(base-data>=7){
+                base=data;
+                list.add(weekConsumption);
+                count++;
+                weekConsumption=0;
+                if(transactions.get(i).getInOut().equals("支出")){
+                    weekConsumption+=transactions.get(i).getPaymentAmount();
+                }
+            }
+        }
+        StringBuilder stringBuilder=new StringBuilder();
+        for (int i = 0; i < count-1; i++) {
+            stringBuilder.append("第");
+            stringBuilder.append(i);
+            stringBuilder.append("周:花费");
+            stringBuilder.append(list.get(i));
+            stringBuilder.append("元;");
+        }
+        String answer=new AITransactionService().askAi(requestBudge+stringBuilder.toString());
+        System.out.println(answer);
+        double[] ret=new double[2];
+        ret=parseDoubleArrayFromString(answer);
+        return ret;
+    }
+
+    private int convertDateToNumber(String date) {
+        // format yyyy/MM/dd
+        String[] parts = date.split("/");
+        if (parts.length != 3) {
+            return -1; // Invalid date format
+        }
+        try {
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            int day = Integer.parseInt(parts[2]);
+            int days = day;
+            int[] daysInMonth = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}; // Days in each month
+            if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+                daysInMonth[2] = 29; // February has 29 days in a leap year
+            }
+            for (int i = 1; i < month; i++) {
+                days += daysInMonth[i];
+            }
+            return year * 365 + (year / 4 - year / 100 + year / 400) + days;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+    public double[] parseDoubleArrayFromString(String input) {
+        int length=input.length();
+        int l=0,rightindex=input.length();
+        // 1. 去除首尾括号
+        for (int i = 0; i < length; i++) {
+            if(input.charAt(i)<58&&input.charAt(i)>47){
+                l=i;
+                break;
+            }
+        }
+        for (int r =length-1 ; r >0; r--) {
+            if(input.charAt(r)<58&&input.charAt(r)>47){
+                rightindex=r;
+                break;
+            }
+        }
+        String content = input.substring(l, rightindex+1 ); // 获取 "1.1, 11.0" 或 " 2.5 ,3.14 , -0.5 "
+
+        // 2. 按逗号分割
+        String[] numberStrings1 = content.split("，"); // 得到 ["1.1", " 11.0"] 或 [" 2.5 ", "3.14 ", " -0.5 "]
+        String[] numberStrings2 = content.split(","); // 得到 ["1.1", " 11.0"] 或 [" 2.5 ", "3.14 ", " -0.5 "]
+        String[] numberStrings= numberStrings1.length> numberStrings2.length?numberStrings1:numberStrings2;
+//        System.out.println(numberStrings[0]);
+//        System.out.println(numberStrings[1]);
+        // 3. & 4. 遍历、清理、解析并存储
+        List<Double> numberList = new ArrayList<>();
+        try {
+            for (String numStr : numberStrings) {
+                String trimmedStr = numStr.trim(); // 去除首尾空格
+                if (!trimmedStr.isEmpty()) { // 避免分割后产生空字符串（例如 "[1.1, , 2.2]"）
+                    numberList.add(Double.parseDouble(trimmedStr)); // 解析为 double
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("错误：字符串无法解析为 double 类型。");
+            return null; // 或者抛出异常
+        }
+
+        // 将 List<Double> 转换为 double[]
+        double[] result = new double[numberList.size()];
+        for (int i = 0; i < numberList.size(); i++) {
+            result[i] = numberList.get(i);
+        }
+        return result;
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Service\Impl\TransactionServiceImpl.java`:
+
+```java
+package Service.Impl;
+
+import Constants.ConfigConstants;
+import DAO.CsvTransactionDao;
+import Service.TransactionService;
+import Utils.CacheUtil;
+import model.Transaction;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+import static Constants.ConfigConstants.CSV_PATH;
+
+public class TransactionServiceImpl implements TransactionService {
+    public static CsvTransactionDao csvTransactionDao;
+
+    /**
+     * 定义缓存：键为固定值（因为只有一个CSV文件），值为交易列表
+     */
+    public final CacheUtil<String, List<Transaction>, Exception> cache;
+
+    /**
+     * 通过构造函数注入路径和csvTransactionDao
+     * @param csvTransactionDao
+     * @throws IOException
+     */
+    public TransactionServiceImpl(CsvTransactionDao csvTransactionDao)  {
+        // 1. 注入Dao层接口
+        TransactionServiceImpl.csvTransactionDao = csvTransactionDao;
+        // 2. 初始化CacheUtil
+        this.cache = new CacheUtil<String, List<Transaction>, Exception>(
+                key -> {
+                    try {
+                        return csvTransactionDao.loadFromCSV(CSV_PATH);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, // 定义缓存未命中的执行逻辑
+                1, 10, 1
+        );
+    }
+
+    /**
+     * 从transactions缓存中读取transactions如果没有则从csv文件中找
+     * @return
+     * @throws IOException
+     */
+    private List<Transaction> getAllTransactions() throws Exception {
+        return cache.get(TRANSACTION_CAFFEINE_KEY);
+    }
+
+
+    /**
+     * 新增交易
+     * @param transaction
+     */
+    @Override
+    public void addTransaction(Transaction transaction) throws IOException {
+        // 设置交易时间为当前时间
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        String currentTime = now.format(formatter);
+        transaction.setTransactionTime(currentTime);
+
+        // 调用 DAO 层方法添加交易
+        csvTransactionDao.addTransaction(CSV_PATH, transaction);
+    }
+
+    @Override
+    public void changeTransaction(Transaction updatedTransaction) throws Exception {
+        // 1. 加载所有交易记录 先加载 caffeine存储的缓存
+        List<Transaction> allTransactions = getAllTransactions();
+
+        // 2. 查找并修改目标交易
+        boolean found = false;
+        for (int i = 0; i < allTransactions.size(); i++) {
+            Transaction t = allTransactions.get(i);
+            // 根据交易单号匹配记录（唯一标识）
+            if (t.getOrderNumber().equals(updatedTransaction.getOrderNumber())) {
+                // 3. 更新非空字段
+                updateTransactionFields(t, updatedTransaction);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            throw new IllegalArgumentException("未找到交易单号: " + updatedTransaction.getOrderNumber());
+        }
+        // 使用事务将写后数据写回csv文件
+        csvTransactionDao.writeTransactionsToCSV(CSV_PATH, allTransactions);
+        // 修改后使缓存失效 （删缓存）
+        cache.invalidate("transactions");
+    }
+
+    /**
+     *  辅助方法：更新非空字段
+     * @param target
+     * @param source
+     */
+    private void updateTransactionFields(Transaction target, Transaction source) {
+        if (source.getTransactionTime() != null && !source.getTransactionTime().isEmpty()) {
+            target.setTransactionTime(source.getTransactionTime());
+        }
+        if (source.getTransactionType() != null && !source.getTransactionType().isEmpty()) {
+            target.setTransactionType(source.getTransactionType());
+        }
+        if (source.getCounterparty() != null && !source.getCounterparty().isEmpty()) {
+            target.setCounterparty(source.getCounterparty());
+        }
+        if (source.getCommodity() != null && !source.getCommodity().isEmpty()) {
+            target.setCommodity(source.getCommodity());
+        }
+        if (source.getInOut() != null && !source.getInOut().isEmpty()) {
+            target.setInOut(source.getInOut());
+        }
+        if (source.getPaymentAmount() != 0.0) { // 假设金额为0表示未修改
+            target.setPaymentAmount(source.getPaymentAmount());
+        }
+        if (source.getPaymentMethod() != null && !source.getPaymentMethod().isEmpty()) {
+            target.setPaymentMethod(source.getPaymentMethod());
+        }
+        if (source.getCurrentStatus() != null && !source.getCurrentStatus().isEmpty()) {
+            target.setCurrentStatus(source.getCurrentStatus());
+        }
+        if (source.getMerchantNumber() != null && !source.getMerchantNumber().isEmpty()) {
+            target.setMerchantNumber(source.getMerchantNumber());
+        }
+        if (source.getRemarks() != null && !source.getRemarks().isEmpty()) {
+            target.setRemarks(source.getRemarks());
+        }
+    }
+
+    /**
+     * 根据订单号删除交易 (若成功则返回true)
+     * @param orderNumber
+     */
+    @Override
+    public boolean deleteTransaction(String orderNumber) throws Exception {
+        boolean result = csvTransactionDao.deleteTransaction(CSV_PATH, orderNumber);
+        if (!result) {
+            throw new Exception("未找到交易单号: " + orderNumber); // 或记录日志
+        }
+        cache.invalidate("transactions");
+        return result;
+    }
+
+    /**
+     * 按照查询条件查询交易信息
+     * @param searchCriteria
+     * @return
+     */
+    @Override
+    public List<Transaction> searchTransaction(Transaction searchCriteria) {
+        try {
+            // 1. 读取所有交易记录 首先读取caffeine
+            List<Transaction> allTransactions = getAllTransactions();
+
+            // 2. 动态模糊匹配
+            List<Transaction> matched = new ArrayList<>();
+            for (Transaction t : allTransactions) {
+                if (matchesCriteria(t, searchCriteria)) {
+                    matched.add(t);
+                }
+            }
+
+            // 3. 按交易时间倒序排序
+            matched.sort((t1, t2) -> compareTransactionTime(t2.getTransactionTime(), t1.getTransactionTime()));
+
+            return matched;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return List.of(); // 实际应用中应处理异常
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    /**
+     * 辅助方法:判断单个交易记录是否匹配条件
+     * @param transaction
+     * @param criteria
+     * @return
+     */
+    private boolean matchesCriteria(Transaction transaction, Transaction criteria) {
+        return (criteria.getTransactionTime() == null || containsIgnoreCase(transaction.getTransactionTime(), criteria.getTransactionTime()))
+                && (criteria.getTransactionType() == null || containsIgnoreCase(transaction.getTransactionType(), criteria.getTransactionType()))
+                && (criteria.getCounterparty() == null || containsIgnoreCase(transaction.getCounterparty(), criteria.getCounterparty()))
+                && (criteria.getCommodity() == null || containsIgnoreCase(transaction.getCommodity(), criteria.getCommodity()))
+                && (criteria.getInOut() == null || containsIgnoreCase(transaction.getInOut(), criteria.getInOut()))
+                && (criteria.getPaymentMethod() == null || containsIgnoreCase(transaction.getPaymentMethod(), criteria.getPaymentMethod()));
+    }
+
+    /**
+     * 辅助方法：字符串模糊匹配（空条件视为匹配）
+     * @param source
+     * @param target
+     * @return
+     */
+    private boolean containsIgnoreCase(String source, String target) {
+        if (target == null || target.trim().isEmpty()) return true; // 空条件不参与筛选
+        if (source == null) return false;
+        return source.toLowerCase().contains(target.toLowerCase().trim());
+    }
+
+    /**
+     * 辅助方法：安全的时间比较（处理 null 值）
+     * @param time1
+     * @param time2
+     * @return
+     */
+    private int compareTransactionTime(String time1, String time2) {
+        if (time1 == null && time2 == null) return 0;
+        if (time1 == null) return -1;
+        if (time2 == null) return 1;
+        return time2.compareTo(time1); // 倒序排序
+    }
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Service\TransactionService.java`:
+
+```java
+package Service;
+
+import model.Transaction;
+
+import java.io.IOException;
+import java.util.List;
+
+public interface TransactionService {
+
+    /**
+     * 新增交易
+     * @param transaction
+     */
+    void addTransaction(Transaction transaction) throws IOException;
+
+    /**
+     * 修改交易
+     * @param transaction
+     */
+    void changeTransaction(Transaction transaction) throws Exception;
+
+    /**
+     * 根据订单号删除交易
+     * @param orderNumber
+     */
+    boolean deleteTransaction(String orderNumber) throws Exception;
+
+    /**
+     * 根据用户输入信息查询交易
+     * @param transaction
+     * @return
+     */
+    List<Transaction> searchTransaction(Transaction transaction);
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Service\deepseek\ChatCompletionsExample.java`:
+
+```java
+package Service.deepseek;
+
+import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
+import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
+import com.volcengine.ark.runtime.model.completion.chat.ChatMessageRole;
+import com.volcengine.ark.runtime.service.ArkService;
+import okhttp3.ConnectionPool;
+import okhttp3.Dispatcher;
+import org.apache.commons.lang.StringUtils;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+public class ChatCompletionsExample {
+    static String apiKey = System.getenv("ARK_API_KEY");
+    static ConnectionPool connectionPool = new ConnectionPool(5, 1, TimeUnit.SECONDS);
+    static Dispatcher dispatcher = new Dispatcher();
+    // The output time of the reasoning model is relatively long. Please increase the timeout period.//
+    static ArkService service = ArkService.builder().timeout(Duration.ofSeconds(1800)).connectTimeout(Duration.ofSeconds(20)).dispatcher(dispatcher).connectionPool(connectionPool).baseUrl("https://ark.cn-beijing.volces.com/api/v3").apiKey(apiKey).build();
+
+//    public static void main(String[] args) {
+//        System.out.println(" [Recommended]----- streaming request -----");
+//        final List<ChatMessage> streamMessages = new ArrayList<>();
+//        final ChatMessage streamUserMessage = ChatMessage.builder().role(ChatMessageRole.USER).content("请回答15.11和15.9哪个大？").build();
+//        streamMessages.add(streamUserMessage);
+//        ChatCompletionRequest streamChatCompletionRequest = ChatCompletionRequest.builder()
+//                .model("ep-20250308174053-7pbkq")
+//                .messages(streamMessages)
+//                .build();
+//        service.streamChatCompletion(streamChatCompletionRequest)
+//                .doOnError(Throwable::printStackTrace)
+//                .blockingForEach(
+//                        delta -> {
+//                            if (!delta.getChoices().isEmpty()) {
+//                                if (StringUtils.isNotEmpty(delta.getChoices().get(0).getMessage().getReasoningContent())) {
+//                                    System.out.print(delta.getChoices().get(0).getMessage().getReasoningContent());
+//                                } else {
+//                                    System.out.print(delta.getChoices().get(0).getMessage().getContent());
+//                                }
+//                            }
+//                        }
+//                );
+//        System.out.println(" ----- standard request -----");
+//        final List<ChatMessage> messages = new ArrayList<>();
+//        final ChatMessage userMessage = ChatMessage.builder().role(ChatMessageRole.USER).content("常见的十字花科植物有哪些？").build();
+//        messages.add(userMessage);
+//        ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
+//                .model("ep-20250308174053-7pbkq")
+//                .messages(messages)
+//                .build();
+//        service.createChatCompletion(chatCompletionRequest).getChoices().forEach(
+//                choice -> {
+//                    System.out.println(choice.getMessage().getReasoningContent());
+//                    System.out.println(choice.getMessage().getContent());
+//                }
+//        );
+//        // shutdown service after all requests is finished
+//        service.shutdownExecutor();
+//    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\Utils\CacheUtil.java`:
+
+```java
+package Utils;
+
+import com.github.benmanes.caffeine.cache.*;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+
+/**
+ * 通用缓存工具类（支持泛型和异常传播）
+ * @param <K> 键类型
+ * @param <V> 值类型
+ * @param <E> 异常类型（如 IOException）
+ */
+public class CacheUtil<K, V, E extends Exception> {
+    private final LoadingCache<K, V> cache;
+
+    public CacheUtil(Function<K, V> loader,
+                     int maxSize,
+                     long expireAfterWrite,
+                     long refreshAfterWrite) {
+
+        this.cache = Caffeine.newBuilder()
+                .maximumSize(maxSize)
+                .expireAfterWrite(expireAfterWrite, TimeUnit.MINUTES)
+                .refreshAfterWrite(refreshAfterWrite, TimeUnit.MINUTES)
+                .build(loader::apply); // 关键修改：使用build(loader)创建LoadingCache
+    }
+
+    /**
+     * 获取缓存值
+     */
+    public V get(K key) {
+        return cache.get(key);
+    }
+
+    /**
+     * 手动更新缓存
+     */
+    public void put(K key, V value) {
+        cache.put(key, value);
+    }
+
+    /**
+     * 手动移除缓存
+     */
+    public void invalidate(K key) {
+        cache.invalidate(key);
+    }
+}
+
+
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\java\model\Transaction.java`:
+
+```java
+package model;
+//Transaction time, transaction type, transaction counterparty,
+// commodity receipt/payment amount (yuan), payment method, current status,
+// transaction order number, merchant order number, remarks
+public class Transaction {
+    private String transactionTime;
+    private String transactionType;
+    private String counterparty;
+    private String commodity;
+    private String inOut;
+    private double paymentAmount;
+    private String paymentMethod;
+    private String currentStatus;
+    private String orderNumber;
+    private String merchantNumber;
+    private String remarks;
+
+    public Transaction() {
+    }
+
+    public Transaction(String transactionTime, String transactionType, String counterparty, String commodity, String inOut, double paymentAmount, String paymentMethod, String currentStatus, String orderNumber, String merchantNumber, String remarks) {
+        this.transactionTime = transactionTime;
+        this.transactionType = transactionType;
+        this.counterparty = counterparty;
+        this.commodity = commodity;
+        this.inOut = inOut;
+        this.paymentAmount = paymentAmount;
+        this.paymentMethod = paymentMethod;
+        this.currentStatus = currentStatus;
+        this.orderNumber = orderNumber;
+        this.merchantNumber = merchantNumber;
+        this.remarks = remarks;
+    }
+
+    public String getInOut() {
+        return inOut;
+    }
+
+    public void setInOut(String inOut) {
+        this.inOut = inOut;
+    }
+
+    public void setTransactionTime(String transactionTime) {
+        this.transactionTime = transactionTime;
+    }
+
+    public void setTransactionType(String transactionType) {
+        this.transactionType = transactionType;
+    }
+
+    public void setCounterparty(String counterparty) {
+        this.counterparty = counterparty;
+    }
+
+    public void setCommodity(String commodity) {
+        this.commodity = commodity;
+    }
+
+    public void setPaymentAmount(double paymentAmount) {
+        this.paymentAmount = paymentAmount;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public void setCurrentStatus(String currentStatus) {
+        this.currentStatus = currentStatus;
+    }
+
+    public void setOrderNumber(String orderNumbe) {
+        this.orderNumber = orderNumbe;
+    }
+
+    public void setMerchantNumber(String merchantNumber) {
+        this.merchantNumber = merchantNumber;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    public String getTransactionTime() {
+        return transactionTime;
+    }
+
+    public String getTransactionType() {
+        return transactionType;
+    }
+
+    public String getCounterparty() {
+        return counterparty;
+    }
+
+    public String getCommodity() {
+        return commodity;
+    }
+
+    public double getPaymentAmount() {
+        return paymentAmount;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public String getCurrentStatus() {
+        return currentStatus;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public String getMerchantNumber() {
+        return merchantNumber;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\resources\CSVForm\0001.csv`:
+
+```csv
+交易时间,交易类型,交易对方,商品,收/支,金额(元),支付方式,当前状态,交易单号,商户单号,备注
+2025/04/22 14:38:46,充值,支付宝,虚拟商品,收入,¥1000.0,微信支付,已完成,T987654321,M123456789,测试
+2025/04/22 14:38:06,充值,支付宝,虚拟商品,收入,¥1000.0,微信支付,已完成,T987654322,M123456789,测123
+2025/04/22 14:38:46,充值,支付宝,虚拟商品,收入,¥1000.0,微信支付,已完成,T987654323,M123456789,测试
+2025/04/22 15:40:01,充值,支付宝,虚拟商品,收入,¥1000.0,微信支付,已完成,T987654324,M123456789,测试
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\main\resources\config.properties`:
+
+```properties
+# config.properties
+csv.path=Ai Bill Application/src/main/resources/CSVForm/0001.csv
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\ControllerTest\AITest.java`:
+
+```java
+package ControllerTest;
+
+import Controller.HistogramPanelContainer;
+import org.junit.Test;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class AITest {
+
+    @Test
+    public void testHistogramPanel() throws Exception {
+        EventQueue.invokeAndWait(() -> {
+            JFrame frame = new JFrame("数据分析界面 - 测试");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(800, 600);
+            frame.add(new HistogramPanelContainer());
+            frame.setVisible(true);
+        });
+
+
+
+
+        // 保持窗口显示一段时间，防止测试结束时窗口立即关闭
+        Thread.sleep(5000);
+    }
+
+}
+
+
+
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\ControllerTest\MenuUITest.java`:
+
+```java
+package ControllerTest;
+
+import Controller.HistogramExample;
+import Controller.HistogramPanelContainer;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.io.IOException;
+import Controller.MenuUI;
+
+import Service.Impl.TransactionServiceImpl;
+
+import Service.Impl.TransactionServiceImpl;
+
+import DAO.CsvTransactionDao;
+
+public class MenuUITest {
+
+    private MenuUI menuUI;
+
+    @BeforeEach
+    public void setUp() {
+        menuUI = new MenuUI();
+
+        // 手动初始化 TransactionServiceImpl 的 csvTransactionDao
+        TransactionServiceImpl.csvTransactionDao = new CsvTransactionDao();
+    }
+
+    @Test
+    public void testSearchFunction() throws IOException {
+        // 创建主面板
+        JPanel mainPanel = menuUI.createMainPanel();
+
+        // 显示界面以便手动验证
+        showUI(mainPanel);
+
+        // 获取输入面板中的组件
+        JPanel inputPanel = findInputPanel(mainPanel);
+        assertNotNull(inputPanel, "输入面板不应为空");
+
+        // 获取输入字段和搜索按钮
+        JTextField transactionTimeField = findTextField(inputPanel, 0);
+        JTextField transactionTypeField = findTextField(inputPanel, 1);
+        JTextField counterpartyField = findTextField(inputPanel, 2);
+        JTextField commodityField = findTextField(inputPanel, 3);
+        JComboBox<String> inOutComboBox = findComboBox(inputPanel);
+        JTextField paymentMethodField = findTextField(inputPanel, 4);
+        JButton searchButton = findButton(inputPanel,"Search");
+
+        assertNotNull(transactionTimeField, "交易时间输入字段不应为空");
+        assertNotNull(transactionTypeField, "交易类型输入字段不应为空");
+        assertNotNull(counterpartyField, "交易对方输入字段不应为空");
+        assertNotNull(commodityField, "商品输入字段不应为空");
+        assertNotNull(inOutComboBox, "收/支下拉框不应为空");
+        assertNotNull(paymentMethodField, "支付方式输入字段不应为空");
+        assertNotNull(searchButton, "搜索按钮不应为空");
+
+        // 设置搜索条件
+        transactionTimeField.setText("2025/3/14 11:48"); // 交易时间
+        transactionTypeField.setText("商户消费");       // 交易类型
+        counterpartyField.setText("物美WUMART");         // 交易对方
+        commodityField.setText("扫码支付");            // 商品
+        inOutComboBox.setSelectedItem("支出");     // 收/支
+        paymentMethodField.setText("零钱");    // 支付方式
+
+        // 模拟点击搜索按钮
+        searchButton.doClick();
+
+        // 获取表格模型
+        DefaultTableModel tableModel = (DefaultTableModel) menuUI.getTable().getModel();
+
+        // 验证表格模型不为空
+        assertNotNull(tableModel, "表格模型不应为空");
+
+        // 验证搜索结果是否正确
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String rowTransactionTime = (String) tableModel.getValueAt(i, 0);
+            String rowTransactionType = (String) tableModel.getValueAt(i, 1);
+            String rowCounterparty = (String) tableModel.getValueAt(i, 2);
+            String rowCommodity = (String) tableModel.getValueAt(i, 3);
+            String rowInOut = (String) tableModel.getValueAt(i, 4);
+            String rowPaymentMethod = (String) tableModel.getValueAt(i, 6);
+
+            // 验证每一行数据是否符合搜索条件
+            assertTrue(rowTransactionTime.contains("2025/3/14 11:48"), "交易时间应符合搜索条件");
+            assertTrue(rowTransactionType.contains("商户消费"), "交易类型应符合搜索条件");
+            assertTrue(rowCounterparty.contains("物美WUMART"), "交易对方应符合搜索条件");
+            assertTrue(rowCommodity.contains("扫码支付"), "商品应符合搜索条件");
+            assertTrue(rowInOut.contains("支出"), "收/支应符合搜索条件");
+            assertTrue(rowPaymentMethod.contains("零钱"), "支付方式应符合搜索条件");
+        }
+    }
+
+    @Test
+    public void testDeleteFunction() throws IOException {
+        // 创建主面板
+        JPanel mainPanel = menuUI.createMainPanel();
+
+        // 显示界面以便手动验证
+        showUI(mainPanel);
+
+        // 获取表格模型
+        DefaultTableModel tableModel = (DefaultTableModel) menuUI.getTable().getModel();
+
+        // 验证表格模型不为空
+        assertNotNull(tableModel, "表格模型不应为空");
+
+        // 获取初始行数
+        int initialRowCount = tableModel.getRowCount();
+
+        // 模拟删除第一行
+        menuUI.deleteRow(0);
+
+        // 验证行数是否减少
+        assertEquals(initialRowCount - 1, tableModel.getRowCount(), "删除后行数应减少");
+
+        // 验证删除后的数据是否正确
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String rowTransactionTime = (String) tableModel.getValueAt(i, 0);
+            assertNotEquals("2025/3/14 11:48", rowTransactionTime, "删除的行不应再出现在表格中");
+        }
+    }
+
+    @Test
+    public void testEditFunction() throws IOException {
+        // 创建主面板
+        JPanel mainPanel = menuUI.createMainPanel();
+
+        // 显示界面以便手动验证
+        showUI(mainPanel);
+
+        // 获取表格模型
+        DefaultTableModel tableModel = (DefaultTableModel) menuUI.getTable().getModel();
+
+        // 验证表格模型不为空
+        assertNotNull(tableModel, "表格模型不应为空");
+
+        // 模拟编辑第一行
+        menuUI.editRow(0);
+
+        // 验证编辑后的数据是否正确
+        String editedTransactionTime = (String) tableModel.getValueAt(0, 0);
+        String editedTransactionType = (String) tableModel.getValueAt(0, 1);
+        String editedCounterparty = (String) tableModel.getValueAt(0, 2);
+        String editedCommodity = (String) tableModel.getValueAt(0, 3);
+        String editedInOut = (String) tableModel.getValueAt(0, 4);
+        String editedPaymentMethod = (String) tableModel.getValueAt(0, 6);
+
+        // 验证编辑后的数据是否符合预期
+        assertNotNull(editedTransactionTime, "编辑后的交易时间不应为空");
+        assertNotNull(editedTransactionType, "编辑后的交易类型不应为空");
+        assertNotNull(editedCounterparty, "编辑后的交易对方不应为空");
+        assertNotNull(editedCommodity, "编辑后的商品不应为空");
+        assertNotNull(editedInOut, "编辑后的收/支不应为空");
+        assertNotNull(editedPaymentMethod, "编辑后的支付方式不应为空");
+    }
+
+    @Test
+    public void testAddFunction() throws IOException {
+        // 创建主面板
+        JPanel mainPanel = menuUI.createMainPanel();
+
+        // 显示界面以便手动验证
+        showUI(mainPanel);
+
+        // 获取输入面板中的组件
+        JPanel inputPanel = findInputPanel(mainPanel);
+        assertNotNull(inputPanel, "输入面板不应为空");
+
+        // 获取 Add 按钮
+        JButton addButton = findButton(inputPanel, "Add");
+        assertNotNull(addButton, "Add 按钮不应为空");
+
+        // 模拟点击 Add 按钮
+        addButton.doClick();
+
+        // 获取对话框
+        Window[] windows = Window.getWindows();
+        JDialog addDialog = null;
+        for (Window window : windows) {
+            if (window instanceof JDialog && "添加交易".equals(((JDialog) window).getTitle())) {
+                addDialog = (JDialog) window;
+                break;
+            }
+        }
+        assertNotNull(addDialog, "添加交易的对话框应弹出");
+
+        // 获取对话框中的输入字段
+        JTextField transactionTimeField = findTextField(addDialog.getContentPane(), 0);
+        JTextField transactionTypeField = findTextField(addDialog.getContentPane(), 1);
+        JTextField counterpartyField = findTextField(addDialog.getContentPane(), 2);
+        JTextField commodityField = findTextField(addDialog.getContentPane(), 3);
+        JComboBox<String> inOutComboBox = findComboBox(addDialog.getContentPane());
+        JTextField paymentAmountField = findTextField(addDialog.getContentPane(), 4);
+        JTextField paymentMethodField = findTextField(addDialog.getContentPane(), 5);
+        JTextField currentStatusField = findTextField(addDialog.getContentPane(), 6);
+        JTextField orderNumberField = findTextField(addDialog.getContentPane(), 7);
+        JTextField merchantNumberField = findTextField(addDialog.getContentPane(), 8);
+        JTextField remarksField = findTextField(addDialog.getContentPane(), 9);
+
+        // 设置新交易的输入值
+        transactionTimeField.setText("2025/3/15 12:00"); // 交易时间
+        transactionTypeField.setText("转账");            // 交易类型
+        counterpartyField.setText("张三");               // 交易对方
+        commodityField.setText("转账");                 // 商品
+        inOutComboBox.setSelectedItem("支出");          // 收/支
+        paymentAmountField.setText("100.0");            // 金额(元)
+        paymentMethodField.setText("银行卡");           // 支付方式
+        currentStatusField.setText("已完成");           // 当前状态
+        orderNumberField.setText("123456789");          // 交易单号
+        merchantNumberField.setText("987654321");       // 商户单号
+        remarksField.setText("测试备注");               // 备注
+
+        // 获取确认按钮
+        JButton confirmButton = findButton(addDialog.getContentPane(), "确认");
+        assertNotNull(confirmButton, "确认按钮不应为空");
+
+        // 模拟点击确认按钮
+        confirmButton.doClick();
+
+        // 获取表格模型
+        DefaultTableModel tableModel = (DefaultTableModel) menuUI.getTable().getModel();
+
+        // 验证表格模型不为空
+        assertNotNull(tableModel, "表格模型不应为空");
+
+        // 验证新交易是否添加到表格中
+        boolean isTransactionAdded = false;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String rowTransactionTime = (String) tableModel.getValueAt(i, 0);
+            String rowTransactionType = (String) tableModel.getValueAt(i, 1);
+            String rowCounterparty = (String) tableModel.getValueAt(i, 2);
+            String rowCommodity = (String) tableModel.getValueAt(i, 3);
+            String rowInOut = (String) tableModel.getValueAt(i, 4);
+            String rowPaymentAmount = (String) tableModel.getValueAt(i, 5);
+            String rowPaymentMethod = (String) tableModel.getValueAt(i, 6);
+            String rowCurrentStatus = (String) tableModel.getValueAt(i, 7);
+            String rowOrderNumber = (String) tableModel.getValueAt(i, 8);
+            String rowMerchantNumber = (String) tableModel.getValueAt(i, 9);
+            String rowRemarks = (String) tableModel.getValueAt(i, 10);
+
+            if (rowTransactionTime.equals("2025/3/15 12:00") &&
+                    rowTransactionType.equals("转账") &&
+                    rowCounterparty.equals("张三") &&
+                    rowCommodity.equals("转账") &&
+                    rowInOut.equals("支出") &&
+                    rowPaymentAmount.equals("100.0") &&
+                    rowPaymentMethod.equals("银行卡") &&
+                    rowCurrentStatus.equals("已完成") &&
+                    rowOrderNumber.equals("123456789") &&
+                    rowMerchantNumber.equals("987654321") &&
+                    rowRemarks.equals("测试备注")) {
+                isTransactionAdded = true;
+                break;
+            }
+        }
+
+        // 验证新交易是否成功添加
+        assertTrue(isTransactionAdded, "新交易应成功添加到表格中");
+    }
+
+    /**
+     * 显示界面以便手动验证
+     *
+     * @param panel 要显示的面板
+     */
+    private void showUI(JPanel panel) {
+        JFrame frame = new JFrame("MenuUI Test");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(1200, 600);
+        frame.add(panel);
+        frame.setVisible(true);
+
+        // 保持界面显示一段时间（5秒）
+        try {
+            Thread.sleep(1000000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        frame.dispose(); // 关闭界面
+    }
+
+    /**
+     * 查找输入面板
+     *
+     * @param mainPanel 主面板
+     * @return 输入面板
+     */
+    private JPanel findInputPanel(JPanel mainPanel) {
+        // 获取右边的面板
+        Component[] components = mainPanel.getComponents();
+        JPanel rightPanel = null;
+        for (Component component : components) {
+            if (component instanceof JPanel && ((JPanel) component).getComponentCount() > 0) {
+                rightPanel = (JPanel) component;
+                break;
+            }
+        }
+
+        if (rightPanel != null) {
+            // 在右边面板中查找输入面板
+            for (Component component : rightPanel.getComponents()) {
+                if (component instanceof JPanel) {
+                    JPanel panel = (JPanel) component;
+                    System.out.println("Panel found: " + panel.getName()); // 打印面板名称
+                    if (panel.getComponentCount() > 0 && panel.getComponent(0) instanceof JLabel) {
+                        return panel; // 输入面板通常包含 JLabel
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 查找输入字段
+     *
+     * @param container     输入面板
+     * @param index     输入字段的索引
+     * @return 输入字段
+     */
+    private JTextField findTextField(Container container, int index) {
+        int count = 0;
+        for (Component component : container.getComponents()) {
+            if (component instanceof JTextField) {
+                if (count == index) {
+                    return (JTextField) component;
+                }
+                count++;
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * 查找下拉框
+     *
+     * @param container 输入面板
+     * @return 下拉框
+     */
+    private JComboBox<String> findComboBox(Container container) {
+        for (Component component : container.getComponents()) {
+            if (component instanceof JComboBox) {
+                return (JComboBox<String>) component;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 查找按钮
+     *
+     * @param panel 输入面板
+     * @return 按钮
+     */
+    /**
+     * 查找按钮
+     *
+     * @param container 容器（可以是 JPanel 或 JDialog）
+     * @param buttonText 按钮的文本
+     * @return 按钮
+     */
+    /**
+     * 查找按钮
+     *
+     * @param container  容器（可以是 JPanel 或 JDialog）
+     * @param buttonText 按钮的文本
+     * @return 按钮
+     */
+    private JButton findButton(Container container, String buttonText) {
+        for (Component component : container.getComponents()) {
+            if (component instanceof JButton) {
+                JButton button = (JButton) component;
+                if (button.getText().equals(buttonText)) {
+                    return button;
+                }
+            }
+        }
+        return null;
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\DAOTest\CsvTransactionDaoTest.java`:
+
+```java
+package DAOTest;
+
+import DAO.CsvTransactionDao;
+import model.Transaction;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static Constants.ConfigConstants.CSV_PATH;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+class CsvTransactionDaoTest {
+    // 测试文件路径（根据实际结构调整）
+    private static final String TEST_CSV_PATH = CSV_PATH;
+    private static CsvTransactionDao dao;
+
+    @Test
+    void testLoadFromCSV_ValidFile_ReturnsTransactions() throws Exception {
+        // Given
+        CsvTransactionDao dao = new CsvTransactionDao();
+
+        // When
+        List<Transaction> transactions = dao.loadFromCSV(CSV_PATH);
+
+        // 验证第一条记录的字段
+        for (int i = 0; i < transactions.size(); i++) {
+            System.out.println(transactions.get(i).getRemarks());
+            System.out.println(transactions.get(i).getCommodity());
+        }
+
+
+    }
+    @Test
+    void testAddTransaction() throws IOException {
+        dao=new CsvTransactionDao();
+        Transaction newTx = new Transaction(
+                "2025-03-09 10:00",
+                "转账",
+                "小明",
+                "书籍",
+                "支",
+                99.99,
+                "微信",
+                "已完成",
+                "TX123456",
+                "M789012",
+                "");
+
+        dao.addTransaction("src/test/resources/001.csv", newTx);
+
+        List<Transaction> transactions = dao.loadFromCSV(TEST_CSV_PATH);
+
+    }
+
+    @Test
+    void testDeleteTransaction() throws IOException {
+        dao=new CsvTransactionDao();
+
+        dao.deleteTransaction("CSV_RELATIVE_PATH", "4200057899202502250932735481");
+
+        List<Transaction> transactions = dao.loadFromCSV(CSV_PATH);
+    }
+    @Test
+    void testChangeInfo() throws IOException{
+        dao=new CsvTransactionDao();
+        dao.changeInformation("TX123456","remarks","测试修改信息",TEST_CSV_PATH);
+        dao.changeInformation("TX123456","paymentAmount","116156",TEST_CSV_PATH);
+    }
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\Service\AIAnalyzerThreadTest.java`:
+
+```java
+package Service;
+
+
+
+import Service.AIservice.AIAnalyzerThread;
+import org.junit.jupiter.api.Test;
+
+public class AIAnalyzerThreadTest {
+
+    @Test
+    public void testRunAIAnalyzerThread() throws InterruptedException {
+        String userRequest = "请帮我分析最近的交易收支情况";
+        String filePath = "src/test/resources/sample_transactions.csv";
+        String startTimeStr = "2025/03/20";
+        String endTimeStr = "";
+
+        // 启动线程
+        Thread thread = new Thread(new AIAnalyzerThread(userRequest, filePath, startTimeStr, endTimeStr));
+        thread.start();
+
+        // 等待线程执行完成
+        thread.join();
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\Service\AIserviceTest.java`:
+
+```java
+package Service;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import Service.AIservice.AITransactionService;
+
+public class AIserviceTest {
+
+    @Test
+    public void testAnalyzeTransactions() {
+        AITransactionService service = new AITransactionService();
+
+        String userRequest = "请帮我分析这个月的收支情况";
+        String filePath = "src/test/resources/sample_transactions.csv";
+
+        String result = service.analyzeTransactions(userRequest, filePath,"2025/03/20","");
+
+        assertNotNull(result, "AI分析结果不能为空");
+        System.out.println("AI分析结果: " + result);
+    }
+
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\Service\AiFunctionTest.java`:
+
+```java
+package Service;
+
+import DAO.CsvTransactionDao;
+import model.Transaction;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import Service.AIservice.AITransactionService;
+
+import java.io.IOException;
+import java.util.List;
+
+public class AiFunctionTest {
+
+    @Test
+    public void testAnalyzeTransactions() throws IOException {
+
+        String filePath = "src/test/resources/sample_transactions.csv";
+        CsvTransactionDao transactionDao = new CsvTransactionDao();
+
+        List<Transaction> transactions = transactionDao.loadFromCSV(filePath);
+
+        // 实例化服务类
+        AITransactionService service = new AITransactionService();
+
+        // 调用合并格式化函数
+        List<String> result = service.formatTransactions(transactions,"2025/03/29","2025/04/10");
+
+        // 输出结果
+        result.forEach(System.out::println);
+    }
+
+
+
+
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\Service\CacheTest.java`:
+
+```java
+package Service;
+
+import Constants.CaffeineKeys;
+import DAO.CsvTransactionDao;
+import Service.Impl.TransactionServiceImpl;
+import Utils.CacheUtil;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import model.Transaction;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
+
+public class CacheTest {
+
+    TransactionServiceImpl transactionService = new TransactionServiceImpl(new CsvTransactionDao());
+
+    @Test
+    void DeleteCache(){
+        CacheUtil<String, List<Transaction>, Exception> cache = transactionService.cache;
+        cache.invalidate(TRANSACTION_CAFFEINE_KEY);
+    }
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\Service\CollegeStudentNeedsTest.java`:
+
+```java
+package Service;
+
+import Service.AIservice.ColledgeStudentThread;
+import Service.AIservice.CollegeStudentNeeds;
+import org.junit.jupiter.api.*;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+// No @ExtendWith needed as we are not using Mockito extensions
+class CollegeStudentNeedsTest {
+
+
+
+    private CollegeStudentNeeds collegeStudentNeeds=new CollegeStudentNeeds();
+    private static final String TEST_CSV_FILENAME = "src/test/resources/001.csv";
+    @Test
+    public void testGenerateBudget() throws IOException, InterruptedException {
+        Thread t=new Thread( new ColledgeStudentThread(TEST_CSV_FILENAME));
+        t.start();
+        t.join();
+//        collegeStudentNeeds.generateBudget(TEST_CSV_FILENAME);
+    }
+    @Test
+    public void testParseStringToDouble(){
+        String s="asdas[369.39,1090.1]das";
+        double[] arr=collegeStudentNeeds.parseDoubleArrayFromString(s);
+        System.out.println(arr[0]+" "+arr[1]);
+    }
+
+
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai Bill Application\src\test\java\Service\TransactionServiceTest.java`:
+
+```java
+package Service;
+
+import DAO.CsvTransactionDao;
+import Service.Impl.TransactionServiceImpl;
+import model.Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import java.io.IOException;
+import java.util.List;
+
+class TransactionServiceTest {
+    private TransactionService transactionService;
+
+    @BeforeEach
+    void setUp() {
+        // 初始化 DAO 和 Service
+        CsvTransactionDao csvTransactionDao = new CsvTransactionDao();
+        transactionService = new TransactionServiceImpl(csvTransactionDao);
+    }
+
+    @Test
+    void testAddTransaction() throws IOException {
+        // 准备测试数据
+        Transaction transaction = new Transaction(
+                "2023-08-20 15:30:00", "转账", "李四", "虚拟商品", "支出", 500.0,
+                "银行卡", "已完成", "T123456789", "M987654321", "测试"
+        );
+
+        // 执行添加操作
+        transactionService.addTransaction(transaction);
+
+        // 验证是否添加成功
+        List<Transaction> transactions = transactionService.searchTransaction(new Transaction());
+        assertFalse(transactions.isEmpty());
+        assertEquals("T123456789", transactions.get(0).getOrderNumber());
+    }
+
+    @Test
+    void testChangeTransaction() throws Exception {
+        // 准备测试数据
+        Transaction originalTransaction = new Transaction(
+                "2023-08-20 15:30:00", "转账", "李四", "虚拟商品", "支出", 500.0,
+                "银行卡", "已完成", "T123456789", "M987654321", "测试"
+        );
+        transactionService.addTransaction(originalTransaction);
+
+        // 准备更新数据
+        Transaction updatedTransaction = new Transaction(
+                null, "充值", null, null, null, 0.0, "微信支付", null, "T123456789", null, "更新备注"
+        );
+
+        // 执行更新操作
+        transactionService.changeTransaction(updatedTransaction);
+
+        // 验证是否更新成功
+        List<Transaction> transactions = transactionService.searchTransaction(new Transaction());
+        assertEquals("充值", transactions.get(0).getTransactionType());
+        assertEquals("微信支付", transactions.get(0).getPaymentMethod());
+        assertEquals("更新备注", transactions.get(0).getRemarks());
+    }
+
+    @Test
+    void testDeleteTransaction() throws Exception {
+        // 准备测试数据
+        Transaction transaction = new Transaction(
+                "2023-08-20 15:30:00", "转账", "李四", "虚拟商品", "支出", 500.0,
+                "银行卡", "已完成", "T123456789", "M987654321", "测试"
+        );
+        transactionService.addTransaction(transaction);
+
+        // 执行删除操作
+        boolean result = transactionService.deleteTransaction("T123456789");
+
+        // 验证是否删除成功
+        assertTrue(result);
+        List<Transaction> transactions = transactionService.searchTransaction(new Transaction());
+        assertTrue(transactions.isEmpty());
+    }
+
+    @Test
+    void testSearchTransaction() throws IOException {
+
+        // 设置搜索条件
+        Transaction searchCriteria = new Transaction();
+        searchCriteria.setCounterparty("支付宝");
+
+        // 执行搜索操作
+        List<Transaction> result = transactionService.searchTransaction(searchCriteria);
+
+        // 验证搜索结果
+        result.forEach(res -> System.out.println(res.getCommodity()));
+    }
+
+
+}
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\Ai-Bill-Application-Prompt.txt`:
+
+```txt
+Project Path: Ai-Bill-Application-Group21
+
+Source Tree:
+
+```txt
 Ai-Bill-Application-Group21
 └── Ai Bill Application
     ├── HistogramPanelContainer.java
@@ -442,7 +3878,7 @@ public class HistogramPanelContainer extends JPanel {
 package Controller;
 
 import Constants.ConfigConstants;
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 
 import Service.Impl.TransactionServiceImpl;
 
@@ -1371,7 +4807,7 @@ public class UserService {
 import javax.swing.*;
 
 import Controller.MenuUI;
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import Interceptor.Login.LoginDialog;
 import Service.Impl.TransactionServiceImpl;
 
@@ -1447,7 +4883,7 @@ package Service.AIservice;
 import Service.Impl.TransactionServiceImpl;
 import Service.TransactionService;
 import Constants.ConfigConstants;
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import Utils.CacheUtil;
 import model.Transaction;
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
@@ -1685,7 +5121,7 @@ public class ColledgeStudentThread implements Runnable{
 package Service.AIservice;
 
 import Constants.ConfigConstants;
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import Service.Impl.TransactionServiceImpl;
 import Utils.CacheUtil;
 import model.Transaction;
@@ -1860,7 +5296,7 @@ public class CollegeStudentNeeds {
 package Service.Impl;
 
 import Constants.ConfigConstants;
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import Service.TransactionService;
 import Utils.CacheUtil;
 import model.Transaction;
@@ -2434,7 +5870,7 @@ import Service.Impl.TransactionServiceImpl;
 
 import Service.Impl.TransactionServiceImpl;
 
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 
 public class MenuUITest {
 
@@ -2810,7 +6246,7 @@ public class MenuUITest {
 ```java
 package DAOTest;
 
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import model.Transaction;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -2952,7 +6388,7 @@ public class AIserviceTest {
 ```java
 package Service;
 
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import model.Transaction;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -2993,7 +6429,7 @@ public class AiFunctionTest {
 package Service;
 
 import Constants.CaffeineKeys;
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import Service.Impl.TransactionServiceImpl;
 import Utils.CacheUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -3067,7 +6503,7 @@ class CollegeStudentNeedsTest {
 ```java
 package Service;
 
-import DAO.Impl.CsvTransactionDao;
+import DAO.CsvTransactionDao;
 import Service.Impl.TransactionServiceImpl;
 import model.Transaction;
 import org.junit.jupiter.api.BeforeEach;
@@ -3162,3 +6598,1258 @@ class TransactionServiceTest {
 
 }
 ```
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\README.md`:
+
+```md
+## Project Overview
+This module is a transaction record management 
+system in the Service layer of the project that connects 
+with the Dao layer that provides CRUD (Create, Read, Update
+, Delete) functionality and data processing for
+transaction data. Core features include transaction 
+creation, modification, deletion, and flexible querying,
+all accessible through standardized interfaces.
+
+## Structure and Function
+Swing GUI (Controller) <- Service <- DAO <-data(CSV/JSON)<-model
+
+##  Model 
+
+### Overview
+
+This Java class, located in the `model` package, serves 
+as a Plain Old Java Object (POJO) or data model to 
+represent a single financial transaction record. It 
+encapsulates all the standard details associated with 
+a transaction, such as its time, type, amount, parties 
+involved, status, and unique identifiers.
+
+This class is typically used in conjunction with Data 
+Access Objects (DAOs) like `TransactionDao` and
+`CsvTransactionDao` to load, save, and manipulate 
+transaction data from a persistent store (e.g., a CSV 
+file or database).
+
+### Package
+
+`model`
+
+### Fields
+
+The `Transaction` class contains the following fields:
+
+* `transactionTime` (String): The date and time when the transaction occurred (e.g., "2023-10-27 15:30:00").
+* `transactionType` (String): The category or type of the transaction (e.g., "在线支付" - Online Payment, "转账" - Transfer, "退款" - Refund).
+* `counterparty` (String): The name or identifier of the other party involved in the transaction.
+* `commodity` (String): A description of the goods, service, or reason for the transaction (e.g., "Coffee", "Salary", "Online Course Fee").
+* `inOut` (String): Indicates the direction of the money flow relative to the account holder. Typically:
+* `paymentAmount` (double): The monetary value of the transaction. The currency unit (e.g., Yuan) is implied by the context where this class is used (often indicated by header names like "金额(元)" in associated CSV files).
+* `paymentMethod` (String): The method used for the payment (e.g., "支付宝" - Alipay, "微信支付" - WeChat Pay, "银行卡" - Bank Card, "现金" - Cash).
+* `currentStatus` (String): The current processing status of the transaction (e.g., "交易成功" - Transaction Successful, "等待付款" - Awaiting Payment, "已关闭" - Closed, "退款成功" - Refund Successful).
+* `orderNumber` (String): A unique identifier assigned to this specific transaction instance by the payment system or application. Often used as a primary key.
+* `merchantNumber` (String): An order number or identifier associated with the merchant's system, often provided for reconciliation purposes. May be empty or null if not applicable.
+* `remarks` (String): An optional field for any additional notes, comments, or user-provided descriptions about the transaction.
+
+### Constructors
+
+* **`public Transaction()`**
+    * Default no-argument constructor. Creates an empty `Transaction` object with all fields initialized to their default values (null for String, 0.0 for double).
+
+* **`public Transaction(String transactionTime, String transactionType, ..., String remarks)`**
+    * Parameterized constructor that accepts values for all fields. Allows for quick instantiation of a fully populated `Transaction` object.
+
+### Methods
+
+The class provides standard public **getter** (`get...()`) and **setter** (`set...()`) methods for all its private fields. These methods allow controlled access and modification of the transaction's attributes from other parts of the application.
+
+* `getTransactionTime()` / `setTransactionTime(String time)`
+* `getTransactionType()` / `setTransactionType(String type)`
+* `getCounterparty()` / `setCounterparty(String counterparty)`
+* `getCommodity()` / `setCommodity(String commodity)`
+* `getInOut()` / `setInOut(String inOut)`
+* `getPaymentAmount()` / `setPaymentAmount(double amount)`
+* `getPaymentMethod()` / `setPaymentMethod(String method)`
+* `getCurrentStatus()` / `setCurrentStatus(String status)`
+* `getOrderNumber()` / `setOrderNumber(String orderNumber)`
+* `getMerchantNumber()` / `setMerchantNumber(String merchantNumber)`
+* `getRemarks()` / `setRemarks(String remarks)`
+
+ 
+### Service (Business logic)
+- Responsibilities:
+Transaction CRUD operations, calling the DAO layer to read and write local files,
+User-defined classification logic (e.g. modifying transaction categories)
+  (3) Operations:
+
+Add Transaction:
+
+Transaction t = new Transaction();
+// Set field values
+service.addTransaction(t);
+
+Modify Transaction:
+
+Transaction update = new Transaction();
+update.setOrderNumber("ORD123");
+// Set fields to update
+service.changeTransaction(update);
+
+Query Transactions:
+
+Transaction criteria = new Transaction();
+criteria.setCounterparty("Alipay");
+List<Transaction> results = service.searchTransaction(criteria);
+Code structure
+   Directory Layout:
+   src/main/java/
+   └── Service/
+   ├── Impl/
+   │   └── TransactionServiceImpl.java  # Service implementation
+   └── TransactionService.java          # Service interface
+   TransactionService.java:
+   Defines the service interface with business-agnostic method signatures, enforcing decoupling 
+   between business logic and implementation details.
+   TransactionServiceImpl.java:
+   Implements the concrete business logic while depending only on the interface-defined contract, maintaining loose coupling with the data access layer through dependency injection.
+
+
+- AIService (Intelligent Analytics) Responsibilities: Generate budget recommendations based
+on historical data, and detect cost-cutting recommendations for seasonal spending in China
+(e.g. Spring Festival) (e.g. marking high-frequency small spending)
+
+
+- **`AITransactionService`**
+
+The central class that performs the full AI-driven transaction analysis. It:
+
+- Loads transaction data from a CSV file via `CsvTransactionDao`.
+- Filters transactions by user-specified time range (`startTimeStr`, `endTimeStr`).
+- Aggregates data by counterparty (income/spending, transaction counts).
+- Formats the result into concise summaries sent to the AI.
+- Sends user questions and formatted data to the Volcengine Ark AI API.
+- Returns a response within **400 characters** for efficient display.
+
+Key methods:
+- `analyzeTransactions(String userRequest, String filePath, String startTimeStr, String endTimeStr)`
+  → Returns an AI-generated analysis result string.
+- `runAiInThread(...)`
+  → Runs the AI logic in a background thread (single-threaded executor).
+- `formatTransactions(...)`
+  → Groups transactions and summarizes them by counterparty and time range.
+- `parseDateTime(...)`
+  → Supports flexible input formats like `yyyy/MM/dd`, `yyyy/MM/dd HH:mm`, and more. - **`AIAnalyzerThread`** A `Runnable` implementation for threading scenarios (especially GUI usage). It calls `AITransactionService.analyzeTransactions(...)` and prints the result. UI developers can replace the console output with GUI updates using `SwingUtilities.invokeLater()`. --- ### Tests (`test/java/Service/AIservice/`) - **`AIserviceTest`** Unit tests for `AITransactionService`, verifying: - Correct loading and filtering of transactions. - Accurate AI response generation and formatting. - Graceful handling of edge cases (e.g., no transactions in range, invalid time formats). - **`AIAnalyzerThreadTest`** Validates threading logic: - Ensures `AIAnalyzerThread` executes `Runnable` correctly. - Demonstrates clean and concurrent AI analysis flow. - Simulates integration with a GUI environment. - **`AiFunctionTest`** Utility-level tests: - Ensures proper CSV parsing and data transformation. - Verifies output formatting before sending to the AI. - Tests various time formats and edge case behaviors
+
+## DAO (File Storage)
+- Responsibilities: Save transaction data in CSV or JSON format and provide interfaces for adding,
+  deleting, and modifying in-memory data
+### CsvTransactionDao Class
+
+#### Package
+
+`DAO`
+
+#### Dependencies
+
+* **`model.Transaction`**: The data model class representing a single transaction.
+* **`DAO.TransactionDao`**: The interface this class is intended to implement (though the implementation is incomplete).
+* **Apache Commons CSV (`org.apache.commons.csv.*`)**: Used for robust parsing and writing of CSV data.
+* **Apache Commons IO (`org.apache.commons.io.input.BOMInputStream`)**: Used specifically to handle potential Byte Order Marks (BOM) often found in UTF-8 encoded files, particularly those edited in Windows.
+* **Java Standard Libraries**: `java.io.*`, `java.nio.*`.
+
+#### Key Features & Implementation Details
+
+* **CSV Loading (`loadFromCSV`)**:
+  * Reads data from a specified CSV file path.
+  * Expects UTF-8 encoding.
+  * Handles potential Byte Order Mark (BOM) at the beginning of the file.
+  * Uses the first row of the CSV as the header to map columns to `Transaction` fields. Assumes specific header names (e.g., "交易时间", "交易类型", "金额(元)").
+  * Parses transaction records into a `List<Transaction>`.
+  * Includes basic caching using an internal `transactions` list and an `isLoad` flag to avoid redundant file reads within the same instance lifecycle (unless forced by methods like `deleteTransaction` or `changeInformation`).
+* **Record Parsing (`parseRecord`)**:
+  * Converts a `CSVRecord` object (from Apache Commons CSV) into a `Transaction` object.
+  * Specifically handles the "金额(元)" (Amount) field by removing the leading "¥" symbol before parsing it as a `double`.
+* **Adding Transactions (`addTransaction(String filePath, Transaction newTransaction)`)**:
+  * **Appends** a new transaction record to the *end* of the specified CSV file.
+  * Creates the file if it doesn't exist.
+  * Writes the header row only if the file is new or was empty.
+  * Formats the payment amount by prepending "¥".
+* **Deleting Transactions (`deleteTransaction(String filePath, String orderNumber)`)**:
+  * Loads data from the file if not already cached.
+  * Filters the cached list to remove the transaction matching the given `orderNumber`.
+  * **Overwrites** the *entire* original CSV file with the filtered list using `writeTransactionsToCSV`.
+  * Returns `true` if a transaction was removed, `false` otherwise.
+* **Updating Transactions (`changeInformation`)**:
+  * Loads data if not already cached.
+  * Finds the transaction by `orderNumber`.
+  * Modifies the specified field (`head`) of the found transaction object in memory.
+  * **Crucially, it attempts the update by first *deleting* the original record (using `deleteTransaction`, which overwrites the file) and then *adding* the modified record (using `addTransaction`, which appends to the file).** This logic is inefficient and potentially problematic due to the conflicting file write strategies (overwrite vs. append).
+  * Error handling for invalid `head` parameters prints to `System.err`. The method often returns `true` even if the underlying delete/add fails.
+* **CSV Writing (`writeTransactionsToCSV`)**:
+  * Helper method used by `deleteTransaction`.
+  * Writes a given `List<Transaction>` to the specified file path, **overwriting** any existing content.
+  * Writes a standard header row.
+  * Formats the payment amount by prepending "¥".
+
+#### Important Issues & Considerations
+
+1.  **Incomplete `TransactionDao` Implementation**: The methods declared in the `TransactionDao` interface (`getAllTransactions`, `addTransaction(Transaction)`, `deleteTransaction(String)`, `updateTransaction`, `getTransactionByOrderNumber`) are present but contain only placeholder/stub code. The actual working logic uses separate methods that require the `filePath` to be passed explicitly each time. **This class, in its current state, does not correctly function as a `TransactionDao` implementation.**
+2.  **Inconsistent File Writing Strategy**: `addTransaction` *appends* to the file, while `deleteTransaction` and `writeTransactionsToCSV` (used by `deleteTransaction` and `changeInformation`) *overwrite* the entire file. This inconsistency can lead to unexpected behavior, especially within the `changeInformation` method.
+3.  **Inefficient Updates/Deletes**: Rewriting the entire CSV file for every single deletion or modification (`changeInformation`) is highly inefficient, especially for large transaction files.
+4.  **Flawed Update Logic (`changeInformation`)**: The delete-then-add approach for updates is problematic due to the inconsistent write strategies and potential race conditions or partial failures. The modified record will likely appear at the *end* of the file, not its original position.
+5.  **Basic Caching**: The caching mechanism (`isLoad` flag) is simple and does not account for external modifications to the CSV file during the application's runtime.
+6.  **Hardcoded Dependencies**: The code relies on specific header names (in Chinese) and the "¥" currency symbol format within the CSV data. Changes to the CSV format would require code modifications.
+
+#### Usage Example (Using Functional Methods)
+
+```java
+import DAO.CsvTransactionDao; // Assuming TransactionDao interface exists but is not used directly here due to stub methods
+import model.Transaction;
+import java.io.IOException;
+import java.util.List;
+
+public class CsvDataManager {
+
+    public static void main(String[] args) {
+        // NOTE: Using the class directly, not via the TransactionDao interface
+        // because the interface methods are not fully implemented.
+        CsvTransactionDao csvDao = new CsvTransactionDao();
+        String csvFilePath = "path/to/your/transactions.csv"; // <--- Specify your file path
+
+        try {
+            // --- Load Data ---
+            System.out.println("Loading transactions...");
+            List<Transaction> transactions = csvDao.loadFromCSV(csvFilePath);
+            System.out.println("Loaded " + transactions.size() + " transactions.");
+            // Display first transaction if available
+            if (!transactions.isEmpty()) {
+                 System.out.println("First transaction order number: " + transactions.get(0).getOrderNumber());
+            }
+
+            // --- Add a New Transaction (Appends) ---
+            Transaction newTx = new Transaction(
+                 "2025-04-20 08:14:00", "Test Add", "Counterparty", "Item", "支",
+                 10.0, "支付宝", "交易成功", "NEW_ORDER_123", "MERCH_456", "Test via DAO add"
+            );
+            System.out.println("\nAdding new transaction (append): " + newTx.getOrderNumber());
+            // csvDao.addTransaction(csvFilePath, newTx); // Uncomment to actually add
+            System.out.println("Transaction potentially added.");
+
+            // --- Delete a Transaction (Overwrites File) ---
+            String orderToDelete = "SOME_EXISTING_ORDER_NUMBER"; // <--- Change to a real order number from your file
+            System.out.println("\nAttempting to delete transaction: " + orderToDelete);
+            // boolean deleted = csvDao.deleteTransaction(csvFilePath, orderToDelete); // Uncomment to actually delete
+            // if (deleted) {
+            //     System.out.println("Transaction deleted successfully (File rewritten).");
+            // } else {
+            //     System.out.println("Transaction not found for deletion.");
+            // }
+
+            // --- Change Information (Overwrites then Appends - Use with Caution) ---
+             String orderToChange = "ANOTHER_EXISTING_ORDER_NUMBER"; // <--- Change to a real order number
+             String fieldToChange = "remarks";
+             String newValue = "Updated remark via changeInformation";
+             System.out.println("\nAttempting to change info for: " + orderToChange);
+             // boolean changed = csvDao.changeInformation(orderToChange, fieldToChange, newValue, csvFilePath); // Uncomment with caution
+             // System.out.println("Change operation attempted (File rewritten and appended). Result: " + changed);
+
+
+        } catch (IOException e) {
+            System.err.println("Error interacting with CSV file: " + e.getMessage());
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing amount in CSV: " + e.getMessage());
+        }
+    }
+}
+```
+
+## Controller (Swing GUI)
+
+Responsibilities: Manage user interface components (buttons, tables, text boxes) to listen for 
+events (clicks, inputs) and call service layer methods to update the interface data display
+
+## attention
+encoding with UTF-8
+
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\README.txt`:
+
+```txt
+## Project Overview
+
+This module is a transaction record management 
+system in the Service layer of the project that connects 
+with the Dao layer that provides CRUD (Create, Read, Update
+, Delete) functionality and data processing for
+transaction data. Core features include transaction 
+creation, modification, deletion, and flexible querying,
+all accessible through standardized interfaces.
+
+## Structure and Function
+
+Swing GUI (Controller) <- Service <- DAO <-data(CSV/JSON)<-model
+
+##  Model 
+
+### Overview
+
+This Java class, located in the `model` package, serves 
+as a Plain Old Java Object (POJO) or data model to 
+represent a single financial transaction record. It 
+encapsulates all the standard details associated with 
+a transaction, such as its time, type, amount, parties 
+involved, status, and unique identifiers.
+
+This class is typically used in conjunction with Data 
+Access Objects (DAOs) like `TransactionDao` and
+`CsvTransactionDao` to load, save, and manipulate 
+transaction data from a persistent store (e.g., a CSV 
+file or database).
+
+### Package
+
+`model`
+
+### Fields
+
+The `Transaction` class contains the following fields:
+
+* `transactionTime` (String): The date and time when the transaction occurred (e.g., "2023-10-27 15:30:00").
+* `transactionType` (String): The category or type of the transaction (e.g., "在线支付" - Online Payment, "转账" - Transfer, "退款" - Refund).
+* `counterparty` (String): The name or identifier of the other party involved in the transaction.
+* `commodity` (String): A description of the goods, service, or reason for the transaction (e.g., "Coffee", "Salary", "Online Course Fee").
+* `inOut` (String): Indicates the direction of the money flow relative to the account holder. Typically:
+* `paymentAmount` (double): The monetary value of the transaction. The currency unit (e.g., Yuan) is implied by the context where this class is used (often indicated by header names like "金额(元)" in associated CSV files).
+* `paymentMethod` (String): The method used for the payment (e.g., "支付宝" - Alipay, "微信支付" - WeChat Pay, "银行卡" - Bank Card, "现金" - Cash).
+* `currentStatus` (String): The current processing status of the transaction (e.g., "交易成功" - Transaction Successful, "等待付款" - Awaiting Payment, "已关闭" - Closed, "退款成功" - Refund Successful).
+* `orderNumber` (String): A unique identifier assigned to this specific transaction instance by the payment system or application. Often used as a primary key.
+* `merchantNumber` (String): An order number or identifier associated with the merchant's system, often provided for reconciliation purposes. May be empty or null if not applicable.
+* `remarks` (String): An optional field for any additional notes, comments, or user-provided descriptions about the transaction.
+
+### Constructors
+
+* **`public Transaction()`**
+  * Default no-argument constructor. Creates an empty `Transaction` object with all fields initialized to their default values (null for String, 0.0 for double).
+
+* **`public Transaction(String transactionTime, String transactionType, ..., String remarks)`**
+  * Parameterized constructor that accepts values for all fields. Allows for quick instantiation of a fully populated `Transaction` object.
+
+### Methods
+
+The class provides standard public **getter** (`get...()`) and **setter** (`set...()`) methods for all its private fields. These methods allow controlled access and modification of the transaction's attributes from other parts of the application.
+
+* `getTransactionTime()` / `setTransactionTime(String time)`
+* `getTransactionType()` / `setTransactionType(String type)`
+* `getCounterparty()` / `setCounterparty(String counterparty)`
+* `getCommodity()` / `setCommodity(String commodity)`
+* `getInOut()` / `setInOut(String inOut)`
+* `getPaymentAmount()` / `setPaymentAmount(double amount)`
+* `getPaymentMethod()` / `setPaymentMethod(String method)`
+* `getCurrentStatus()` / `setCurrentStatus(String status)`
+* `getOrderNumber()` / `setOrderNumber(String orderNumber)`
+* `getMerchantNumber()` / `setMerchantNumber(String merchantNumber)`
+* `getRemarks()` / `setRemarks(String remarks)`
+
+
+### Service (Business logic)
+
+- Responsibilities:
+  Transaction CRUD operations, calling the DAO layer to read and write local files,
+  User-defined classification logic (e.g. modifying transaction categories)
+  (3) Operations:
+
+Add Transaction:
+
+Transaction t = new Transaction();
+// Set field values
+service.addTransaction(t);
+
+Modify Transaction:
+
+Transaction update = new Transaction();
+update.setOrderNumber("ORD123");
+// Set fields to update
+service.changeTransaction(update);
+
+Query Transactions:
+
+Transaction criteria = new Transaction();
+criteria.setCounterparty("Alipay");
+List<Transaction> results = service.searchTransaction(criteria);
+Code structure
+   Directory Layout:
+   src/main/java/
+   └── Service/
+   ├── Impl/
+   │   └── TransactionServiceImpl.java  # Service implementation
+   └── TransactionService.java          # Service interface
+   TransactionService.java:
+   Defines the service interface with business-agnostic method signatures, enforcing decoupling 
+   between business logic and implementation details.
+   TransactionServiceImpl.java:
+   Implements the concrete business logic while depending only on the interface-defined contract, maintaining loose coupling with the data access layer through dependency injection.
+
+
+- AIService (Intelligent Analytics) Responsibilities: Generate budget recommendations based
+  on historical data, and detect cost-cutting recommendations for seasonal spending in China
+  (e.g. Spring Festival) (e.g. marking high-frequency small spending)
+
+
+- **`AITransactionService`**
+
+The central class that performs the full AI-driven transaction analysis. It:
+
+- Loads transaction data from a CSV file via `CsvTransactionDao`.
+- Filters transactions by user-specified time range (`startTimeStr`, `endTimeStr`).
+- Aggregates data by counterparty (income/spending, transaction counts).
+- Formats the result into concise summaries sent to the AI.
+- Sends user questions and formatted data to the Volcengine Ark AI API.
+- Returns a response within **400 characters** for efficient display.
+
+Key methods:
+
+- `analyzeTransactions(String userRequest, String filePath, String startTimeStr, String endTimeStr)`
+  → Returns an AI-generated analysis result string.
+- `runAiInThread(...)`
+  → Runs the AI logic in a background thread (single-threaded executor).
+- `formatTransactions(...)`
+  → Groups transactions and summarizes them by counterparty and time range.
+- `parseDateTime(...)`
+  → Supports flexible input formats like `yyyy/MM/dd`, `yyyy/MM/dd HH:mm`, and more. - **`AIAnalyzerThread`** A `Runnable` implementation for threading scenarios (especially GUI usage). It calls `AITransactionService.analyzeTransactions(...)` and prints the result. UI developers can replace the console output with GUI updates using `SwingUtilities.invokeLater()`. --- ### Tests (`test/java/Service/AIservice/`) - **`AIserviceTest`** Unit tests for `AITransactionService`, verifying: - Correct loading and filtering of transactions. - Accurate AI response generation and formatting. - Graceful handling of edge cases (e.g., no transactions in range, invalid time formats). - **`AIAnalyzerThreadTest`** Validates threading logic: - Ensures `AIAnalyzerThread` executes `Runnable` correctly. - Demonstrates clean and concurrent AI analysis flow. - Simulates integration with a GUI environment. - **`AiFunctionTest`** Utility-level tests: - Ensures proper CSV parsing and data transformation. - Verifies output formatting before sending to the AI. - Tests various time formats and edge case behaviors
+
+## DAO (File Storage)
+
+- Responsibilities: Save transaction data in CSV or JSON format and provide interfaces for adding,
+  deleting, and modifying in-memory data
+
+### CsvTransactionDao Class
+
+#### Package
+
+`DAO`
+
+#### Dependencies
+
+* **`model.Transaction`**: The data model class representing a single transaction.
+* **`DAO.TransactionDao`**: The interface this class is intended to implement (though the implementation is incomplete).
+* **Apache Commons CSV (`org.apache.commons.csv.*`)**: Used for robust parsing and writing of CSV data.
+* **Apache Commons IO (`org.apache.commons.io.input.BOMInputStream`)**: Used specifically to handle potential Byte Order Marks (BOM) often found in UTF-8 encoded files, particularly those edited in Windows.
+* **Java Standard Libraries**: `java.io.*`, `java.nio.*`.
+
+#### Key Features & Implementation Details
+
+* **CSV Loading (`loadFromCSV`)**:
+  * Reads data from a specified CSV file path.
+  * Expects UTF-8 encoding.
+  * Handles potential Byte Order Mark (BOM) at the beginning of the file.
+  * Uses the first row of the CSV as the header to map columns to `Transaction` fields. Assumes specific header names (e.g., "交易时间", "交易类型", "金额(元)").
+  * Parses transaction records into a `List<Transaction>`.
+  * Includes basic caching using an internal `transactions` list and an `isLoad` flag to avoid redundant file reads within the same instance lifecycle (unless forced by methods like `deleteTransaction` or `changeInformation`).
+* **Record Parsing (`parseRecord`)**:
+  * Converts a `CSVRecord` object (from Apache Commons CSV) into a `Transaction` object.
+  * Specifically handles the "金额(元)" (Amount) field by removing the leading "¥" symbol before parsing it as a `double`.
+* **Adding Transactions (`addTransaction(String filePath, Transaction newTransaction)`)**:
+  * **Appends** a new transaction record to the *end* of the specified CSV file.
+  * Creates the file if it doesn't exist.
+  * Writes the header row only if the file is new or was empty.
+  * Formats the payment amount by prepending "¥".
+* **Deleting Transactions (`deleteTransaction(String filePath, String orderNumber)`)**:
+  * Loads data from the file if not already cached.
+  * Filters the cached list to remove the transaction matching the given `orderNumber`.
+  * **Overwrites** the *entire* original CSV file with the filtered list using `writeTransactionsToCSV`.
+  * Returns `true` if a transaction was removed, `false` otherwise.
+* **Updating Transactions (`changeInformation`)**:
+  * Loads data if not already cached.
+  * Finds the transaction by `orderNumber`.
+  * Modifies the specified field (`head`) of the found transaction object in memory.
+  * **Crucially, it attempts the update by first *deleting* the original record (using `deleteTransaction`, which overwrites the file) and then *adding* the modified record (using `addTransaction`, which appends to the file).** This logic is inefficient and potentially problematic due to the conflicting file write strategies (overwrite vs. append).
+  * Error handling for invalid `head` parameters prints to `System.err`. The method often returns `true` even if the underlying delete/add fails.
+* **CSV Writing (`writeTransactionsToCSV`)**:
+  * Helper method used by `deleteTransaction`.
+  * Writes a given `List<Transaction>` to the specified file path, **overwriting** any existing content.
+  * Writes a standard header row.
+  * Formats the payment amount by prepending "¥".
+
+#### Important Issues & Considerations
+
+1.  **Incomplete `TransactionDao` Implementation**: The methods declared in the `TransactionDao` interface (`getAllTransactions`, `addTransaction(Transaction)`, `deleteTransaction(String)`, `updateTransaction`, `getTransactionByOrderNumber`) are present but contain only placeholder/stub code. The actual working logic uses separate methods that require the `filePath` to be passed explicitly each time. **This class, in its current state, does not correctly function as a `TransactionDao` implementation.**
+2.  **Inconsistent File Writing Strategy**: `addTransaction` *appends* to the file, while `deleteTransaction` and `writeTransactionsToCSV` (used by `deleteTransaction` and `changeInformation`) *overwrite* the entire file. This inconsistency can lead to unexpected behavior, especially within the `changeInformation` method.
+3.  **Inefficient Updates/Deletes**: Rewriting the entire CSV file for every single deletion or modification (`changeInformation`) is highly inefficient, especially for large transaction files.
+4.  **Flawed Update Logic (`changeInformation`)**: The delete-then-add approach for updates is problematic due to the inconsistent write strategies and potential race conditions or partial failures. The modified record will likely appear at the *end* of the file, not its original position.
+5.  **Basic Caching**: The caching mechanism (`isLoad` flag) is simple and does not account for external modifications to the CSV file during the application's runtime.
+6.  **Hardcoded Dependencies**: The code relies on specific header names (in Chinese) and the "¥" currency symbol format within the CSV data. Changes to the CSV format would require code modifications.
+
+#### Usage Example (Using Functional Methods)
+
+```java
+import DAO.CsvTransactionDao; // Assuming TransactionDao interface exists but is not used directly here due to stub methods
+import model.Transaction;
+import java.io.IOException;
+import java.util.List;
+
+public class CsvDataManager {
+
+    public static void main(String[] args) {
+        // NOTE: Using the class directly, not via the TransactionDao interface
+        // because the interface methods are not fully implemented.
+        CsvTransactionDao csvDao = new CsvTransactionDao();
+        String csvFilePath = "path/to/your/transactions.csv"; // <--- Specify your file path
+
+        try {
+            // --- Load Data ---
+            System.out.println("Loading transactions...");
+            List<Transaction> transactions = csvDao.loadFromCSV(csvFilePath);
+            System.out.println("Loaded " + transactions.size() + " transactions.");
+            // Display first transaction if available
+            if (!transactions.isEmpty()) {
+                 System.out.println("First transaction order number: " + transactions.get(0).getOrderNumber());
+            }
+
+            // --- Add a New Transaction (Appends) ---
+            Transaction newTx = new Transaction(
+                 "2025-04-20 08:14:00", "Test Add", "Counterparty", "Item", "支",
+                 10.0, "支付宝", "交易成功", "NEW_ORDER_123", "MERCH_456", "Test via DAO add"
+            );
+            System.out.println("\nAdding new transaction (append): " + newTx.getOrderNumber());
+            // csvDao.addTransaction(csvFilePath, newTx); // Uncomment to actually add
+            System.out.println("Transaction potentially added.");
+
+            // --- Delete a Transaction (Overwrites File) ---
+            String orderToDelete = "SOME_EXISTING_ORDER_NUMBER"; // <--- Change to a real order number from your file
+            System.out.println("\nAttempting to delete transaction: " + orderToDelete);
+            // boolean deleted = csvDao.deleteTransaction(csvFilePath, orderToDelete); // Uncomment to actually delete
+            // if (deleted) {
+            //     System.out.println("Transaction deleted successfully (File rewritten).");
+            // } else {
+            //     System.out.println("Transaction not found for deletion.");
+            // }
+
+            // --- Change Information (Overwrites then Appends - Use with Caution) ---
+             String orderToChange = "ANOTHER_EXISTING_ORDER_NUMBER"; // <--- Change to a real order number
+             String fieldToChange = "remarks";
+             String newValue = "Updated remark via changeInformation";
+             System.out.println("\nAttempting to change info for: " + orderToChange);
+             // boolean changed = csvDao.changeInformation(orderToChange, fieldToChange, newValue, csvFilePath); // Uncomment with caution
+             // System.out.println("Change operation attempted (File rewritten and appended). Result: " + changed);
+
+
+        } catch (IOException e) {
+            System.err.println("Error interacting with CSV file: " + e.getMessage());
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing amount in CSV: " + e.getMessage());
+        }
+    }
+}
+```
+
+## Controller (Swing GUI)
+
+Responsibilities: Manage user interface components (buttons, tables, text boxes) to listen for 
+events (clicks, inputs) and call service layer methods to update the interface data display
+
+## attention
+
+encoding with UTF-8
+```
+
+`软工/Ai-Bill-Application-Group21 - 副本\项目要求.txt`:
+
+```txt
+1. General Information 
+In the next few weeks, your team will be required to develop a software application that 
+will serve as a smart personal finance manager that helps users track expenses, set 
+savings goals, and analyses spending habits using AI. Agile methods should be applied 
+in all activities, from requirements through analysis/design, implementation, and testing. 
+Iterations should be planned, and outcomes should be submitted. 
+There are no restrictions on what you can include in the final product, and the given 
+specification contains only high-level abstract requirements. It should be noted that 
+determining the software requirements is one of the most important and complex phases 
+in any development project. You should apply requirement-finding techniques and Agile 
+methods to identify the actual requirements at an appropriate level. Most importantly, you 
+need to prioritize the features that are implemented in accordance with both ease of 
+implementation and meeting requirements. As in real software, you should define the 
+project scope properly. Keep your design SIMPLE. Bear in mind that there is no absolute 
+right answer – your solution may be perfectly appropriate.
+
+2. Project Specification 
+2.1 Basic Requirements 
+Managing personal finances effectively is crucial in today’s digital economy, where 
+transactions occur across multiple platforms like WeChat Pay, Alipay, and traditional 
+banking. Many individuals struggle with tracking expenses, categorizing spending, and 
+setting realistic budgets. An AI-powered personal finance tracker simplifies financial 
+management by automatically classifying transactions, detecting spending patterns, and 
+offering personalized savings recommendations. However, AI is not perfect – users must 
+manually review to ensure accuracy. By integrating AI with manual validation, this 
+software helps users make informed financial decisions while adapting to regional 
+spending habits and economic conditions, improving financial literacy and budgeting 
+skills. Here are some suggested functions to assist you in getting started. Suggested 
+features can include the following, but not limited to: 
+• Manual & Automated Data Entry: End users may input transactions manually or 
+import structured CSV files from banking/financial apps. 
+• Expense Categorisation (AI + Manual Correction): AI classifies transactions into 
+categories (e.g., groceries, rent, entertainment), but end users can verify & correct 
+misclassifications. 
+• Spending Insights & Predictions: AI suggests monthly budgets, savings goals, and 
+cost-cutting recommendations based on spending behaviour. 
+• Local Financial Context: Customisable to China-specific budgeting habits, for 
+example detects seasonal spending habits, such as higher expenses during Chinese 
+New Year. 
+A full prototype of the application should be produced. It is not required to implement the 
+full working code for all functions in the prototype, however your team should implement 
+core functions of your choice. 
+
+2.2 Other Requirements 
+• The software must be developed using Java as a stand-alone application running 
+on computers. A simple graphic user interface (GUI) should be used. The recent 
+Java Edition should be used. Do NOT build a Web-based application or Phone 
+App. 
+• All input and output data should be in simple text file format. You may use plain 
+text (txt), CSV, JSON, or XML. Do NOT use a database. 
+• Basic restrictions and error checking must be considered. 
+• Your design must be flexible and extensible to adapt to future changes, e.g. 
+modify existing features and add new features. When doing so, you should be 
+able to reuse the existing components and make the least impact on the existing 
+code. 
+Page 2 of 8 
+Your tasks are to define detailed requirements, design, develop and test the above software 
+using Agile methods. Feel free to design the software as long as it satisfies the basic 
+requirements, define the SCOPE properly.  
+
+2.3 AI-Assisted Development 
+To prevent over-reliance on AI, 
+the following constraints apply: 
+• Live Data Collection: AI cannot generate user-specific data patterns – you must 
+gather real data. 请给出相应的数据搜集渠道（但是我们已经设计好了csv表，相应字段也设计了）
+• Manual Data Cleaning and Validation: AI assistance is allowed, but the team must 
+need to manually check for missing information, inconsistency, and inappropriate 
+categorisation, etc. 
+• Context-Specific Constraints: AI may struggle with domain-specific rules – you 
+must implement real-world constraints (e.g. AI may count a WeChat Red Packet as a 
+personal income where it is in fact a gift money and not a regular income.) 
+• Oral Spot-Check: During the vivas, you will need to answer questions like “Why did 
+AI make this recommendation?”, “How did you modify AI’s solution?”, etc, to 
+demonstrate your understanding.
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\HistogramPanelContainer.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import java.awt.*;
+
+// 直方图面板容器
+public class HistogramPanelContainer extends JPanel {
+    private HistogramPanel histogramPanel;
+    private JTextArea textArea;
+    private JSplitPane splitPane;
+    private boolean isHistogramVisible = true;
+    private boolean isTextVisible = true;
+
+    public HistogramPanelContainer() {
+        setLayout(new BorderLayout(10, 10));
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton btnShowHistogram = new JButton("显示直方图");
+        JButton btnShowText1 = new JButton("显示文本 1");
+        JButton btnShowText2 = new JButton("显示文本 2");
+
+        buttonPanel.add(btnShowHistogram);
+        buttonPanel.add(btnShowText1);
+        buttonPanel.add(btnShowText2);
+        add(buttonPanel, BorderLayout.NORTH);
+
+        textArea = new JTextArea();
+        textArea.setFont(new Font("微软雅黑", Font.PLAIN, 18));
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        JScrollPane textScrollPane = new JScrollPane(textArea);
+
+        histogramPanel = new HistogramPanel();
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, textScrollPane, histogramPanel);
+        splitPane.setResizeWeight(0.5);
+        add(splitPane, BorderLayout.CENTER);
+
+        btnShowHistogram.addActionListener(e -> toggleHistogram());
+        btnShowText1.addActionListener(e -> toggleText("这是一段非常长的文本..."));
+        btnShowText2.addActionListener(e -> toggleText("222222222222222"));
+    }
+
+    private void toggleHistogram() {
+        if (isHistogramVisible) {
+            histogramPanel.setVisible(false);
+        } else {
+            showHistogram();
+            histogramPanel.setVisible(true);
+        }
+        isHistogramVisible = !isHistogramVisible;
+        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(isHistogramVisible ? 0.5 : 0.0));
+    }
+
+    private void toggleText(String text) {
+        if (isTextVisible) {
+            textArea.setText("");
+        } else {
+            textArea.setText(text);
+        }
+        isTextVisible = !isTextVisible;
+    }
+
+
+
+    private void showHistogram() {
+        int[] data = DataGenerator.generateData(1000, 100);
+        Histogram histogram = new Histogram(data, 10);
+        histogramPanel.updateData(histogram.computeFrequency());
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\pom.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>Ai-bill</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.knowm.xchart</groupId>
+            <artifactId>xchart</artifactId>
+            <version>3.8.4</version> <!-- Use the latest version -->
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- CSV 解析核心库 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+        <!-- 文件操作工具 -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.15.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 断言增强库 -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.24.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.volcengine</groupId>
+            <artifactId>volcengine-java-sdk-ark-runtime</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <!-- pom.xml -->
+
+
+
+        <!-- JSON 处理 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
+        <!--        caffeine缓存中间件-->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version> <!-- 使用最新版本 -->
+        </dependency>
+
+    </dependencies>
+
+</project>
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\src\main\java\Constants\CaffeineKeys.java`:
+
+```java
+package Constants;
+
+public class CaffeineKeys {
+    public static final String TRANSACTION_CAFFEINE_KEY = "transactions";
+
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\src\main\java\Constants\ConfigConstants.java`:
+
+```java
+package Constants;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+/**
+ * 配置常量类（线程安全初始化）
+ */
+public final class ConfigConstants {
+    private ConfigConstants() {} // 私有构造防止实例化
+
+    // CSV路径常量
+    public static final String CSV_PATH; // Original, may still be referenced in old code
+    public static final String USERS_CSV_PATH; // User CSV path
+    public static final String SUMMARY_CSV_PATH; // 新增汇总统计CSV路径
+
+
+    // 静态初始化块（类加载时执行）
+    static {
+        Properties prop = new Properties();
+        try (InputStream input = ConfigConstants.class.getClassLoader()
+                .getResourceAsStream("config.properties")) {
+
+            if (input == null) {
+                throw new RuntimeException("配置文件 config.properties 未找到在 classpath 中");
+            }
+
+            prop.load(input);
+
+            CSV_PATH = prop.getProperty("csv.path");
+            USERS_CSV_PATH = prop.getProperty("csv.users_path");
+            SUMMARY_CSV_PATH = prop.getProperty("csv.summary_path"); // 读取汇总统计CSV路径
+
+
+            // Basic validation
+            if (USERS_CSV_PATH == null || USERS_CSV_PATH.trim().isEmpty()) {
+                throw new RuntimeException("'csv.users_path' not found or is empty in config.properties.");
+            }
+            if (SUMMARY_CSV_PATH == null || SUMMARY_CSV_PATH.trim().isEmpty()) {
+                throw new RuntimeException("'csv.summary_path' not found or is empty in config.properties.");
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("加载配置文件失败", e); // 转换为运行时异常
+        }
+        System.out.println("Loaded USERS_CSV_PATH: " + USERS_CSV_PATH);
+        System.out.println("Loaded SUMMARY_CSV_PATH: " + SUMMARY_CSV_PATH);
+        if (CSV_PATH != null) System.out.println("Loaded CSV_PATH: " + CSV_PATH); // Optional print
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\src\main\java\Constants\StandardCategories.java`:
+
+```java
+package Constants;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections; // For immutable lists
+import java.util.stream.Collectors;
+
+public final class StandardCategories {
+    private StandardCategories() {} // Prevent instantiation
+
+    // Standard Expense Categories for analysis and filtering
+    public static final List<String> EXPENSE_CATEGORIES = Collections.unmodifiableList(List.of(
+            "餐饮",
+            "食品杂货",
+            "服饰",
+            "日用品",
+            "交通",
+            "娱乐",
+            "住房",
+            "通信",
+            "教育",
+            "医疗",
+            "金融服务",
+            "其他支出" // General catch-all for expenses
+    ));
+
+    // Standard Income Categories
+    public static final List<String> INCOME_CATEGORIES = Collections.unmodifiableList(List.of(
+            "工资",
+            "兼职收入",
+            "投资收益",
+            "其他收入" // General catch-all for income
+    ));
+
+    // Special Transaction Types (may not be strictly 'expense' or 'income' in analysis)
+    public static final List<String> SPECIAL_TYPES = Collections.unmodifiableList(List.of(
+            "转账", // Transfers between accounts or people
+            "红包" // WeChat/Alipay Red Packets - often social, not regular income/expense
+            // Add other special types as needed, e.g., Refund, Credit Card Repayment
+    ));
+
+    /**
+     * Generates a comma-separated string of all standard categories for AI prompts.
+     * @return String like "餐饮,食品杂货,服饰,..."
+     */
+    public static String getAllCategoriesString() {
+        return ALL_KNOWN_TYPES.stream()
+                .collect(Collectors.joining(","));
+    }
+
+    // All Known Transaction Types (combination of all the above + potentially user-defined ones initially)
+    // This list might be used for dropdowns in UI, etc.
+    public static final List<String> ALL_KNOWN_TYPES;
+
+    static {
+        List<String> allTypesMutable = new ArrayList<>();
+        allTypesMutable.addAll(EXPENSE_CATEGORIES);
+        allTypesMutable.addAll(INCOME_CATEGORIES);
+        allTypesMutable.addAll(SPECIAL_TYPES);
+        ALL_KNOWN_TYPES = Collections.unmodifiableList(allTypesMutable);
+    }
+
+
+    /**
+     * Helper method to check if a transaction type is a standard expense category.
+     * Handles potential variations like "支" vs "支出".
+     */
+    public static boolean isStandardExpenseCategory(String type) {
+        if (type == null) return false;
+        String trimmedType = type.trim();
+        // First, check if it's directly in the list
+        if (EXPENSE_CATEGORIES.contains(trimmedType)) {
+            return true;
+        }
+        // Handle common aliases/variations if necessary, e.g., "交通费" -> "交通"
+        // This might require a mapping logic if aliases are common and not handled by AI mapping.
+        return false; // For now, strict check
+    }
+
+    /**
+     * Helper method to get the standardized category for a given transaction type string.
+     * This is where mapping from potentially messy user input or AI output to standard categories happens.
+     * For now, a simple direct match is used. In the future, this could use AI recognition results
+     * or manual mapping rules.
+     * @param rawType The transaction type string from data.
+     * @return The matched standard category, or the original rawType if no standard match, or "未知" for null/empty.
+     */
+    public static String getStandardCategory(String rawType) {
+        if (rawType == null || rawType.trim().isEmpty()) {
+            return "未知"; // Unknown category
+        }
+        String trimmedType = rawType.trim();
+        // Check if it matches any standard category (case-insensitive might be better)
+        // Let's do a simple case-sensitive check for now against the predefined lists.
+        if (ALL_KNOWN_TYPES.contains(trimmedType)) {
+            return trimmedType; // Direct match
+        }
+
+        // Future Improvement: Implement smarter mapping here, potentially using AI suggestions
+        // or a configuration file for mapping common user inputs to standard categories.
+        // E.g., if rawType is "吃饭", map to "餐饮". If "地铁票", map to "交通".
+
+        return trimmedType; // If no standard match, return the original type.
+        // We might want a dedicated "Other" if it doesn't fit any *known* type.
+    }
+
+    /**
+     * Helper method to check if a transaction type is a standard income category.
+     */
+    public static boolean isStandardIncomeCategory(String type) {
+        if (type == null) return false;
+        return INCOME_CATEGORIES.contains(type.trim());
+    }
+
+    /**
+     * Helper method to check if a transaction type is a special type.
+     */
+    public static boolean isSpecialType(String type) {
+        if (type == null) return false;
+        return SPECIAL_TYPES.contains(type.trim());
+    }
+
+
+}
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\src\main\java\Controller\ButtonEditor.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
+    private final JPanel panel = new JPanel(new BorderLayout()); // 使用 BorderLayout
+    private final JButton button = new JButton();
+    private int rowIndex;
+    private final MenuUI menuUI;
+
+    public ButtonEditor(MenuUI menuUI) {
+        this.menuUI = menuUI;
+
+        // 设置按钮样式
+        button.setFocusPainted(false); // 移除按钮的焦点边框
+        button.setPreferredSize(new Dimension(80, 30)); // 设置按钮的固定尺寸
+
+        // 添加按钮到面板
+        panel.add(button, BorderLayout.CENTER);
+
+        // 为按钮添加事件监听器
+        button.addActionListener(e -> {
+            System.out.println("按钮点击事件触发: " + button.getText());
+            fireEditingStopped(); // 停止编辑
+            String buttonText = button.getText();
+            if ("Modify".equals(buttonText)) {
+                menuUI.editRow(rowIndex); // 调用 MenuUI 的 editRow 方法
+            } else if ("Delete".equals(buttonText)) {
+                int confirm = JOptionPane.showConfirmDialog(panel, "确定要删除此行吗？", "确认删除", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    menuUI.deleteRow(rowIndex); // 调用 MenuUI 的 deleteRow 方法
+                }
+            }
+        });
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.rowIndex = row; // 更新当前行索引
+        button.setText(value != null ? value.toString() : ""); // 根据单元格的值设置按钮文本
+        return panel;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        return button.getText(); // 返回按钮的当前文本
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\src\main\java\Controller\ButtonRenderer.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+
+class ButtonRenderer extends DefaultTableCellRenderer {
+    private final JPanel panel = new JPanel(new BorderLayout()); // 使用 BorderLayout
+    private final JButton button = new JButton();
+
+    public ButtonRenderer() {
+        button.setFocusPainted(false); // 移除按钮的焦点边框
+        button.setPreferredSize(new Dimension(80, 30)); // 设置按钮的固定尺寸
+        panel.add(button, BorderLayout.CENTER); // 将按钮添加到面板中心
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        // 根据单元格的值设置按钮文本
+        button.setText(value != null ? value.toString() : "");
+        return panel;
+    }
+}
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\src\main\java\Controller\HistogramExample.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Random;
+
+// 数据生成类
+class DataGenerator {
+    public static int[] generateData(int numberOfDataPoints, int maxValue) {
+        Random random = new Random();
+        int[] data = new int[numberOfDataPoints];
+        for (int i = 0; i < numberOfDataPoints; i++) {
+            data[i] = random.nextInt(maxValue);
+        }
+        return data;
+    }
+}
+
+// 直方图计算类
+class Histogram {
+    private int binSize;
+    private int[] data;
+
+    public Histogram(int[] data, int binSize) {
+        this.data = data;
+        this.binSize = binSize;
+    }
+
+    public HashMap<Integer, Integer> computeFrequency() {
+        HashMap<Integer, Integer> frequencyMap = new HashMap<>();
+        for (int number : data) {
+            int bin = number / binSize;
+            frequencyMap.put(bin, frequencyMap.getOrDefault(bin, 0) + 1);
+        }
+        return frequencyMap;
+    }
+}
+
+// 直方图 GUI 绘制类
+class HistogramPanel extends JPanel {
+    HashMap<Integer, Integer> frequencyMap;
+
+    public HistogramPanel() {
+        this.frequencyMap = new HashMap<>();
+    }
+
+    public void updateData(HashMap<Integer, Integer> frequencyMap) {
+        this.frequencyMap = frequencyMap;
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        int barWidth = 40;
+        int gap = 10;
+        int maxFrequency = frequencyMap.values().stream().mapToInt(v -> v).max().orElse(1);
+
+        int index = 0;
+        for (Integer key : frequencyMap.keySet()) {
+            int height = (int) ((frequencyMap.get(key) / (double) maxFrequency) * getHeight());
+            g.setColor(Color.BLUE);
+            g.fillRect(index * (barWidth + gap), getHeight() - height, barWidth, height);
+            g.setColor(Color.BLACK);
+            g.drawRect(index * (barWidth + gap), getHeight() - height, barWidth, height);
+            g.drawString("Bin " + key, index * (barWidth + gap) + 5, getHeight() - 5);
+            index++;
+        }
+    }
+}
+
+
+// 主窗口类
+public class HistogramExample {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("数据分析界面");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(800, 600);
+            frame.add(new HistogramPanelContainer());
+            frame.setVisible(true);
+        });
+    }
+}
+
+```
+
+`软工/Ai-Bill-Application-Group21\Ai Bill Application\src\main\java\Controller\HistogramPanelContainer.java`:
+
+```java
+package Controller;
+
+import javax.swing.*;
+import java.awt.*;
+
+// 直方图面板容器
+public class HistogramPanelContainer extends JPanel {
+    private HistogramPanel histogramPanel;
+    private JTextArea textArea;
+    private JSplitPane splitPane;
+    private boolean isHistogramVisible = true;
+    private boolean isTextVisible = true;
+
+    public HistogramPanelContainer() {
+        setLayout(new BorderLayout(10, 10));
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton btnShowHistogram = new JButton("显示直方图");
+        JButton btnShowText1 = new JButton("显示文本 1");
+        JButton btnShowText2 = new JButton("显示文本 2");
+
+        buttonPanel.add(btnShowHistogram);
+        buttonPanel.add(btnShowText1);
+        buttonPanel.add(btnShowText2);
+        add(buttonPanel, BorderLayout.NORTH);
+
+        textArea = new JTextArea();
+        textArea.setFont(new Font("微软雅黑", Font.PLAIN, 18));
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        JScrollPane textScrollPane = new JScrollPane(textArea);
+
+        histogramPanel = new HistogramPanel();
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, textScrollPane, histogramPanel);
+        splitPane.setResizeWeight(0.5);
+        add(splitPane, BorderLayout.CENTER);
+
+        btnShowHistogram.addActionListener(e -> toggleHistogram());
+        btnShowText1.addActionListener(e -> toggleText("这是一段非常长的文本..."));
+        btnShowText2.addActionListener(e -> toggleText("222222222222222"));
+    }
+
+    private void toggleHistogram() {
+        if (isHistogramVisible) {
+            histogramPanel.setVisible(false);
+        } else {
+            showHistogram();
+            histogramPanel.setVisible(true);
+        }
+        isHistogramVisible = !isHistogramVisible;
+        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(isHistogramVisible ? 0.5 : 0.0));
+    }
+
+    private void toggleText(String text) {
+        if (isTextVisible) {
+            textArea.setText("");
+        } else {
+            textArea.setText(text);
+        }
+        isTextVisible = !isTextVisible;
+    }
+
+
+
+    private void showHistogram() {
+        int[] data = DataGenerator.generateData(1000, 100);
+        Histogram histogram = new Histogram(data, 10);
+        histogramPanel.updateData(histogram.computeFrequency());
+    }
+}
+
