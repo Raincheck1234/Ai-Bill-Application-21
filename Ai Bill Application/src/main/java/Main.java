@@ -73,7 +73,7 @@ public class Main {
 
                 JFrame frame = new JFrame("交易管理系统 - " + authenticatedUser.getUsername());
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setSize(1200, 600);
+                frame.setSize(1500, 800);
                 frame.setLocationRelativeTo(null);
                 frame.add(menuUI.createMainPanel());
                 frame.setVisible(true);
