@@ -14,6 +14,7 @@ import Service.AIservice.AITransactionService; // Import AI Service classes
 import Service.AIservice.CollegeStudentNeeds;
 import Service.TransactionService;
 import Service.User.UserService;
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import model.User;
 import Constants.ConfigConstants;
 
@@ -43,7 +44,11 @@ public class Main {
 
         SummaryStatisticService summaryStatisticService = new SummaryStatisticService(userDao, transactionDao, summaryStatisticDao);
 
-
+        try {
+            UIManager.setLookAndFeel( new FlatIntelliJLaf() );
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
+        }
         // In the event dispatch thread (EDT) start GUI
         SwingUtilities.invokeLater(() -> {
             LoginDialog loginDialog = new LoginDialog(userService);
