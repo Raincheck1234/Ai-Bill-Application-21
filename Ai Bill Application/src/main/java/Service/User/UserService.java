@@ -82,8 +82,8 @@ public class UserService {
         if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             return null;
         }
-
-        User user = userCache.get(username.trim());
+        User user = userCache.get(username.trim
+       ());
         if (user != null && user.getPassword().equals(password.trim())) { // Simple password check
             System.out.println("Authentication successful for user: " + username);
             return user; // Authentication successful, return the User object
