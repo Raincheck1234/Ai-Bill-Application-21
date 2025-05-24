@@ -366,14 +366,13 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         addDialog.setTitle("添加交易");
         JPanel dialogPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
+        // Default constraints
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 5, 5, 5);
 
         JTextField transactionTimeField = new JTextField(15);
         JTextField transactionTypeField = new JTextField(15);
         JButton aiSuggestButton = new JButton("AI分类建议");
-        // Removed aiStatusLabel as we use a separate waiting dialog
-
 
         JTextField counterpartyField = new JTextField(15);
         JTextField commodityField = new JTextField(15);
@@ -385,41 +384,54 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         JTextField merchantNumberField = new JTextField(15);
         JTextField remarksField = new JTextField(15);
 
+        // Array of fields for easier iteration
+        JTextField[] fields = {
+                transactionTimeField, transactionTypeField, counterpartyField,
+                commodityField, null, paymentAmountField, paymentMethodField,
+                currentStatusField, orderNumberField, merchantNumberField, remarksField
+        };
+        String[] fieldNames = {
+                "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)",
+                "支付方式", "当前状态", "交易单号", "商户单号", "备注"
+        };
 
-        gbc.gridx = 0; gbc.gridy = 0; dialogPanel.add(new JLabel("交易时间:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 0; gbc.gridwidth = 2; dialogPanel.add(transactionTimeField, gbc); gbc.gridwidth = 1;
+        // Add components using GridBagLayout
+        // Iterate through the field names and components
+        for (int i = 0; i < fieldNames.length; i++) {
+            // Handle the JComboBox separately as it's not in the fields array
+            if (fieldNames[i].equals("收/支")) {
+                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; // Constraints for label
+                dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1; dialogPanel.add(new JLabel("交易类型:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 1; gbc.weightx = 1.0; dialogPanel.add(transactionTypeField, gbc);
-        gbc.gridx = 2; gbc.gridy = 1; gbc.weightx = 0.0; dialogPanel.add(aiSuggestButton, gbc);
+                gbc.gridx = 1; gbc.gridy = i; gbc.gridwidth = 2; gbc.weightx = 1.0; // Constraints for JComboBox
+                dialogPanel.add(inOutComboBox, gbc);
+                // No gbc.gridwidth reset needed here as it's the last component on this row spanning 2 columns
+                continue; // Move to next iteration
+            }
 
+            // Constraints for Label
+            gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
+            dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 1; dialogPanel.add(new JLabel("交易对方:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 2; gbc.gridwidth = 2; dialogPanel.add(counterpartyField, gbc); gbc.gridwidth = 1;
+            // Constraints for TextField
+            gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; // TextField gets horizontal weight
 
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 1; dialogPanel.add(new JLabel("商品:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 3; gbc.gridwidth = 2; dialogPanel.add(commodityField, gbc); gbc.gridwidth = 1;
+            // Special case for Transaction Type field (index 1)
+            if (fieldNames[i].equals("交易类型")) { // i is 1 here
+                gbc.gridwidth = 1; // It only spans 1 column to make space for the button
+                dialogPanel.add(fields[i], gbc); // Add the transactionTypeField
 
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 1; dialogPanel.add(new JLabel("收/支:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 4; gbc.gridwidth = 2; dialogPanel.add(inOutComboBox, gbc); gbc.gridwidth = 1;
+                // Constraints for AI Suggest Button
+                gbc.gridx = 2; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; // Button has no horizontal weight
+                dialogPanel.add(aiSuggestButton, gbc);
+                // No gbc.gridwidth reset needed here as it's the last component on this row spanning 1 column
 
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 1; dialogPanel.add(new JLabel("金额(元):"), gbc);
-        gbc.gridx = 1; gbc.gridy = 5; gbc.gridwidth = 2; dialogPanel.add(paymentAmountField, gbc); gbc.gridwidth = 1;
-
-        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 1; dialogPanel.add(new JLabel("支付方式:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 6; gbc.gridwidth = 2; dialogPanel.add(paymentMethodField, gbc); gbc.gridwidth = 1;
-
-        gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 1; dialogPanel.add(new JLabel("当前状态:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 7; gbc.gridwidth = 2; dialogPanel.add(currentStatusField, gbc); gbc.gridwidth = 1;
-
-        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 1; dialogPanel.add(new JLabel("交易单号:"));
-        gbc.gridx = 1; gbc.gridy = 8; gbc.gridwidth = 2; dialogPanel.add(orderNumberField, gbc); gbc.gridwidth = 1;
-
-        gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 1; dialogPanel.add(new JLabel("商户单号:"));
-        gbc.gridx = 1; gbc.gridy = 9; gbc.gridwidth = 2; dialogPanel.add(merchantNumberField, gbc); gbc.gridwidth = 1;
-
-        gbc.gridx = 0; gbc.gridy = 10; gbc.gridwidth = 1; dialogPanel.add(new JLabel("备注:"));
-        gbc.gridx = 1; gbc.gridy = 10; gbc.gridwidth = 2; dialogPanel.add(remarksField, gbc); gbc.gridwidth = 1;
+            } else { // All other TextFields
+                gbc.gridwidth = 2; // These fields span 2 columns (1 and 2)
+                dialogPanel.add(fields[i], gbc); // Add the text field
+                // No gbc.gridwidth reset needed here as it's the last component on this row spanning 2 columns
+            }
+        }
 
 
         // --- Define the modal waiting dialog ---
@@ -439,7 +451,14 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
-        gbc.gridx = 0; gbc.gridy = 11; gbc.gridwidth = 3; gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE; // Adjust gridy
+        // Constraints for Button Panel (placed below the last field row, which is index 10)
+        gbc.gridx = 0; gbc.gridy = fieldNames.length; // fieldNames.length is 11, so gridy = 11
+        gbc.gridwidth = 3; // Span all 3 columns
+        gbc.anchor = GridBagConstraints.CENTER; // Center the panel horizontally
+        gbc.fill = GridBagConstraints.NONE; // Don't resize button panel
+        gbc.insets = new Insets(15, 5, 5, 5); // Add some space above buttons
+        gbc.weightx = 0.0; // No horizontal weight for this row
+        gbc.weighty = 1.0; // Give this row vertical weight to push fields up
         dialogPanel.add(buttonPanel, gbc);
 
 
@@ -457,7 +476,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
             // 2. Build temporary transaction object from current fields
             Transaction tempTransaction = new Transaction(
                     emptyIfNull(transactionTimeField.getText().trim()),
-                    emptyIfNull(transactionTypeField.getText().trim()), // Capture current potentially incomplete type
+                    emptyIfNull(transactionTypeField.getText().trim()),
                     emptyIfNull(counterpartyField.getText().trim()),
                     emptyIfNull(commodityField.getText().trim()),
                     (String) inOutComboBox.getSelectedItem(),
@@ -577,7 +596,15 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                     return;
                 }
             }
-            // --- End Validation ---
+            // Check for non-negative amount consistency with InOut
+            if (paymentAmount < 0 && (inOut != null && (inOut.equals("收入") || inOut.equals("收")))) {
+                JOptionPane.showMessageDialog(addDialog, "收入金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (paymentAmount < 0 && (inOut != null && (inOut.equals("支出") || inOut.equals("支")))) { // Assuming expenses are positive input amounts
+                JOptionPane.showMessageDialog(addDialog, "支出金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
 
             Transaction newTransaction = new Transaction(
@@ -669,21 +696,112 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
             String[] fieldNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"};
             JButton aiSuggestButton = new JButton("AI分类建议");
 
-
+            // Add components using GridBagLayout
             for (int i = 0; i < fieldNames.length; i++) {
-                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
-                fields[i] = new JTextField(rowData.get(i));
-                if (i == 1) { // Transaction Type field
-                    gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; dialogPanel.add(fields[i], gbc);
-                    gbc.gridx = 2; gbc.gridy = i; gbc.weightx = 0.0; dialogPanel.add(aiSuggestButton, gbc);
-                    gbc.gridwidth = 1;
-                } else {
-                    gbc.gridx = 1; gbc.gridy = i; gbc.gridwidth = 2; gbc.weightx = 1.0; dialogPanel.add(fields[i], gbc);
-                    gbc.gridwidth = 1;
+                // Constraints for Label
+                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
+                dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
+
+                // Constraints for TextField
+                gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; // TextField gets horizontal weight
+
+                if (fieldNames[i].equals("收/支")) { // Handle ComboBox
+                    gbc.gridwidth = 2; // Spans 2 columns
+                    // Create ComboBox for 收/支 here, populated with current value
+                    JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"});
+                    // Find the correct index for the current value and set it
+                    String currentInOut = rowData.get(i);
+                    for (int j = 0; j < inOutComboBox.getItemCount(); j++) {
+                        if (currentInOut != null && currentInOut.equals(inOutComboBox.getItemAt(j))) {
+                            inOutComboBox.setSelectedIndex(j);
+                            break;
+                        }
+                    }
+                    // Replace the JTextField in the fields array with this ComboBox
+                    // This requires adjusting how fields array is used or creating a separate array for components
+                    // Simpler: Access the ComboBox directly later, just add it here.
+                    dialogPanel.add(inOutComboBox, gbc);
+                    // Need to capture the ComboBox reference to get its value later
+                    // Let's create a final JComboBox reference just for this row
+                    final JComboBox<String> finalInOutComboBox = inOutComboBox; // Make it final to use in listeners
+                    // To retrieve value later: finalInOutComboBox.getSelectedItem()
+
+                    // Skip the rest of the loop body for this iteration (as it's not a JTextField being added)
+                    continue; // Move to next iteration
+
+                } else { // All other TextFields
+                    fields[i] = new JTextField(rowData.get(i)); // Create the text field
+                    gbc.gridwidth = 2; // These fields span 2 columns
+                    dialogPanel.add(fields[i], gbc); // Add the text field
+                }
+
+
+                if (fieldNames[i].equals("交易类型")) { // Add AI button next to Transaction Type field (index 1)
+                    // The field[1] has already been added above in the 'else' block
+                    // Need to adjust GBCs and add the AI button next to it
+                    gbc.gridx = 2; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; // Constraints for AI button
+                    dialogPanel.add(aiSuggestButton, gbc); // Add AI button
+                    // No gbc.gridwidth reset needed as it's the last component on this row spanning 1 column
                 }
             }
 
-            fields[8].setEditable(false); // Disable editing OrderNumber field
+            // Re-populate fields array and handle the 收/支 ComboBox reference more cleanly
+            // Let's recreate the dialog panel setup more cleanly outside the loop if needed
+            // Or, adjust the loop to handle the ComboBox component addition correctly.
+            // The current loop structure is problematic for mixing JTextFields and JComboBox.
+
+            // Let's revert to the previous layout structure for fields and handle ComboBox separately
+            // Re-structure the field addition logic:
+
+            dialogPanel = new JPanel(new GridBagLayout()); // Re-initialize panel for clean layout
+            gbc = new GridBagConstraints(); // Re-initialize constraints
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(5, 5, 5, 5);
+
+            fields = new JTextField[10]; // 10 TextFields (excluding 收/支 which is ComboBox)
+            String[] fieldNamesExcludingInOut = {"交易时间", "交易类型", "交易对方", "商品", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"};
+            JComboBox<String> editInOutComboBox = new JComboBox<>(new String[]{"收入", "支出"}); // New ComboBox for edit dialog
+
+            // Map rowData index to fieldNamesExcludingInOut index and JComboBox
+            int fieldIdx = 0;
+            for(int i = 0; i < fieldNames.length; i++) {
+                String currentFieldName = fieldNames[i];
+
+                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
+                dialogPanel.add(new JLabel(currentFieldName + ":"), gbc); // Add Label
+
+                if (currentFieldName.equals("收/支")) { // Handle 收/支 row
+                    gbc.gridx = 1; gbc.gridy = i; gbc.gridwidth = 2; gbc.weightx = 1.0;
+                    // Set current value in ComboBox
+                    String currentInOutValue = rowData.get(i); // Get value from original rowData
+                    for (int j = 0; j < editInOutComboBox.getItemCount(); j++) {
+                        if (currentInOutValue != null && currentInOutValue.equals(editInOutComboBox.getItemAt(j))) {
+                            editInOutComboBox.setSelectedIndex(j);
+                            break;
+                        }
+                    }
+                    dialogPanel.add(editInOutComboBox, gbc);
+
+                } else { // Handle all JTextField rows
+                    fields[fieldIdx] = new JTextField(rowData.get(i)); // Create JTextField
+                    gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; // Text field starts at column 1
+
+                    if (currentFieldName.equals("交易类型")) { // Special case for AI button
+                        gbc.gridwidth = 1; // Spans 1 column
+                        dialogPanel.add(fields[fieldIdx], gbc); // Add the field
+
+                        gbc.gridx = 2; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
+                        dialogPanel.add(aiSuggestButton, gbc); // Add AI button
+
+                    } else { // Standard JTextField row
+                        gbc.gridwidth = 2; // Spans 2 columns
+                        dialogPanel.add(fields[fieldIdx], gbc); // Add the field
+                    }
+                    fieldIdx++; // Increment field index only for TextFields
+                }
+            }
+            // Disable editing the order number field (which is fields[7] in the new fields array)
+            fields[7].setEditable(false);
 
 
             // --- Define the modal waiting dialog ---
@@ -703,26 +821,45 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
             buttonPanel.add(confirmButton);
             buttonPanel.add(cancelButton);
 
-            gbc.gridx = 0; gbc.gridy = fieldNames.length; gbc.gridwidth = 3; gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE; dialogPanel.add(buttonPanel, gbc);
+            // Constraints for Button Panel (placed below the last field/combo row, which is index 10)
+            gbc.gridx = 0; gbc.gridy = fieldNames.length; // fieldNames.length is 11, so gridy = 11
+            gbc.gridwidth = 3; // Span all 3 columns
+            gbc.anchor = GridBagConstraints.CENTER; // Center the panel horizontally
+            gbc.fill = GridBagConstraints.NONE; // Don't resize button panel
+            gbc.insets = new Insets(15, 5, 5, 5); // Add some space above buttons
+            gbc.weightx = 0.0; // No horizontal weight for this row
+            gbc.weighty = 1.0; // Give this row vertical weight to push fields up
+            dialogPanel.add(buttonPanel, gbc);
 
 
             editDialog.add(dialogPanel, BorderLayout.CENTER);
 
 
             // Add AI Suggest button action listener - MODIFIED LOGIC FLOW
+            JTextField[] finalFields = fields;
             aiSuggestButton.addActionListener(e -> {
                 System.out.println("AI Suggest button clicked (EDT) in edit dialog.");
                 // 1. Disable button immediately on EDT
                 aiSuggestButton.setEnabled(false);
                 // confirmButton.setEnabled(false); // Optional: also disable confirm
 
-                // 2. Build temporary transaction object from current fields
+                // 2. Build temporary transaction object from current fields + ComboBox
                 Transaction tempTransaction = new Transaction(
-                        fields[0].getText().trim(), fields[1].getText().trim(), fields[2].getText().trim(),
-                        fields[3].getText().trim(), fields[4].getText().trim(), safeParseDouble(fields[5].getText().trim()),
-                        fields[6].getText().trim(), fields[7].getText().trim(), fields[8].getText().trim(),
-                        fields[9].getText().trim(), fields[10].getText().trim()
+                        finalFields[0].getText().trim(), // 交易时间
+                        finalFields[1].getText().trim(), // 交易类型
+                        finalFields[2].getText().trim(), // 交易对方
+                        finalFields[3].getText().trim(), // 商品
+                        (String) editInOutComboBox.getSelectedItem(), // Get value from the edit dialog's ComboBox
+                        safeParseDouble(finalFields[4].getText().trim()), // 金额(元) - Index adjusted for fields array
+                        finalFields[5].getText().trim(), // 支付方式 - Index adjusted
+                        finalFields[6].getText().trim(), // 当前状态 - Index adjusted
+                        finalFields[7].getText().trim(), // 交易单号 - Index adjusted (this is originalOrderNumber field, but disabled)
+                        finalFields[8].getText().trim(), // 商户单号 - Index adjusted
+                        finalFields[9].getText().trim()  // 备注 - Index adjusted
                 );
+                // Ensure the original order number is used for the temp transaction key if needed by RecognizeTransaction
+                tempTransaction.setOrderNumber(originalOrderNumber); // Use the actual original ON
+
 
                 // 3. Create and start the background thread FIRST
                 new Thread(() -> {
@@ -741,7 +878,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
 
                     // 4. Schedule the UI update and dialog hiding on the EDT from the background thread
-                    String finalSuggestion = aiSuggestion; // Need a final variable for use in lambda
+                    String finalSuggestion = aiSuggestion;
                     SwingUtilities.invokeLater(() -> {
                         System.out.println("Updating UI on EDT from background thread (edit dialog).");
                         // --- Hide waiting dialog ---
@@ -751,21 +888,19 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                         if (finalSuggestion != null && !finalSuggestion.isEmpty() && !finalSuggestion.startsWith("Error:")) {
                             // Safety Check: Although prompt asks for standard, AI might deviate.
                             if (StandardCategories.ALL_KNOWN_TYPES.contains(finalSuggestion.trim())) {
-                                fields[1].setText(finalSuggestion.trim());
+                                finalFields[1].setText(finalSuggestion.trim()); // Update Transaction Type field (index 1)
                             } else {
-                                System.err.println("AI returned non-standard category despite prompt: " + finalSuggestion);
-                                // Handle non-standard: Warn and clear/set to default
+                                System.err.println("AI returned non-standard category despite prompt (edit dialog): " + finalSuggestion);
                                 JOptionPane.showMessageDialog(editDialog, "AI返回了非预期的分类格式：\n" + finalSuggestion + "\n请手动输入。", "AI结果异常", JOptionPane.WARNING_MESSAGE);
-                                fields[1].setText("");
+                                finalFields[1].setText(""); // Clear or set to default
                             }
                         } else if (finalSuggestion != null && finalSuggestion.startsWith("Error:")) {
-                            // Handle the error case
                             JOptionPane.showMessageDialog(editDialog, "获取AI分类建议失败！\n" + finalSuggestion.substring(6), "AI错误", JOptionPane.ERROR_MESSAGE);
-                            fields[1].setText("");
+                            finalFields[1].setText("");
                         }
                         else { // AI returned null or empty
                             JOptionPane.showMessageDialog(editDialog, "AI未能提供分类建议。", "AI提示", JOptionPane.INFORMATION_MESSAGE);
-                            fields[1].setText("");
+                            finalFields[1].setText("");
                         }
 
                         // 5. Re-enable buttons on EDT
@@ -776,7 +911,6 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                 }).start();
 
                 // --- 6. Show the modal waiting dialog LAST in the EDT block ---
-                // This call will block the EDT until waitingDialog.setVisible(false) is called from the thread.
                 System.out.println("Showing waiting dialog (EDT block continues here in edit dialog).");
                 waitingDialog.setLocationRelativeTo(editDialog); // Center relative to edit dialog before showing
                 waitingDialog.setVisible(true); // THIS IS THE CALL THAT BLOCKS THE EDT
@@ -785,18 +919,20 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
 
             // Add Confirm and Cancel button listeners
+            JTextField[] finalFields1 = fields;
             confirmButton.addActionListener(e -> {
-                String transactionTime = fields[0].getText().trim();
-                String finalTransactionType = fields[1].getText().trim();
-                String counterparty = fields[2].getText().trim();
-                String commodity = fields[3].getText().trim();
-                String inOut = fields[4].getText().trim();
-                String paymentAmountText = fields[5].getText().trim();
-                String paymentMethod = fields[6].getText().trim();
-                String currentStatus = fields[7].getText().trim();
+                // Get values from fields array and the specific ComboBox
+                String transactionTime = finalFields1[0].getText().trim();
+                String finalTransactionType = finalFields1[1].getText().trim();
+                String counterparty = finalFields1[2].getText().trim();
+                String commodity = finalFields1[3].getText().trim();
+                String inOut = (String) editInOutComboBox.getSelectedItem(); // GET VALUE FROM THE EDIT DIALOG'S COMBOBOX
+                String paymentAmountText = finalFields1[4].getText().trim(); // Index adjusted for fields array
+                String paymentMethod = finalFields1[5].getText().trim(); // Index adjusted
+                String currentStatus = finalFields1[6].getText().trim(); // Index adjusted
                 // Original ON is used from the variable 'originalOrderNumber' defined outside this listener
-                String merchantNumber = fields[9].getText().trim();
-                String remarks = fields[10].getText().trim();
+                String merchantNumber = finalFields1[8].getText().trim(); // Index adjusted
+                String remarks = finalFields1[9].getText().trim();  // Index adjusted
 
                 // --- Input Validation ---
                 if (finalTransactionType.isEmpty()) {
@@ -808,11 +944,14 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                     JOptionPane.showMessageDialog(editDialog, "交易类型必须是标准类别之一！\n允许的类别:\n" + StandardCategories.getAllCategoriesString(), "输入错误", JOptionPane.ERROR_MESSAGE);
                     return; // Enforce standard categories for manual input
                 }
-                // Validate 收/支 is one of expected values
-                if (!inOut.equals("收入") && !inOut.equals("支出") && !inOut.equals("收") && !inOut.equals("支")) {
+                // Validate 收/支 is one of expected values (ComboBox ensures this)
+                if (!inOut.equals("收入") && !inOut.equals("支出")) { // ComboBox only has these two
+                    // This validation is actually redundant if the ComboBox only offers "收入" and "支出"
+                    // But good to keep for robustness if the ComboBox items could change or if it included ""
                     JOptionPane.showMessageDialog(editDialog, "收/支字段必须是 '收入' 或 '支出'。", "输入错误", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+
 
                 double paymentAmount = 0.0;
                 if (!paymentAmountText.isEmpty()) {
@@ -827,7 +966,15 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                         return;
                     }
                 }
-                // --- End Validation ---
+                // Check for non-negative amount consistency with InOut
+                if (paymentAmount < 0 && (inOut.equals("收入"))) {
+                    JOptionPane.showMessageDialog(editDialog, "收入金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (paymentAmount < 0 && (inOut.equals("支出"))) {
+                    JOptionPane.showMessageDialog(editDialog, "支出金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
 
                 Transaction updatedTransaction = new Transaction(
@@ -843,6 +990,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                     clearSearchFields();
                     String updatedInOut = updatedTransaction.getInOut();
                     boolean foundInOut = false;
+                    // Update the search UI ComboBox
                     for(int i=0; i < searchInOutComboBox.getItemCount(); i++) {
                         if (updatedInOut != null && updatedInOut.equals(searchInOutComboBox.getItemAt(i))) {
                             searchInOutComboBox.setSelectedItem(updatedInOut);
@@ -863,8 +1011,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                     ex.printStackTrace();
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    // Change ERROR_ERROR to ERROR_MESSAGE
-                    JOptionPane.showMessageDialog(editDialog, "修改失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(editDialog, "修改失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE); // Use ERROR_MESSAGE
                 }
             });
 
@@ -878,13 +1025,8 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
         } else {
             // This block is for invalid rowIndex. The dialog shouldn't be shown.
-            // Remove the confusing editDialog.pack/setLocation/setVisible calls here.
             System.err.println("Attempted to edit row with invalid index: " + rowIndex + ". Table row count: " + this.tableModel.getRowCount());
         }
-        // Remove the final redundant pack/setLocation/setVisible calls outside the if block
-        // if (editDialog != null) { editDialog.pack(); }
-        // if (editDialog != null) { editDialog.setLocationRelativeTo(this); }
-        // if (editDialog != null) { editDialog.setVisible(true); } // Redundant if dialog shown in the if block
     }
 
     // Method to create the AI panel - UPDATED
