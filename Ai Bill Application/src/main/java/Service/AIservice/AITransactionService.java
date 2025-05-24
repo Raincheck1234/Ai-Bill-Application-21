@@ -20,6 +20,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.concurrent.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import model.MonthlySummary;
+
 import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
 
 public class AITransactionService {
@@ -418,6 +423,68 @@ public class AITransactionService {
             return "Failed to generate personalized saving tips: " + e.getMessage();
         }
     }
+
+    public String analyzeSeasonalSpendingPatterns(String userFilePath) {
+        try {
+            Map<String, MonthlySummary> summaries = transactionService.getMonthlyTransactionSummary();
+            System.out.println("AI Service: Retrieved " + summaries.size() + " months of summary data for detailed seasonal analysis.");
+
+            if (summaries.isEmpty()) {
+                return "Not enough monthly transaction data found to analyze detailed seasonal spending patterns.";
+            }
+
+            StringBuilder promptBuilder = new StringBuilder();
+            promptBuilder.append("I am a user in China. Please analyze my monthly financial data below to identify seasonal spending patterns and provide budgeting advice. Focus on the following aspects:\n\n");
+
+            // 1. 法定节假日支出分析和预算建议
+            promptBuilder.append("1.  **Public Holiday Spending Analysis & Budgeting Advice:**\n");
+            promptBuilder.append("    *   Analyze spending around major Chinese public holidays: Spring Festival (Chinese New Year, typically Jan/Feb), Qingming Festival (April), Labor Day (May 1st), Dragon Boat Festival (Duanwu, typically May/June), National Day (Oct 1st), and New Year's Day (Jan 1st).\n");
+            promptBuilder.append("    *   Identify any significant increases or changes in spending categories (e.g., travel, gifts, dining out, red packets/hongbao) during these holiday periods.\n");
+            promptBuilder.append("    *   Provide specific budgeting suggestions to prepare for these holidays. For example, how much should I consider setting aside in the months leading up to these holidays based on my past spending?\n\n");
+
+            // 2. 季节变化与衣物支出，以及季节性行为不符之处
+            promptBuilder.append("2.  **Seasonal Changes & Clothing Expenses:**\n");
+            promptBuilder.append("    *   Analyze spending on clothing. Are there noticeable increases during season changes (e.g., spring/summer, autumn/winter transitions)?\n");
+            promptBuilder.append("    *   Suggest how much I should budget for seasonal clothing changes.\n");
+            promptBuilder.append("    *   Identify any spending patterns that seem unusual for the season in China (e.g., high spending on winter clothing in summer, or vice-versa). If such inconsistencies are found, please point them out.\n\n");
+
+            promptBuilder.append("Please provide clear, actionable insights and advice based on the data. Here is my monthly financial data:\n\n");
+
+
+            List<String> sortedMonths = new ArrayList<>(summaries.keySet());
+            Collections.sort(sortedMonths);
+
+            for (String month : sortedMonths) {
+                MonthlySummary ms = summaries.get(month);
+                promptBuilder.append("--- ").append(ms.getMonthIdentifier()).append(" ---\n");
+                promptBuilder.append("  Total Income: ").append(String.format("%.2f", ms.getTotalIncome())).append(" CNY\n");
+                promptBuilder.append("  Total Expense: ").append(String.format("%.2f", ms.getTotalExpense())).append(" CNY\n");
+                promptBuilder.append("  Net (Income - Expense): ").append(String.format("%.2f", ms.getTotalIncome() - ms.getTotalExpense())).append(" CNY\n");
+                promptBuilder.append("  Expense Breakdown:\n");
+                if (ms.getExpenseByCategory().isEmpty()) {
+                    promptBuilder.append("    (No expenses recorded this month)\n");
+                } else {
+                    ms.getExpenseByCategory().entrySet().stream()
+                            .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                            .forEach(entry ->
+                                    promptBuilder.append(String.format("    %s: %.2f CNY\n", entry.getKey(), entry.getValue()))
+                            );
+                }
+                promptBuilder.append("\n");
+            }
+
+            String aiPrompt = promptBuilder.toString();
+            System.out.println("AI Service: Sending detailed seasonal spending analysis prompt to AI. Prompt length: " + aiPrompt.length());
+
+            return askAi(aiPrompt);
+
+        } catch (Exception e) {
+            System.err.println("AI Service: Failed to analyze detailed seasonal spending patterns.");
+            e.printStackTrace();
+            return "Failed to analyze detailed seasonal spending patterns: " + e.getMessage();
+        }
+    }
+
 
 
     // ... Keep other methods like analyzeTransactions, formatTransactions, parseDateTime, askAi ...

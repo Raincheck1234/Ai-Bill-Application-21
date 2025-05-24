@@ -8,30 +8,35 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import java.util.concurrent.ExecutorService; // Import ExecutorService
+
+
 public class LoginDialog extends JDialog {
     private User authenticatedUser = null;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private final UserService userService;
+    private final ExecutorService executorService; // NEW: ExecutorService field
 
     /**
-     * Constructor now accepts UserService.
-     * @param userService The UserService instance for authentication.
+     * Constructor now accepts UserService and ExecutorService.
+     * @param userService The UserService instance for authentication and registration.
+     * @param executorService Executor service for background tasks.
      */
-    public LoginDialog(UserService userService) {
+    public LoginDialog(UserService userService, ExecutorService executorService) { // Accept ExecutorService
         this.userService = userService;
+        this.executorService = executorService; // Assign ExecutorService
 
         setTitle("User Login");
         // Use BorderLayout for the main dialog content
-        setLayout(new BorderLayout(10, 10)); // Add some padding
+        setLayout(new BorderLayout(10, 10));
         setModal(true);
-        setSize(300, 200); // Adjusted size for better fit
+        setSize(300, 200);
         setResizable(false);
 
         // --- Input Panel (Center) ---
-        // Use GridLayout for username and password fields
-        JPanel inputPanel = new JPanel(new GridLayout(2, 2, 10, 10)); // 2 rows, 2 columns with gaps
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10)); // Padding on top/sides
+        JPanel inputPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
         usernameField = new JTextField();
         passwordField = new JPasswordField();
@@ -41,23 +46,21 @@ public class LoginDialog extends JDialog {
         inputPanel.add(new JLabel("Password:"));
         inputPanel.add(passwordField);
 
-        add(inputPanel, BorderLayout.CENTER); // Add input panel to the center of the dialog
+        add(inputPanel, BorderLayout.CENTER);
 
 
         // --- Button Panel (South) ---
-        // Use FlowLayout to center or align buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10)); // Align buttons to the right with gaps
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
 
         JButton loginButton = new JButton("Login");
         JButton registerButton = new JButton("Register");
         JButton cancelButton = new JButton("Cancel");
 
-        // Add buttons to the panel
         buttonPanel.add(loginButton);
         buttonPanel.add(registerButton); // Register button
         buttonPanel.add(cancelButton);
 
-        add(buttonPanel, BorderLayout.SOUTH); // Add button panel to the south of the dialog
+        add(buttonPanel, BorderLayout.SOUTH);
 
 
         // Login button logic (same as before)
@@ -68,7 +71,7 @@ public class LoginDialog extends JDialog {
             authenticatedUser = userService.authenticate(username, password);
 
             if (authenticatedUser != null) {
-                dispose(); // Close dialog
+                dispose();
             } else {
                 JOptionPane.showMessageDialog(
                         this,
@@ -76,13 +79,14 @@ public class LoginDialog extends JDialog {
                         "Login Failed",
                         JOptionPane.ERROR_MESSAGE
                 );
-                clearFields(); // Clear fields on failure
+                clearFields();
             }
         });
 
-        // Register button logic (same as before)
+        // Register button logic - Pass ExecutorService to RegistrationDialog
         registerButton.addActionListener(e -> {
-            RegistrationDialog registrationDialog = new RegistrationDialog(this, userService);
+            // Create and show the Registration dialog, pass ExecutorService
+            RegistrationDialog registrationDialog = new RegistrationDialog(this, userService, executorService); // Pass ExecutorService
             registrationDialog.setVisible(true);
             clearFields(); // Clear login fields after clicking register
         });
@@ -95,9 +99,8 @@ public class LoginDialog extends JDialog {
             System.exit(0);
         });
 
-        // Pack the dialog to fit content and center it
-        pack(); // Adjust size based on preferred sizes of components
-        setLocationRelativeTo(null); // Center dialog on screen
+        pack();
+        setLocationRelativeTo(null);
     }
 
     // Method to clear input fields (same as before)

@@ -1,6 +1,5 @@
 package Interceptor.Login;
 
-import Constants.StandardCategories; // Keep import if needed for validation
 import Service.User.UserService;
 import model.User;
 
@@ -8,7 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List; // Keep if used elsewhere
+import java.util.List;
+
+import java.util.concurrent.ExecutorService; // Import ExecutorService
+import java.util.concurrent.Future; // Import Future if needed
+
 
 /**
  * Dialog for new user registration (English).
@@ -18,65 +21,51 @@ public class RegistrationDialog extends JDialog {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JPasswordField confirmPasswordField;
-    // If adding role selection: private JComboBox<String> roleComboBox;
 
     private final UserService userService; // Injected UserService
+    private final ExecutorService executorService; // NEW: ExecutorService field
+
 
     /**
      * Constructor for the RegistrationDialog.
-     * @param owner The parent Frame or Dialog (e.g., LoginDialog instance).
-     * @param userService The UserService instance for registration logic.
+     *
+     * @param owner           The parent Frame or Dialog (e.g., LoginDialog instance).
+     * @param userService     The UserService instance for registration logic.
+     * @param executorService Executor service for background tasks.
      */
-    public RegistrationDialog(JDialog owner, UserService userService) {
-        // Call super constructor with owner, title, and modal property
-        super(owner, "User Registration", true); // Title in English
-        this.userService = userService; // Assign injected service
+    public RegistrationDialog(JDialog owner, UserService userService, ExecutorService executorService) { // Accept ExecutorService
+        super(owner, "User Registration", true);
+        this.userService = userService;
+        this.executorService = executorService; // Assign ExecutorService
 
-        // Set the layout manager: 4 rows, 2 columns, with horizontal and vertical gaps
-        setLayout(new GridLayout(4, 2, 10, 10)); // 4 rows, 2 columns, with gaps
-        setSize(350, 200); // Adjusted size for 4x2 layout
+        setLayout(new GridLayout(4, 2, 10, 10));
+        setSize(350, 200);
         setResizable(false);
 
-        // Create input components
         usernameField = new JTextField();
         passwordField = new JPasswordField();
         confirmPasswordField = new JPasswordField();
-        // if adding role selection: roleComboBox = new JComboBox<>(new String[]{"user"}); // Assuming default role is 'user'
 
-        // Create buttons
-        JButton registerButton = new JButton("Register"); // Button text in English
-        JButton cancelButton = new JButton("Cancel");     // Button text in English
+        JButton registerButton = new JButton("Register");
+        JButton cancelButton = new JButton("Cancel");
 
-        // --- Add components to the dialog following the GridLayout (Row by Row, Column by Column) ---
-        // Row 0
-        add(new JLabel("Username:"));           // Row 0, Col 0 (Label)
-        add(usernameField);                     // Row 0, Col 1 (Field)
-
-        // Row 1
-        add(new JLabel("Password:"));           // Row 1, Col 0 (Label)
-        add(passwordField);                     // Row 1, Col 1 (Field)
-
-        // Row 2
-        add(new JLabel("Confirm Password:"));   // Row 2, Col 0 (Label)
-        add(confirmPasswordField);              // Row 2, Col 1 (Field)
-
-        // Row 3 (Buttons)
-        // You can place buttons directly in GridLayout cells if they fit, or use a JPanel in a cell
-        // Let's place them directly for simplicity with this layout
-        add(registerButton);                    // Row 3, Col 0 (Register Button)
-        add(cancelButton);                      // Row 3, Col 1 (Cancel Button)
-
-        // If adding role selection, insert here (e.g., before Confirm Password, adjusting GridLayout rows)
-        // add(new JLabel("Role:")); add(roleComboBox);
+        add(new JLabel("Username:"));
+        add(usernameField);
+        add(new JLabel("Password:"));
+        add(passwordField);
+        add(new JLabel("Confirm Password:"));
+        add(confirmPasswordField);
+        add(registerButton);
+        add(cancelButton);
 
 
-        // --- Define the modal waiting dialog ---
-        JDialog waitingDialog = new JDialog(this, "Please wait", true); // Modal dialog owned by RegistrationDialog itself
+        // --- Define the modal waiting dialog for registration process ---
+        JDialog waitingDialog = new JDialog(this, "Please wait", true);
         waitingDialog.setLayout(new FlowLayout());
         waitingDialog.add(new JLabel("Registering user..."));
         waitingDialog.setSize(200, 100);
         waitingDialog.setResizable(false);
-        waitingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); // Prevent closing with X button
+        waitingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
 
         // --- Add Action Listeners ---
@@ -84,127 +73,120 @@ public class RegistrationDialog extends JDialog {
         // Cancel button logic
         cancelButton.addActionListener(e -> {
             System.out.println("Cancel button clicked (EDT) in RegistrationDialog.");
-            dispose(); // Close the registration dialog
+            dispose();
         });
 
-        // Register button logic - MODIFIED LOGIC FLOW with background thread and waiting dialog
+        // Register button logic - Uses ExecutorService
         registerButton.addActionListener(e -> {
             System.out.println("Register button clicked (EDT).");
 
-            // Get input values
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword()).trim();
             String confirmPassword = new String(confirmPasswordField.getPassword()).trim();
-            // String role = (String) roleComboBox.getSelectedItem(); // if using role selection
-            String role = "user"; // Assume default role is 'user' for registration
+            String role = "user";
 
 
             // --- Basic Input Validation (UI level) ---
             if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Please fill in all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
-                return; // Stop if fields are empty
+                return;
             }
             if (!password.equals(confirmPassword)) {
                 JOptionPane.showMessageDialog(this, "Password and Confirm Password do not match.", "Input Error", JOptionPane.WARNING_MESSAGE);
-                clearFields(); // Clear password fields
-                return; // Stop if passwords don't match
+                clearFields();
+                return;
             }
             // Optional: More password strength validation
 
 
-            // --- Show waiting dialog and call service in background ---
+            // --- Show waiting dialog and submit task to ExecutorService ---
             // 1. Disable button immediately on EDT
             registerButton.setEnabled(false);
-            cancelButton.setEnabled(false); // Also disable cancel button
+            cancelButton.setEnabled(false);
 
-            // 2. Create and start the background thread FIRST
-            new Thread(() -> {
-                System.out.println("Background thread started for user registration...");
+            // 2. Show the modal waiting dialog LAST in the EDT block
+            waitingDialog.setLocationRelativeTo(this);
+            waitingDialog.setVisible(true); // THIS CALL BLOCKS THE EDT
+
+
+            // 3. Submit the registration task to the ExecutorService
+            // This happens *after* setVisible(true) returns, because EDT is blocked.
+            executorService.submit(() -> {
+                System.out.println("Registration task submitted to ExecutorService...");
                 String message;
                 boolean success = false;
                 try {
-                    // Thread.sleep(3000); // Simulate delay for testing thread behavior
+                    // Thread.sleep(3000); // Simulate delay
 
-                    // Call the actual service method (Implemented in Step 9.2)
-                    System.out.println("Registration Thread: Calling userService.registerUser for " + username);
-                    success = userService.registerUser(username, password, role); // Pass collected data
-                    System.out.println("Registration Thread: userService.registerUser returned " + success);
+                    System.out.println("Registration Task: Calling userService.registerUser for " + username);
+                    success = userService.registerUser(username, password, role);
+                    System.out.println("Registration Task: userService.registerUser returned " + success);
 
                     if (success) {
                         message = "Registration successful!";
                     } else {
-                        // UserService.registerUser should return false if username exists
-                        message = "Registration failed. Username might already exist.";
+                        // Assuming UserService throws IllegalArgumentException for username exists
+                        // Message will be set in the catch block below
+                        // If registerUser returns false without exception, adjust logic here.
+                        // Based on Step 9.2, it throws Exception or IllegalArgumentException on failure.
+                        // So success=false implies an exception was thrown.
+                        message = "An unexpected error occurred."; // Fallback if success=false but no exception caught
                     }
 
                 } catch (IllegalArgumentException ex) {
-                    // Catch validation errors from service (e.g., invalid input data)
-                    message = "Registration failed due to invalid data:\n" + ex.getMessage();
-                    System.err.println("Error during registration (Invalid data):");
+                    message = "Registration failed due to invalid data or existing username:\n" + ex.getMessage();
+                    System.err.println("Error during registration task (IllegalArgumentException):");
                     ex.printStackTrace();
-                }
-                catch (Exception ex) { // Catch other exceptions from service (e.g., IOException from file operations)
+                    success = false;
+                } catch (Exception ex) {
                     message = "Registration failed due to an error!\n" + ex.getMessage();
-                    System.err.println("Error during registration (Exception):");
+                    System.err.println("Error during registration task (Exception):");
                     ex.printStackTrace();
+                    success = false;
                 }
 
-                // 3. Schedule UI update on Event Dispatch Thread (EDT) from the background thread
+                // 4. Schedule UI update on Event Dispatch Thread (EDT)
                 String finalMessage = message;
-                boolean finalSuccess = success; // Use the actual success flag
-                System.out.println("Registration Thread: Scheduling UI update on EDT.");
+                boolean finalSuccess = success;
+                System.out.println("Registration Task: Scheduling UI update on EDT.");
 
                 SwingUtilities.invokeLater(() -> {
-                    System.out.println("EDT: Running UI update for registration.");
-                    // --- Hide waiting dialog ---
-                    waitingDialog.dispose(); // Dispose the waiting dialog
+                    System.out.println("EDT: Running UI update after registration task.");
+                    waitingDialog.dispose();
                     System.out.println("EDT: waitingDialog disposed.");
 
-                    // --- Show result message to user ---
                     JOptionPane.showMessageDialog(this, finalMessage,
                             finalSuccess ? "Registration Success" : "Registration Failed",
                             finalSuccess ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
                     System.out.println("EDT: Registration result dialog shown.");
 
-                    // --- Handle main dialog closing and button re-enabling ---
                     if (finalSuccess) {
-                        dispose(); // Close registration dialog on success
-                        // Optional: Clear login dialog fields or pre-fill username
-                        // User registered = new User(username, password, role, null, null); // Create temp User object if needed
-                        // ((LoginDialog) owner).setUsernameFieldText(username); // If LoginDialog had a public setter for username field
+                        dispose();
+                        System.out.println("EDT: Registration dialog disposed (success).");
                     } else {
-                        // Re-enable buttons if registration failed but dialog is still open
                         registerButton.setEnabled(true);
                         cancelButton.setEnabled(true);
-                        clearFields(); // Clear fields on failure
+                        clearFields();
                         System.out.println("EDT: Buttons re-enabled, fields cleared (failure).");
                     }
                     System.out.println("EDT: UI update complete.");
                 });
-                System.out.println("Registration Thread: Finished run method.");
-            }).start();
-
-            // 4. Show the modal waiting dialog LAST in the EDT block
-            // This call will block the EDT until waitingDialog.dispose() is called from the thread.
-            System.out.println("Showing waiting dialog (EDT block continues here).");
-            waitingDialog.setLocationRelativeTo(this); // Center waiting dialog relative to registration dialog
-            waitingDialog.setVisible(true); // THIS IS THE CALL THAT BLOCKS THE EDT
-            System.out.println("waiting dialog is now hidden (EDT unblocked)."); // This line prints after the thread disposes the dialog
+                System.out.println("Registration Task: Finished run method.");
+            });
+            System.out.println("Showing waiting dialog returned (EDT unblocked)."); // This prints after the task finishes and disposes the dialog
         });
 
-
-        // Pack dialog to minimum size and center it
         pack();
-        setLocationRelativeTo(owner); // Center relative to the owner (LoginDialog)
+        setLocationRelativeTo(owner);
     }
 
     /**
      * Clears the input fields in the registration dialog.
      */
     private void clearFields() {
-        usernameField.setText(""); // Also clear username field on failure
+        usernameField.setText("");
         passwordField.setText("");
         confirmPasswordField.setText("");
-        usernameField.requestFocusInWindow(); // Focus back to username
+        usernameField.requestFocusInWindow();
     }
 }
