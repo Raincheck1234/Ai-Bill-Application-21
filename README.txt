@@ -1,4 +1,5 @@
 ## Project Overview
+
 This module is a transaction record management 
 system in the Service layer of the project that connects 
 with the Dao layer that provides CRUD (Create, Read, Update
@@ -8,6 +9,7 @@ creation, modification, deletion, and flexible querying,
 all accessible through standardized interfaces.
 
 ## Structure and Function
+
 Swing GUI (Controller) <- Service <- DAO <-data(CSV/JSON)<-model
 
 ##  Model 
@@ -50,10 +52,10 @@ The `Transaction` class contains the following fields:
 ### Constructors
 
 * **`public Transaction()`**
-    * Default no-argument constructor. Creates an empty `Transaction` object with all fields initialized to their default values (null for String, 0.0 for double).
+  * Default no-argument constructor. Creates an empty `Transaction` object with all fields initialized to their default values (null for String, 0.0 for double).
 
 * **`public Transaction(String transactionTime, String transactionType, ..., String remarks)`**
-    * Parameterized constructor that accepts values for all fields. Allows for quick instantiation of a fully populated `Transaction` object.
+  * Parameterized constructor that accepts values for all fields. Allows for quick instantiation of a fully populated `Transaction` object.
 
 ### Methods
 
@@ -71,11 +73,12 @@ The class provides standard public **getter** (`get...()`) and **setter** (`set.
 * `getMerchantNumber()` / `setMerchantNumber(String merchantNumber)`
 * `getRemarks()` / `setRemarks(String remarks)`
 
- 
+
 ### Service (Business logic)
+
 - Responsibilities:
-Transaction CRUD operations, calling the DAO layer to read and write local files,
-User-defined classification logic (e.g. modifying transaction categories)
+  Transaction CRUD operations, calling the DAO layer to read and write local files,
+  User-defined classification logic (e.g. modifying transaction categories)
   (3) Operations:
 
 Add Transaction:
@@ -111,8 +114,8 @@ Code structure
 
 
 - AIService (Intelligent Analytics) Responsibilities: Generate budget recommendations based
-on historical data, and detect cost-cutting recommendations for seasonal spending in China
-(e.g. Spring Festival) (e.g. marking high-frequency small spending)
+  on historical data, and detect cost-cutting recommendations for seasonal spending in China
+  (e.g. Spring Festival) (e.g. marking high-frequency small spending)
 
 
 - **`AITransactionService`**
@@ -127,6 +130,7 @@ The central class that performs the full AI-driven transaction analysis. It:
 - Returns a response within **400 characters** for efficient display.
 
 Key methods:
+
 - `analyzeTransactions(String userRequest, String filePath, String startTimeStr, String endTimeStr)`
   → Returns an AI-generated analysis result string.
 - `runAiInThread(...)`
@@ -137,8 +141,10 @@ Key methods:
   → Supports flexible input formats like `yyyy/MM/dd`, `yyyy/MM/dd HH:mm`, and more. - **`AIAnalyzerThread`** A `Runnable` implementation for threading scenarios (especially GUI usage). It calls `AITransactionService.analyzeTransactions(...)` and prints the result. UI developers can replace the console output with GUI updates using `SwingUtilities.invokeLater()`. --- ### Tests (`test/java/Service/AIservice/`) - **`AIserviceTest`** Unit tests for `AITransactionService`, verifying: - Correct loading and filtering of transactions. - Accurate AI response generation and formatting. - Graceful handling of edge cases (e.g., no transactions in range, invalid time formats). - **`AIAnalyzerThreadTest`** Validates threading logic: - Ensures `AIAnalyzerThread` executes `Runnable` correctly. - Demonstrates clean and concurrent AI analysis flow. - Simulates integration with a GUI environment. - **`AiFunctionTest`** Utility-level tests: - Ensures proper CSV parsing and data transformation. - Verifies output formatting before sending to the AI. - Tests various time formats and edge case behaviors
 
 ## DAO (File Storage)
+
 - Responsibilities: Save transaction data in CSV or JSON format and provide interfaces for adding,
   deleting, and modifying in-memory data
+
 ### CsvTransactionDao Class
 
 #### Package
@@ -266,4 +272,5 @@ Responsibilities: Manage user interface components (buttons, tables, text boxes)
 events (clicks, inputs) and call service layer methods to update the interface data display
 
 ## attention
+
 encoding with UTF-8
