@@ -73,7 +73,7 @@ public class ButtonEditorTest {
 
         try {
             // --- Modify MenuUI initialization to pass ExecutorService ---
-            MenuUI menuUI = new MenuUI(testUser, transactionService, summaryStatisticService, aiTransactionService, collegeStudentNeeds, testExecutorService); // Pass ExecutorService
+            MenuUI menuUI = new MenuUI(testUser, transactionService, summaryStatisticService, aiTransactionService, collegeStudentNeeds, testExecutorService, new UserService(new CsvUserDao(""), new CsvTransactionDao(), new CsvSummaryStatisticDao())); // Pass ExecutorService
 
 
             ButtonEditor editor = new ButtonEditor(menuUI); // Pass the MenuUI instance

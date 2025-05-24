@@ -1,34 +1,48 @@
 package Controller;
 
-import Constants.StandardCategories;
-import Service.AIservice.AITransactionService;
+import Constants.StandardCategories; // Import StandardCategories if needed in UI
+import Service.AIservice.AITransactionService; // Import AI services
 import Service.AIservice.CollegeStudentNeeds;
-import Service.Impl.SummaryStatisticService;
+import Service.Impl.SummaryStatisticService; // Import SummaryStatisticService
 import Service.TransactionService;
-import model.SummaryStatistic;
+import Service.User.UserService;
+import model.SummaryStatistic; // Import SummaryStatistic
 import model.Transaction;
 import model.User;
+// import Constants.StandardCategories; // Already imported above
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.BufferedWriter; // Added for Export
 import java.io.IOException;
+import java.nio.file.Files; // Added for Export
+import java.nio.file.Paths; // Added for Export
+import java.util.ArrayList; // Added for Export
 import java.util.List;
 import java.util.Vector;
-import java.util.Comparator;
-import java.util.stream.Collectors;
-
+import java.util.Comparator; // For sorting stats display
 import java.util.concurrent.ExecutorService; // Import ExecutorService
-import java.util.concurrent.Future; // Import Future if needed for task management
+import java.util.stream.Collectors; // Added for loadCSVDataForCurrentUser
+import java.awt.Dimension;
 
-public class MenuUI extends JPanel {
+// Added for Export (Apache Commons CSV)
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
+// Added for Batch AI (pre-existing in pre)
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (optional but common)
 
     private final User currentUser;
     private final TransactionService transactionService;
     private final SummaryStatisticService summaryStatisticService;
     private final AITransactionService aiTransactionService;
     private final CollegeStudentNeeds collegeStudentNeeds;
-    private final ExecutorService executorService; // ExecutorService field
+    private final ExecutorService executorService;
+    private final UserService userService; // Added UserService for user management
 
     private DefaultTableModel tableModel;
 
@@ -42,11 +56,12 @@ public class MenuUI extends JPanel {
     private JButton searchButton;
 
     private JTable table;
+    // REMOVED in post: private HistogramPanelContainer histogramPanelContainer; // No longer needed
 
     private JPanel rightPanel;
     private CardLayout cardLayout;
 
-    // UI components for AI panel
+    // UI components for AI panel (existing + new)
     private JTextArea aiResultArea;
     private JTextField aiStartTimeField;
     private JTextField aiEndTimeField;
@@ -56,19 +71,24 @@ public class MenuUI extends JPanel {
     private JButton aiPersonalSummaryButton;
     private JButton aiSavingsGoalsButton;
     private JButton aiPersonalSavingTipsButton;
-    private JButton runBatchAiButton;
+    private JButton runBatchAiButton; // Existing in pre
+    private JButton aiSeasonalAnalysisButton; // NEW: Added seasonal analysis button from post
 
-    // UI components for Admin Stats panel
+
+    // UI components for Admin Stats panel (existing)
     private JTextArea adminStatsArea;
     private JButton generateStatsButton;
     private JButton refreshDisplayButton;
 
-    // Panel for Visualization
-    private VisualizationPanel visualizationPanel;
+    // Panel for Visualization (existing in pre)
+    private VisualizationPanel visualizationPanel; // Add instance field
 
+    // New panel for User Management (Admin) (existing in pre)
+    private UserManagerPanel userManagerPanel; // Add instance field
 
     /**
      * Constructor to initialize the main UI panel and its components.
+     * This constructor is from MenuUI-pre.txt and accepts all necessary services.
      *
      * @param authenticatedUser The currently logged-in user.
      * @param transactionService User-specific transaction service.
@@ -76,44 +96,51 @@ public class MenuUI extends JPanel {
      * @param aiTransactionService AI transaction service.
      * @param collegeStudentNeeds College student specific AI service.
      * @param executorService Executor service for background tasks.
+     * @param userService UserService for user management (for admin).
      */
     public MenuUI(User authenticatedUser, TransactionService transactionService,
                   SummaryStatisticService summaryStatisticService,
                   AITransactionService aiTransactionService,
                   CollegeStudentNeeds collegeStudentNeeds,
-                  ExecutorService executorService) { // Accept ExecutorService
+                  ExecutorService executorService,
+                  UserService userService) { // Accept ExecutorService
 
         this.currentUser = authenticatedUser;
         this.transactionService = transactionService;
         this.summaryStatisticService = summaryStatisticService;
         this.aiTransactionService = aiTransactionService;
         this.collegeStudentNeeds = collegeStudentNeeds;
-        this.executorService = executorService; // Assign ExecutorService
+        this.executorService = executorService;
+        this.userService = userService; // Assign UserServic
 
-        // Initialize table model
+        // Initialize table model (same as before)
         String[] columnNames = {"Transaction Time", "Transaction Type", "Counterparty", "Commodity", "In/Out", "Amount(CNY)", "Payment Method", "Current Status", "Order Number", "Merchant Number", "Remarks", "Modify", "Delete"};
         this.tableModel = new DefaultTableModel(columnNames, 0);
         this.table = new JTable(this.tableModel);
 
-        // Set the layout manager for this JPanel (MenuUI)
+        // Set the layout manager for this JPanel (MenuUI) (same as before)
         setLayout(new BorderLayout());
 
-        // Add the left navigation panel
+        // Add the left navigation panel (modified to include User Management button)
         add(createLeftPanel(), BorderLayout.WEST);
 
-        // Add the right content panel (uses CardLayout)
+        // Add the right content panel (uses CardLayout) (modified to include User Management panel)
         setupRightPanel();
         add(rightPanel, BorderLayout.CENTER);
 
-        // Initial data load happens after the main panel is created and added to a frame.
-        // We'll call loadCSVDataForCurrentUser("") in createMainPanel().
+        // Initial data load is done in createMainPanel (same as before)
+        // loadCSVDataForCurrentUser("Income");
 
         System.out.println("MenuUI initialized for user: " + currentUser.getUsername() + " (" + currentUser.getRole() + ")");
     }
 
+    // REMOVED: The second confusing constructor from pre.txt
+
+
     /**
      * Creates and returns the main JPanel for the MenuUI.
      * This method is typically called once from Main.java after the MenuUI instance is created.
+     * (Same as before)
      *
      * @return The main JPanel (which is the MenuUI instance itself).
      */
@@ -126,11 +153,8 @@ public class MenuUI extends JPanel {
     }
 
 
-    /**
-     * Loads CSV data for the current user and populates the table model.
-     *
-     * @param initialInOutFilter Optional filter ("Income", "Expense", or empty for all).
-     */
+    // Method to load CSV data for the current user with optional initial filter
+    // Same logic as before
     public void loadCSVDataForCurrentUser(String initialInOutFilter) {
         this.tableModel.setRowCount(0); // Clear the table model
 
@@ -143,7 +167,8 @@ public class MenuUI extends JPanel {
                 filteredTransactions.addAll(transactions);
             } else {
                 String filter = initialInOutFilter.trim();
-                // Filter based on In/Out, handling potential variations ("Income"/"收", "Expense"/"支", "In"/"Out")
+                // Assuming "Income" maps to "收" and "Expense" maps to "支" or their English equivalents if data uses that.
+                // This filter needs to be robust to these variations.
                 filteredTransactions = transactions.stream()
                         .filter(t -> t.getInOut() != null && (t.getInOut().equalsIgnoreCase(filter) ||
                                 (filter.equalsIgnoreCase("Income") && (t.getInOut().equalsIgnoreCase("收") || t.getInOut().equalsIgnoreCase("In"))) ||
@@ -163,31 +188,33 @@ public class MenuUI extends JPanel {
         }
     }
 
-    /**
-     * Creates the left navigation panel with buttons.
-     * @return The left panel.
-     */
+    // Method to create the left panel (Menu/AI/Admin/Visualization/User Management buttons) - MODIFIED (from pre)
     private JPanel createLeftPanel() {
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JButton menuButton = new JButton("Transaction List");
-        JButton aiButton = new JButton("AI Analysis");
-        JButton adminButton = new JButton("Admin Stats");
-        JButton visualizationButton = new JButton("Visualization");
+        JButton menuButton = new JButton("Transaction List"); // "交易列表"
+        JButton aiButton = new JButton("AI Analysis");       // "AI分析"
+        JButton adminStatsButton = new JButton("Admin Stats");     // "管理员统计"
+        JButton visualizationButton = new JButton("Visualization"); // "可视化"
+        JButton userManagerButton = new JButton("User Management"); // NEW: User Management button from pre
 
+
+        // Set consistent size for buttons
         Dimension buttonSize = new Dimension(150, 40);
         menuButton.setMaximumSize(buttonSize);
         aiButton.setMaximumSize(buttonSize);
-        adminButton.setMaximumSize(buttonSize);
+        adminStatsButton.setMaximumSize(buttonSize);
         visualizationButton.setMaximumSize(buttonSize);
+        userManagerButton.setMaximumSize(buttonSize); // Set size for new button
 
 
         menuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         aiButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        adminButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        adminStatsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         visualizationButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        userManagerButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Align new button
 
 
         leftPanel.add(menuButton);
@@ -195,78 +222,92 @@ public class MenuUI extends JPanel {
         leftPanel.add(aiButton);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
+        // Add Admin-only buttons (from pre)
         if ("admin".equalsIgnoreCase(currentUser.getRole())) {
-            leftPanel.add(adminButton);
+            leftPanel.add(adminStatsButton); // Admin Stats button
             leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-            System.out.println("Admin user logged in, showing Admin button.");
+            leftPanel.add(userManagerButton); // NEW: User Management button
+            leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            System.out.println("Admin user logged in, showing Admin and User Management buttons.");
         } else {
-            System.out.println("Regular user logged in, hiding Admin button.");
+            System.out.println("Regular user logged in, hiding Admin buttons.");
         }
 
+
+        // Add Visualization button (visible for all users) (from pre)
         leftPanel.add(visualizationButton);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
 
-        // Add action listeners for navigation buttons
+        // Add action listeners (existing for Menu, AI, Admin, Visualization, and User Management) (from pre)
         menuButton.addActionListener(e -> {
             cardLayout.show(rightPanel, "Table");
-            // Decide if you want to reload all data or just income when returning to table
-            loadCSVDataForCurrentUser("Income"); // Example: show only Income by default on return
+            loadCSVDataForCurrentUser("Income"); // Load "Income" by default or "" for all
         });
 
         aiButton.addActionListener(e -> {
             cardLayout.show(rightPanel, "AI");
-            // Optional: Clear AI results area or show default message when switching
-            // aiResultArea.setText("Welcome to the AI Personal Finance Analysis feature.\n\n...");
         });
 
+        visualizationButton.addActionListener(e -> {
+            cardLayout.show(rightPanel, "Visualization"); // Switch to visualization view
+            if (visualizationPanel != null) { // Ensure panel is initialized
+                visualizationPanel.refreshPanelData(); // Call refresh method
+            }
+        });
+
+
         if ("admin".equalsIgnoreCase(currentUser.getRole())) {
-            adminButton.addActionListener(e -> {
+            adminStatsButton.addActionListener(e -> {
                 cardLayout.show(rightPanel, "AdminStats");
                 displaySummaryStatistics(); // Refresh stats display when switching
             });
+
+            // NEW: Add action listener for User Management button (from pre)
+            userManagerButton.addActionListener(e -> {
+                cardLayout.show(rightPanel, "UserManagement"); // Switch to User Management view
+                // Optional: Trigger initial data load or setup in UserManagerPanel
+                if (userManagerPanel != null) {
+                    userManagerPanel.refreshPanelData(); // Call refresh method
+                }
+            });
         }
 
-        visualizationButton.addActionListener(e -> {
-            cardLayout.show(rightPanel, "Visualization");
-            if (visualizationPanel != null) {
-                visualizationPanel.refreshPanelData(); // Call refresh method on VisualizationPanel
-            }
-        });
 
         leftPanel.add(Box.createVerticalGlue());
 
         return leftPanel;
     }
 
-    /**
-     * Sets up the right panel with different views using CardLayout.
-     */
+    // Method to set up the right panel, adding different views - MODIFIED (from pre)
     private void setupRightPanel() {
         this.cardLayout = new CardLayout();
         this.rightPanel = new JPanel(this.cardLayout);
 
-        JPanel tablePanel = createTablePanel(); // Table view
-        JPanel aiPanel = createAIPanel(); // AI view
-        JPanel adminStatsPanel = createAdminStatsPanel(); // Admin stats view
-        this.visualizationPanel = new VisualizationPanel(this.transactionService); // Create VisualizationPanel, inject TransactionService
+        // Create and add different panels (views)
+        JPanel tablePanel = createTablePanel(); // Table view (from pre)
+        JPanel aiPanel = createAIPanel(); // AI view (modified in this merge)
+        JPanel adminStatsPanel = createAdminStatsPanel(); // Admin stats view (from pre)
+        this.visualizationPanel = new VisualizationPanel(this.transactionService); // Visualization panel (from pre)
+
+        // NEW: Create User Management Panel and inject UserService and ExecutorService (from pre)
+        this.userManagerPanel = new UserManagerPanel(this.userService, this.executorService);
 
 
         rightPanel.add(tablePanel, "Table");
         rightPanel.add(aiPanel, "AI");
         if ("admin".equalsIgnoreCase(currentUser.getRole())) {
             rightPanel.add(adminStatsPanel, "AdminStats");
+            rightPanel.add(userManagerPanel, "UserManagement"); // NEW: Add User Management card
         }
         rightPanel.add(visualizationPanel, "Visualization");
 
 
-        cardLayout.show(rightPanel, "Table"); // Set the initially visible card
+        // Set the initially visible card (Table view)
+        cardLayout.show(rightPanel, "Table");
     }
 
-    /**
-     * Creates the panel for displaying and managing transaction data in a table.
-     * @return The table panel.
-     */
+    // Method to create the table panel - same as before (from pre)
     private JPanel createTablePanel() {
         JPanel tablePanel = new JPanel(new BorderLayout());
 
@@ -280,7 +321,7 @@ public class MenuUI extends JPanel {
 
         tablePanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        // Set cell renderers and editors for action buttons
+        // Set cell renderers and editors
         this.table.getColumnModel().getColumn(11).setCellRenderer(new ButtonRenderer());
         this.table.getColumnModel().getColumn(11).setCellEditor(new ButtonEditor(this));
 
@@ -290,19 +331,15 @@ public class MenuUI extends JPanel {
         return tablePanel;
     }
 
-    /**
-     * Creates the input panel for searching and adding transactions.
-     * @return The input panel.
-     */
+    // Inside MenuUI class, createInputPanel method - MODIFIED (from pre, includes Export)
     private JPanel createInputPanel() {
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
-        // Create input fields and capture references
         searchTransactionTimeField = new JTextField(10);
         searchTransactionTypeField = new JTextField(10);
         searchCounterpartyField = new JTextField(10);
         searchCommodityField = new JTextField(10);
-        searchInOutComboBox = new JComboBox<>(new String[]{"", "Income", "Expense"});
+        searchInOutComboBox = new JComboBox<>(new String[]{"", "Income", "Expense"}); // "Income", "Expense"
         searchPaymentMethodField = new JTextField(10);
 
         inputPanel.add(new JLabel("Transaction Time:")); inputPanel.add(searchTransactionTimeField);
@@ -312,13 +349,17 @@ public class MenuUI extends JPanel {
         inputPanel.add(new JLabel("In/Out:")); inputPanel.add(searchInOutComboBox);
         inputPanel.add(new JLabel("Payment Method:")); inputPanel.add(searchPaymentMethodField);
 
-        JButton searchButton = new JButton("Search");
+        searchButton = new JButton("Search");
         JButton addButton = new JButton("Add");
-        JButton importButton = new JButton("Import CSV");
+        JButton importButton = new JButton("Import CSV"); // "Import CSV"
+        JButton exportButton = new JButton("Export CSV"); // NEW: Export button from pre
+
 
         inputPanel.add(searchButton);
         inputPanel.add(addButton);
         inputPanel.add(importButton);
+        inputPanel.add(exportButton); // Add export button from pre
+
 
         searchButton.addActionListener(e -> triggerCurrentSearch());
         addButton.addActionListener(e -> showAddTransactionDialog());
@@ -327,12 +368,15 @@ public class MenuUI extends JPanel {
             showImportDialog();
         });
 
+        // Add ActionListener for Export button - NEW (from pre)
+        exportButton.addActionListener(e -> {
+            showExportDialog(); // Call a new method to handle export
+        });
+
         return inputPanel;
     }
 
-    /**
-     * Shows the dialog for importing transactions from a CSV file.
-     */
+    // Inside MenuUI class, showImportDialog method - (from pre, uses ExecutorService)
     private void showImportDialog() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Select CSV file to import");
@@ -345,8 +389,8 @@ public class MenuUI extends JPanel {
             String filePath = fileToImport.getAbsolutePath();
             System.out.println("User selected file for import: " + filePath);
 
-            // Submit import task to the ExecutorService
-            executorService.submit(() -> {
+            // Submit import task to the ExecutorService (from pre)
+            executorService.submit(() -> { // Use submit
                 System.out.println("Import task submitted to ExecutorService.");
                 String message;
                 try {
@@ -379,33 +423,122 @@ public class MenuUI extends JPanel {
         }
     }
 
-    /**
-     * Shows the dialog for adding a new transaction.
-     */
+    // Inside MenuUI class, showExportDialog method - NEW (from pre, uses ExecutorService)
+    private void showExportDialog() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save CSV file"); // "Save CSV file"
+        // Set a default file name
+        fileChooser.setSelectedFile(new java.io.File("transactions_export.csv"));
+        // Add file filter for .csv files
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
+
+        // Show save dialog
+        int userSelection = fileChooser.showSaveDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            java.io.File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+
+            // Ensure file extension is .csv if not already provided
+            if (!filePath.toLowerCase().endsWith(".csv")) {
+                filePath += ".csv";
+                fileToSave = new java.io.File(filePath); // Update File object
+            }
+
+            System.out.println("User selected file for export: " + filePath);
+
+            // Execute export logic in a background thread to avoid blocking UI
+            String finalFilePath = filePath; // Final variable for lambda
+            executorService.submit(() -> { // Use submit (from pre)
+                System.out.println("Export task submitted to ExecutorService for file: " + finalFilePath);
+                String message;
+                try {
+                    // Get data from the current table model
+                    DefaultTableModel model = (DefaultTableModel) table.getModel();
+                    int rowCount = model.getRowCount();
+                    int colCount = model.getColumnCount(); // Includes Modify/Delete columns
+
+                    // Get headers from table model
+                    String[] headers = new String[colCount - 2]; // Exclude Modify and Delete columns
+                    for (int i = 0; i < headers.length; i++) {
+                        headers[i] = model.getColumnName(i);
+                    }
+
+                    // Use Apache Commons CSV to write to file
+                    try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(finalFilePath), java.nio.charset.StandardCharsets.UTF_8);
+                         CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(headers).withTrim())) {
+
+                        // Write data rows
+                        for (int i = 0; i < rowCount; i++) {
+                            // Create a list/array for the row data, excluding the last two columns
+                            List<String> rowData = new ArrayList<>();
+                            for (int j = 0; j < colCount - 2; j++) { // Exclude Modify/Delete columns
+                                Object cellValue = model.getValueAt(i, j);
+                                rowData.add(cellValue != null ? cellValue.toString() : "");
+                            }
+                            csvPrinter.printRecord(rowData); // Write the row
+                        }
+                        csvPrinter.flush(); // Ensure data is written
+
+                        message = "Successfully exported " + rowCount + " transaction records to:\n" + finalFilePath; // "Successfully exported " ... " transaction records to:\n"
+                        System.out.println("Export task finished: " + message);
+
+                        String finalMessage = message;
+                        SwingUtilities.invokeLater(() -> { // Update UI on EDT
+                            JOptionPane.showMessageDialog(this, finalMessage, "Export Successful", JOptionPane.INFORMATION_MESSAGE); // "Export Successful"
+                        });
+
+                    } catch (IOException ex) {
+                        message = "Export failed!\n" + ex.getMessage();
+                        System.err.println("Export task failed: " + ex.getMessage());
+                        ex.printStackTrace();
+                        String finalMessage1 = message;
+                        SwingUtilities.invokeLater(() -> { // Update UI on EDT
+                            JOptionPane.showMessageDialog(this, finalMessage1, "Export Error", JOptionPane.ERROR_MESSAGE); // "Export Error"
+                        });
+                    }
+
+                } catch (Exception e) {
+                    // This catch block is for errors within the executorService task setup, not the IOException itself.
+                    System.err.println("Error during export task setup: " + e.getMessage());
+                    e.printStackTrace();
+                    SwingUtilities.invokeLater(() -> { // Update UI on EDT
+                        JOptionPane.showMessageDialog(this, "An unexpected error occurred during export: " + e.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE); // "Export Error"
+                    });
+                }
+            });
+
+        } else {
+            System.out.println("User cancelled file saving."); // "User cancelled file saving."
+        }
+    }
+
+
+    // Inside MenuUI class, showAddTransactionDialog method - (from pre, uses ExecutorService for AI)
     private void showAddTransactionDialog() {
         JDialog addDialog = new JDialog();
-        addDialog.setTitle("Add Transaction");
+        addDialog.setTitle("Add Transaction"); // "Add Transaction"
         JPanel dialogPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        // Default constraints
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 5, 5, 5);
 
         JTextField transactionTimeField = new JTextField(15);
         JTextField transactionTypeField = new JTextField(15);
-        JButton aiSuggestButton = new JButton("AI Category Suggestion");
+        JButton aiSuggestButton = new JButton("AI Category Suggestion"); // "AI Category Suggestion"
 
         JTextField counterpartyField = new JTextField(15);
         JTextField commodityField = new JTextField(15);
-        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"Income", "Expense"});
+        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"Income", "Expense"}); // "Income", "Expense"
         JTextField paymentAmountField = new JTextField(15);
         JTextField paymentMethodField = new JTextField(15);
         JTextField currentStatusField = new JTextField(15);
-        JTextField orderNumberField = new JTextField(15); // Order Number field (should be editable for add)
+        JTextField orderNumberField = new JTextField(15);
         JTextField merchantNumberField = new JTextField(15);
         JTextField remarksField = new JTextField(15);
 
-        // Add components using GridBagLayout - Corrected layout logic
+
+        // Add components using GridBagLayout (from pre layout structure)
         String[] fieldNames = {
                 "Transaction Time", "Transaction Type", "Counterparty", "Commodity",
                 "In/Out", "Amount(CNY)", "Payment Method", "Current Status",
@@ -419,26 +552,29 @@ public class MenuUI extends JPanel {
         };
         int textFieldIndex = 0;
 
-        for (int i = 0; i < fieldNames.length; i++) {
-            // Constraints for Label (Column 0, Row i)
-            gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
+        int row = 0; // Use a row counter
+        for (String fieldName : fieldNames) {
+            // Constraints for Label (Column 0)
+            gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 1; gbc.weightx = 0.0;
             gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.NONE;
-            dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
+            dialogPanel.add(new JLabel(fieldName + ":"), gbc);
 
-            // Reset constraints for the input component on the same row
-            gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0;
+            // Reset constraints for the input component
+            gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
             gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.HORIZONTAL;
 
-            if (fieldNames[i].equals("Transaction Type")) { // Row for Transaction Type and AI button
+
+            if (fieldName.equals("Transaction Type")) { // Row for Transaction Type and AI button
                 gbc.gridwidth = 1; // Field takes 1 column
                 dialogPanel.add(textFields[textFieldIndex++], gbc); // Add Transaction Type field
 
-                // Constraints for AI Suggest Button (Column 2, Same Row i)
-                gbc.gridx = 2; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
+                // Constraints for AI Suggest Button (Column 2)
+                gbc.gridx = 2; gbc.gridy = row; gbc.gridwidth = 1; gbc.weightx = 0.0;
                 gbc.fill = GridBagConstraints.NONE; // Button doesn't fill space
                 dialogPanel.add(aiSuggestButton, gbc);
+                gbc.fill = GridBagConstraints.HORIZONTAL; // Reset fill
 
-            } else if (fieldNames[i].equals("In/Out")) { // Row for In/Out ComboBox
+            } else if (fieldName.equals("In/Out")) { // Row for In/Out ComboBox
                 gbc.gridwidth = 2; // ComboBox spans 2 columns
                 dialogPanel.add(inOutComboBox, gbc);
 
@@ -446,41 +582,39 @@ public class MenuUI extends JPanel {
                 gbc.gridwidth = 2; // These fields span 2 columns (1 and 2)
                 dialogPanel.add(textFields[textFieldIndex++], gbc); // Add the text field
             }
+
+            row++; // Move to the next row
         }
 
-        // Order Number field should be editable for adding
+        // Order Number field should be editable for adding (from pre)
         orderNumberField.setEditable(true);
 
 
-        // --- Define the modal waiting dialog for AI suggestion ---
-        JDialog waitingDialog = new JDialog(addDialog, "Please wait", true);
+        JDialog waitingDialog = new JDialog(addDialog, "Please wait", true); // "Please wait"
         waitingDialog.setLayout(new FlowLayout());
-        waitingDialog.add(new JLabel("Getting AI category suggestion..."));
+        waitingDialog.add(new JLabel("Getting AI category suggestion...")); // "Getting AI category suggestion..."
         waitingDialog.setSize(250, 100);
         waitingDialog.setResizable(false);
-        waitingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); // Prevent closing with X
+        waitingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); // Prevent closing with X (from pre)
 
 
-        // Add Confirm and Cancel buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton confirmButton = new JButton("Confirm");
-        JButton cancelButton = new JButton("Cancel");
+        JButton confirmButton = new JButton("Confirm"); // "Confirm"
+        JButton cancelButton = new JButton("Cancel");   // "Cancel"
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
-        // Constraints for Button Panel (placed below the last field row)
-        gbc.gridx = 0; gbc.gridy = fieldNames.length; // Row 11 (after 0-10)
-        gbc.gridwidth = 3; // Span all 3 columns
-        gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(15, 5, 5, 5);
+        // Constraints for Button Panel (placed below the last field row) (from pre layout structure)
+        gbc.gridx = 0; gbc.gridy = fieldNames.length; // Row after the last field
+        gbc.gridwidth = 3; gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(15, 5, 5, 5); // Add some space above buttons
         gbc.weightx = 0.0; gbc.weighty = 1.0; // Give this row vertical weight to push fields up
         dialogPanel.add(buttonPanel, gbc);
-
 
         addDialog.add(dialogPanel, BorderLayout.CENTER);
 
 
-        // Add AI Suggest button action listener - Uses ExecutorService
+        // Add AI Suggest button action listener - Uses ExecutorService (from pre)
         aiSuggestButton.addActionListener(e -> {
             System.out.println("AI Suggest button clicked (EDT).");
 
@@ -505,7 +639,7 @@ public class MenuUI extends JPanel {
             );
 
             // 3. Submit the AI task to the ExecutorService
-            executorService.submit(() -> {
+            executorService.submit(() -> { // Use submit (from pre)
                 System.out.println("AI Suggest task submitted to ExecutorService...");
                 String aiSuggestion = null;
                 try {
@@ -558,44 +692,47 @@ public class MenuUI extends JPanel {
         });
 
 
-        // Add Confirm button action listener
         confirmButton.addActionListener(e -> {
-            // Get values from textFields array + ComboBox
-            String transactionTime = textFields[0].getText().trim();
-            String finalTransactionType = textFields[1].getText().trim();
-            String counterparty = textFields[2].getText().trim();
-            String commodity = textFields[3].getText().trim();
+            String transactionTime = emptyIfNull(transactionTimeField.getText().trim());
+            String finalTransactionType = emptyIfNull(transactionTypeField.getText().trim());
+            String counterparty = emptyIfNull(counterpartyField.getText().trim());
+            String commodity = emptyIfNull(commodityField.getText().trim());
             String inOut = (String) inOutComboBox.getSelectedItem();
-            String paymentAmountText = textFields[4].getText().trim();
-            String paymentMethod = textFields[5].getText().trim();
-            String currentStatus = textFields[6].getText().trim();
-            String orderNumber = textFields[7].getText().trim(); // Order Number
-            String merchantNumber = textFields[8].getText().trim(); // Merchant Number
-            String remarks = textFields[9].getText().trim(); // Remarks
+            String paymentAmountText = paymentAmountField.getText().trim();
+            String paymentMethod = emptyIfNull(paymentMethodField.getText().trim());
+            String currentStatus = emptyIfNull(currentStatusField.getText().trim());
+            String orderNumber = emptyIfNull(orderNumberField.getText().trim());
+            String merchantNumber = emptyIfNull(merchantNumberField.getText().trim());
+            String remarks = emptyIfNull(remarksField.getText().trim());
 
-            // --- Input Validation ---
             if (orderNumber.isEmpty()) {
                 JOptionPane.showMessageDialog(addDialog, "Order Number cannot be empty!", "Input Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Optional: Validate Order Number uniqueness in Service layer BEFORE adding
 
             if (finalTransactionType.isEmpty()) {
                 JOptionPane.showMessageDialog(addDialog, "Transaction Type cannot be empty!", "Input Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Validate against standard categories for manual input
             if (!StandardCategories.ALL_KNOWN_TYPES.contains(finalTransactionType)) {
                 JOptionPane.showMessageDialog(addDialog, "Transaction type must be one of the standard categories!\nAllowed categories:\n" + StandardCategories.getAllCategoriesString(), "Input Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
             double paymentAmount = 0.0;
             if (!paymentAmountText.isEmpty()) {
                 try {
                     paymentAmount = Double.parseDouble(paymentAmountText);
-                    if (paymentAmount < 0) {
+                    if (paymentAmount < 0) { // Non-negative check from pre
                         JOptionPane.showMessageDialog(addDialog, "Amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    // Validate non-negative amount consistency with In/Out (from pre)
+                    if (paymentAmount < 0 && (inOut != null && inOut.equals("Income"))) { // Assuming "Income" or "Expense" from ComboBox
+                        JOptionPane.showMessageDialog(addDialog, "Income amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (paymentAmount < 0 && (inOut != null && inOut.equals("Expense"))) {
+                        JOptionPane.showMessageDialog(addDialog, "Expense amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 } catch (NumberFormatException ex) {
@@ -603,29 +740,11 @@ public class MenuUI extends JPanel {
                     return;
                 }
             }
-            // Validate non-negative amount consistency with In/Out
-            if (paymentAmount < 0 && (inOut != null && inOut.equals("Income"))) { // Assuming "Income" or "Expense" from ComboBox
-                JOptionPane.showMessageDialog(addDialog, "Income amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (paymentAmount < 0 && (inOut != null && inOut.equals("Expense"))) {
-                JOptionPane.showMessageDialog(addDialog, "Expense amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-
             Transaction newTransaction = new Transaction(
                     transactionTime, finalTransactionType, counterparty, commodity, inOut,
                     paymentAmount, paymentMethod, currentStatus, orderNumber, merchantNumber, remarks
             );
             try {
-                // Optional: Check for duplicate order number in service layer before adding
-                // boolean isUnique = transactionService.isOrderNumberUnique(orderNumber);
-                // if (!isUnique) {
-                //      JOptionPane.showMessageDialog(addDialog, "Order Number '" + orderNumber + "' already exists!", "Input Error", JOptionPane.ERROR_MESSAGE);
-                //      return;
-                // }
-
                 transactionService.addTransaction(newTransaction);
                 loadCSVDataForCurrentUser("");
                 clearSearchFields();
@@ -645,50 +764,42 @@ public class MenuUI extends JPanel {
         addDialog.setVisible(true);
     }
 
-    /**
-     * Shows the dialog for editing an existing transaction.
-     * @param rowIndex The row index of the transaction in the current table view.
-     */
+    // Inside MenuUI class, editRow method - (from pre, uses ExecutorService for AI)
     public void editRow(int rowIndex) {
         System.out.println("Editing row: " + rowIndex + " for user " + currentUser.getUsername());
 
-        // Define JDialog, JPanel, GridBagConstraints at the start
         JDialog editDialog = new JDialog();
         JPanel dialogPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
+
         if (rowIndex >= 0 && rowIndex < this.tableModel.getRowCount()) {
-            // Retrieve data from the currently displayed table row
             Vector<String> rowData = new Vector<>();
-            for (int i = 0; i <= 10; i++) { // Columns 0 to 10 are Transaction fields
+            for (int i = 0; i <= 10; i++) {
                 Object value = this.tableModel.getValueAt(rowIndex, i);
                 rowData.add(value != null ? value.toString() : "");
             }
             System.out.println("Retrieved row data from table model for editing: " + rowData);
-
-            String originalOrderNumber = rowData.get(8).trim(); // Order number is at index 8
+            String originalOrderNumber = rowData.get(8).trim();
             if (originalOrderNumber.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Cannot edit: Order Number is empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                System.err.println("Attempted to edit row " + rowIndex + " but order number is empty in the table.");
-                return; // Return immediately if no order number in the row
+                System.err.println("Attempted to edit row " + rowIndex + " but order number is empty.");
+                return;
             }
 
-            editDialog.setTitle("Edit Transaction (Order No: " + originalOrderNumber + ")");
+            editDialog.setTitle("Edit Transaction (Order No: " + originalOrderNumber + ")"); // "Edit Transaction (Order No: "
             editDialog.setModal(true);
-
-            // Default constraints for components in the dialog panel
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = new Insets(5, 5, 5, 5);
-            gbc.weightx = 1.0; // Input components get horizontal weight
 
-            // Fields for the dialog (order matches fieldNames)
+            // Fields for the dialog (from pre structure)
             JTextField transactionTimeField = new JTextField(rowData.get(0));
             JTextField transactionTypeField = new JTextField(rowData.get(1));
-            JButton aiSuggestButton = new JButton("AI Category Suggestion");
+            JButton aiSuggestButton = new JButton("AI Category Suggestion"); // "AI Category Suggestion"
             JTextField counterpartyField = new JTextField(rowData.get(2));
             JTextField commodityField = new JTextField(rowData.get(3));
-            JComboBox<String> editInOutComboBox = new JComboBox<>(new String[]{"Income", "Expense"}); // JComboBox for In/Out
-            // Set initial value for In/Out ComboBox
+            JComboBox<String> editInOutComboBox = new JComboBox<>(new String[]{"Income", "Expense"}); // JComboBox for In/Out (from pre)
+            // Set initial value for In/Out ComboBox (from pre)
             String currentInOutValue = rowData.get(4); // In/Out is at index 4 in rowData
             for (int j = 0; j < editInOutComboBox.getItemCount(); j++) {
                 if (currentInOutValue != null && currentInOutValue.equalsIgnoreCase(editInOutComboBox.getItemAt(j))) { // Use equalsIgnoreCase
@@ -703,17 +814,16 @@ public class MenuUI extends JPanel {
             JTextField merchantNumberField = new JTextField(rowData.get(9));
             JTextField remarksField = new JTextField(rowData.get(10));
 
-            // Disable Order Number field editing - Order Number is the key, should not be changeable via edit
+            // Disable Order Number field editing (from pre)
             orderNumberField.setEditable(false);
 
-
-            // Add components using GridBagLayout
+            // Add components using GridBagLayout (from pre layout structure)
             String[] fieldNames = {
                     "Transaction Time", "Transaction Type", "Counterparty", "Commodity",
                     "In/Out", "Amount(CNY)", "Payment Method", "Current Status",
                     "Order Number", "Merchant Number", "Remarks"
             };
-            // Map field names to the created components for easier iteration
+            // Map field names to the created components for easier iteration (from pre structure)
             java.util.Map<String, Component> componentMap = new java.util.LinkedHashMap<>(); // Use LinkedHashMap to maintain order
             componentMap.put("Transaction Time", transactionTimeField);
             componentMap.put("Transaction Type", transactionTypeField);
@@ -727,8 +837,7 @@ public class MenuUI extends JPanel {
             componentMap.put("Merchant Number", merchantNumberField);
             componentMap.put("Remarks", remarksField);
 
-
-            int row = 0;
+            int row = 0; // Use a row counter
             for (String fieldName : fieldNames) {
                 // Constraints for Label (Column 0)
                 gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 1; gbc.weightx = 0.0;
@@ -758,41 +867,35 @@ public class MenuUI extends JPanel {
                 row++; // Move to the next row
             }
 
-
-            // --- Define the modal waiting dialog for AI suggestion ---
-            JDialog waitingDialog = new JDialog(editDialog, "Please wait", true);
+            JDialog waitingDialog = new JDialog(editDialog, "Please wait", true); // "Please wait"
             waitingDialog.setLayout(new FlowLayout());
-            waitingDialog.add(new JLabel("Getting AI category suggestion..."));
+            waitingDialog.add(new JLabel("Getting AI category suggestion...")); // "Getting AI category suggestion..."
             waitingDialog.setSize(250, 100);
             waitingDialog.setResizable(false);
-            waitingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); // Prevent closing with X
+            waitingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); // Prevent closing with X (from pre)
 
 
-            // Add Confirm and Cancel buttons
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            JButton confirmButton = new JButton("Confirm");
-            JButton cancelButton = new JButton("Cancel");
+            JButton confirmButton = new JButton("Confirm"); // "Confirm"
+            JButton cancelButton = new JButton("Cancel");   // "Cancel"
             buttonPanel.add(confirmButton);
             buttonPanel.add(cancelButton);
 
-            // Constraints for Button Panel (placed below the last row)
-            gbc.gridx = 0; gbc.gridy = fieldNames.length; // Row 11 (after 0-10)
-            gbc.gridwidth = 3;
-            gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE;
-            gbc.insets = new Insets(15, 5, 5, 5);
+            // Constraints for Button Panel (from pre layout structure)
+            gbc.gridx = 0; gbc.gridy = fieldNames.length; // Row after the last field
+            gbc.gridwidth = 3; gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE;
+            gbc.insets = new Insets(15, 5, 5, 5); // Add some space above buttons
             gbc.weightx = 0.0; gbc.weighty = 1.0; // Give this row vertical weight
             dialogPanel.add(buttonPanel, gbc);
 
-
             editDialog.add(dialogPanel, BorderLayout.CENTER);
 
-
-            // Add AI Suggest button action listener - Uses ExecutorService
+            // Add AI Suggest button action listener - Uses ExecutorService (from pre)
             aiSuggestButton.addActionListener(e -> {
                 System.out.println("AI Suggest button clicked (EDT) in edit dialog.");
                 aiSuggestButton.setEnabled(false);
 
-                // Build temporary transaction object from dialog components' current values
+                // Build temporary transaction object from dialog components' current values (from pre)
                 Transaction tempTransaction = new Transaction(
                         transactionTimeField.getText().trim(),
                         transactionTypeField.getText().trim(),
@@ -802,16 +905,13 @@ public class MenuUI extends JPanel {
                         safeParseDouble(paymentAmountField.getText().trim()),
                         paymentMethodField.getText().trim(),
                         currentStatusField.getText().trim(),
-                        orderNumberField.getText().trim(), // Use the disabled field's text for ON
+                        orderNumberField.getText().trim(), // Use the disabled field's text for ON (holds originalOrderNumber)
                         merchantNumberField.getText().trim(),
                         remarksField.getText().trim()
                 );
-                // Ensure the original order number is used for the temp transaction key if needed by RecognizeTransaction
-                // It's already in the tempTransaction from orderNumberField, which holds rowData.get(8)
-                // tempTransaction.setOrderNumber(originalOrderNumber); // This line might not be needed if orderNumberField holds the correct value
 
-                // Submit the AI task to the ExecutorService
-                executorService.submit(() -> {
+                // Submit the AI task to the ExecutorService (from pre)
+                executorService.submit(() -> { // Use submit (from pre)
                     System.out.println("AI Suggest task submitted to ExecutorService (edit dialog)...");
                     String aiSuggestion = null;
                     try {
@@ -857,22 +957,21 @@ public class MenuUI extends JPanel {
             });
 
 
-            // Add Confirm button action listener
             confirmButton.addActionListener(e -> {
                 // Get values from dialog components
                 String transactionTime = transactionTimeField.getText().trim();
                 String finalTransactionType = transactionTypeField.getText().trim();
                 String counterparty = counterpartyField.getText().trim();
                 String commodity = commodityField.getText().trim();
-                String inOut = (String) editInOutComboBox.getSelectedItem(); // GET VALUE FROM THE EDIT DIALOG'S COMBOBOX
+                String inOut = (String) editInOutComboBox.getSelectedItem(); // GET VALUE FROM THE EDIT DIALOG'S COMBOBOX (from pre)
                 String paymentAmountText = paymentAmountField.getText().trim();
                 String paymentMethod = paymentMethodField.getText().trim();
                 String currentStatus = currentStatusField.getText().trim();
-                String orderNumber = orderNumberField.getText().trim(); // Get from disabled field, which holds original ON
+                String orderNumber = orderNumberField.getText().trim(); // Get from disabled field, which holds original ON (from pre)
                 String merchantNumber = merchantNumberField.getText().trim();
                 String remarks = remarksField.getText().trim();
 
-                // --- Input Validation ---
+                // --- Input Validation --- (from pre)
                 // Order Number field is disabled, it should contain the originalOrderNumber.
                 // Validation on originalOrderNumber already happened at method entry.
 
@@ -887,6 +986,7 @@ public class MenuUI extends JPanel {
                 }
                 // Validate In/Out is one of expected values (ComboBox ensures this for "Income"/"Expense")
                 if (!inOut.equals("Income") && !inOut.equals("Expense")) { // ComboBox only has these two, but add check for robustness
+                    // This check is theoretically redundant with the JComboBox but good practice
                     JOptionPane.showMessageDialog(editDialog, "In/Out field must be 'Income' or 'Expense'.", "Input Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -904,7 +1004,7 @@ public class MenuUI extends JPanel {
                         return;
                     }
                 }
-                // Check for non-negative amount consistency with In/Out
+                // Check for non-negative amount consistency with In/Out (from pre)
                 if (paymentAmount < 0 && inOut.equals("Income")) {
                     JOptionPane.showMessageDialog(editDialog, "Income amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -914,9 +1014,10 @@ public class MenuUI extends JPanel {
                     return;
                 }
 
+
                 Transaction updatedTransaction = new Transaction(
                         transactionTime, finalTransactionType, counterparty, commodity, inOut,
-                        paymentAmount, paymentMethod, currentStatus, originalOrderNumber, // Use the correct originalOrderNumber (captured at method start)
+                        paymentAmount, paymentMethod, currentStatus, originalOrderNumber, // Use the correct originalOrderNumber (captured at method start) (from pre)
                         merchantNumber, remarks
                 );
 
@@ -925,6 +1026,7 @@ public class MenuUI extends JPanel {
                     transactionService.changeTransaction(updatedTransaction);
                     System.out.println("Edit successful. Preparing to refresh display filtered by InOut: " + updatedTransaction.getInOut());
                     clearSearchFields();
+                    // Attempt to keep the current In/Out filter selected after refresh (from pre)
                     String updatedInOut = updatedTransaction.getInOut();
                     boolean foundInOut = false;
                     for(int i=0; i < searchInOutComboBox.getItemCount(); i++) {
@@ -936,7 +1038,7 @@ public class MenuUI extends JPanel {
                     }
                     if (!foundInOut) { searchInOutComboBox.setSelectedItem(""); }
 
-                    triggerCurrentSearch();
+                    triggerCurrentSearch(); // Refresh the table based on potentially updated filters (from pre)
 
                     editDialog.dispose();
                     JOptionPane.showMessageDialog(null, "Update successful!", "Information", JOptionPane.INFORMATION_MESSAGE);
@@ -952,72 +1054,69 @@ public class MenuUI extends JPanel {
             });
             cancelButton.addActionListener(e -> editDialog.dispose());
 
-            // --- Dialog setup and showing ---
+            // --- Dialog setup and showing --- (from pre)
             editDialog.pack();
             editDialog.setLocationRelativeTo(this);
             editDialog.setVisible(true); // Show the edit dialog
             // --- End Dialog setup ---
 
         } else {
-            // This block is for invalid rowIndex.
             System.err.println("Attempted to edit row with invalid index: " + rowIndex + ". Table row count: " + this.tableModel.getRowCount());
         }
     }
 
-    /**
-     * Creates the panel for displaying AI analysis results and controls.
-     * @return The AI analysis panel.
-     */
+
+    // Inside MenuUI class, createAIPanel method - MODIFIED (integrates seasonal analysis from post, keeps pre's batch button)
     private JPanel createAIPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Panel for General AI Analysis controls
+        // --- 通用分析面板 (原始数据) ---
         JPanel generalAnalysisPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         JTextField userRequestField = new JTextField(40);
-        aiStartTimeField = new JTextField(10);
-        aiEndTimeField = new JTextField(10);
-        aiAnalyzeButton = new JButton("General Analysis"); // Updated text
+        aiStartTimeField = new JTextField(10); // 格式应为 yyyy/MM/dd HH:mm
+        aiEndTimeField = new JTextField(10);   // 格式应为 yyyy/MM/dd HH:mm
+        aiAnalyzeButton = new JButton("General Analysis (Raw Data)"); // "通用分析 (原始数据)"
 
-
-        generalAnalysisPanel.add(new JLabel("General Analysis Request:"));
+        generalAnalysisPanel.add(new JLabel("General Analysis Request:")); // "通用分析请求:"
         generalAnalysisPanel.add(userRequestField);
-        generalAnalysisPanel.add(new JLabel("Time Range (yyyy/MM/dd HH:mm): From:"));
+        generalAnalysisPanel.add(new JLabel("Time Range (yyyy/MM/dd HH:mm): From:")); // "时间范围 (yyyy/MM/dd HH:mm): 从:"
         generalAnalysisPanel.add(aiStartTimeField);
-        generalAnalysisPanel.add(new JLabel("To:"));
-        generalAnalysisPanel.add(aiEndTimeField);
+        generalAnalysisPanel.add(new JLabel("To:")); // "到:"
+        generalAnalysisPanel.add(aiEndTimeField); // 将 aiEndTimeField 添加到布局中
         generalAnalysisPanel.add(aiAnalyzeButton);
 
-
-        // Panel for Summary-Based AI Analysis controls
+        // --- 基于月度总结的分析面板 ---
         JPanel summaryAnalysisPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        aiPersonalSummaryButton = new JButton("Personal Spending Summary");
-        aiSavingsGoalsButton = new JButton("Savings Goal Suggestions");
-        aiPersonalSavingTipsButton = new JButton("Personalized Saving Tips");
+        aiPersonalSummaryButton = new JButton("Personal Spending Summary"); // "个人消费总结"
+        aiSavingsGoalsButton = new JButton("Savings Goal Suggestions");   // "储蓄目标建议"
+        aiPersonalSavingTipsButton = new JButton("Personalized Saving Tips"); // "个性化省钱技巧"
+        // Initialize the NEW seasonal analysis button here (from post)
+        aiSeasonalAnalysisButton = new JButton("Analyze Seasonal Spending (China Focus)"); // "分析季节性消费 (中国视角)" - Initialize new button
 
-        summaryAnalysisPanel.add(new JLabel("Based on Monthly Summary Analysis:"));
+        summaryAnalysisPanel.add(new JLabel("Based on Monthly Summary Analysis:")); // "基于月度总结分析:"
         summaryAnalysisPanel.add(aiPersonalSummaryButton);
         summaryAnalysisPanel.add(aiSavingsGoalsButton);
         summaryAnalysisPanel.add(aiPersonalSavingTipsButton);
+        summaryAnalysisPanel.add(aiSeasonalAnalysisButton); // ADD the new button to the panel (from post)
 
-
-        // Panel for Student-Specific features
+        // --- 学生专属功能面板 ---
         JPanel csButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        aiBudgetButton = new JButton("Budget Suggestion (Student)");
-        aiTipsButton = new JButton("Saving Tips (Student)");
-        csButtonsPanel.add(new JLabel("Student-Specific Features:"));
+        aiBudgetButton = new JButton("Budget Suggestion (Student)"); // "预算建议 (学生)"
+        aiTipsButton = new JButton("Saving Tips (Student)");       // "省钱技巧 (学生)"
+
+        csButtonsPanel.add(new JLabel("Student-Specific Features:")); // "学生专属功能:"
         csButtonsPanel.add(aiBudgetButton);
         csButtonsPanel.add(aiTipsButton);
 
-
-        // --- NEW Panel for Batch/Debug Tasks ---
+        // --- NEW Panel for Batch/Debug Tasks --- (from pre)
         JPanel batchTaskPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         runBatchAiButton = new JButton("Run Batch AI Analysis (Test ExecutorService)"); // Create the button
         batchTaskPanel.add(new JLabel("Multi-thread performace testing: ")); // Optional label
         batchTaskPanel.add(runBatchAiButton); // Add the button
         // --- End New Panel ---
 
-        // Combine all control panels in a box layout at the top
+        // --- 顶部控制面板 (所有按钮面板的布局) ---
         JPanel topControlPanel = new JPanel();
         topControlPanel.setLayout(new BoxLayout(topControlPanel, BoxLayout.Y_AXIS));
         topControlPanel.add(generalAnalysisPanel);
@@ -1026,33 +1125,55 @@ public class MenuUI extends JPanel {
         topControlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         topControlPanel.add(csButtonsPanel);
         topControlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        topControlPanel.add(batchTaskPanel); // Add the new batch task panel
+        topControlPanel.add(batchTaskPanel); // Add the new batch task panel (from pre)
         topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing below it
 
 
         panel.add(topControlPanel, BorderLayout.NORTH);
 
-        // Center area for displaying AI results
         aiResultArea = new JTextArea();
-        aiResultArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14)); // Using a common font name
+        aiResultArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14)); // "微软雅黑"
         aiResultArea.setLineWrap(true);
         aiResultArea.setWrapStyleWord(true);
         aiResultArea.setEditable(false);
-        aiResultArea.setText("Welcome to the AI Personal Finance Analysis feature.\n\n" +
-                "You can try the following operations:\n" +
-                "1. Enter a general analysis request in the input field above (based on raw data, time range can be specified), then click \"General Analysis\".\n" +
-                "2. Click \"Personal Spending Summary\" to get a detailed summary based on your monthly income and expenses.\n" +
-                "3. Click \"Savings Goal Suggestions\" to get savings advice based on your income and expenditure situation.\n" +
-                "4. Click \"Personalized Saving Tips\" to get saving advice based on your spending categories.\n" +
-                "5. Student users can click \"Budget Suggestion (Student)\" and \"Saving Tips (Student)\" for exclusive advice.\n");
+        // Update initial text to include description for the new seasonal analysis button (from post)
+        aiResultArea.setText("Welcome to the AI Personal Finance Analysis feature.\n\n" + // "欢迎使用AI个人财务分析功能。\n\n"
+                "You can try the following operations:\n" + // "您可以尝试以下操作：\n"
+                "1. Enter a general analysis request in the input field above (based on raw data, time range can be specified), then click \"General Analysis (Raw Data)\".\n" + // "1. 在上方输入框输入通用分析请求（基于原始数据，可指定时间范围），然后点击“通用分析”。\n"
+                "2. Click \"Personal Spending Summary\" to get a detailed summary based on your monthly income and expenses.\n" + // "2. 点击“个人消费总结”获取基于您月度收支的详细总结。\n"
+                "3. Click \"Savings Goal Suggestions\" to get savings advice based on your income and expenditure situation.\n" + // "3. 点击“储蓄目标建议”获取基于您收支情况的储蓄建议。\n"
+                "4. Click \"Personalized Saving Tips\" to get saving advice based on your spending categories.\n" + // "4. 点击“个性化省钱技巧”获取基于您消费类别的省钱建议。\n"
+                "5. Click \"Analyze Seasonal Spending (China Focus)\" for insights into your spending habits across different seasons/holidays.\n" + // "5. 点击“分析季节性消费 (中国视角)”获取您在不同季节/节假日的消费习惯洞察。\n" (新增说明 from post)
+                "6. Student users can click \"Budget Suggestion (Student)\" and \"Saving Tips (Student)\" for exclusive advice.\n" + // "6. 学生用户可以点击“预算建议”和“省钱技巧”获取专属建议。\n"
+                "7. (Admin only) Click \"Run Batch AI Analysis (Test ExecutorService)\" to test multi-threaded AI performance.\n"); // Added description for batch button (from pre)
 
 
         JScrollPane resultScrollPane = new JScrollPane(aiResultArea);
         panel.add(resultScrollPane, BorderLayout.CENTER);
 
-        // --- Action Listener for the NEW Batch Button ---
+        // Action listeners for AI buttons (from pre, modified/added where necessary)
+
+        // Seasonal Analysis Button Action Listener - NEW (from post, adapted to use pre's ExecutorService)
+        aiSeasonalAnalysisButton.addActionListener(e -> {
+            aiResultArea.setText("--- Analyzing Seasonal Spending Patterns (China Focus) ---\n\nPlease wait while AI analyzes your monthly data for seasonal trends...\n"); // "--- 正在分析季节性消费模式 (中国视角) ---\n\n请稍候，AI正在分析您的月度数据以寻找季节性趋势...\n"
+            setAIButtonsEnabled(false);
+            // Use executorService from pre
+            executorService.submit(() -> { // Use submit
+                System.out.println("Seasonal Analysis task submitted to ExecutorService..."); // Optional logging
+                String result = aiTransactionService.analyzeSeasonalSpendingPatterns(currentUser.getTransactionFilePath());
+                System.out.println("Seasonal Analysis task finished."); // Optional logging
+                SwingUtilities.invokeLater(() -> {
+                    aiResultArea.setText("--- Seasonal Spending Analysis (China Focus) ---\n\n" + result); // "--- 季节性消费分析 (中国视角) ---\n\n"
+                    setAIButtonsEnabled(true);
+                    System.out.println("UI updated after Seasonal Analysis task."); // Optional logging
+                });
+            });
+        });
+
+
+        // Action Listener for the Batch AI Button (from pre)
         runBatchAiButton.addActionListener(e -> {
-            int numberOfTasks = 30; // Define the number of tasks for the batch run
+            int numberOfTasks = 10; // Define the number of tasks for the batch run
             String userRequest = "Summarize recent activity"; // Example request for batch tasks
             String filePath = currentUser.getTransactionFilePath(); // Use current user's file path
             String startTime = "2024/01/01"; // Example time range for batch tasks
@@ -1065,14 +1186,14 @@ public class MenuUI extends JPanel {
             // Disable all AI related buttons while batch is running
             setAIButtonsEnabled(false);
 
-            // Use an AtomicInteger to track completed tasks across threads
+            // Use an AtomicInteger to track completed tasks across threads (from pre)
             java.util.concurrent.atomic.AtomicInteger completedTasks = new java.util.concurrent.atomic.AtomicInteger(0);
             long startTimeMillis = System.currentTimeMillis(); // Record start time for total duration
 
             for (int i = 0; i < numberOfTasks; i++) {
                 final int taskIndex = i;
-                // Submit each individual task to the ExecutorService
-                executorService.submit(() -> {
+                // Submit each individual task to the ExecutorService (from pre)
+                executorService.submit(() -> { // Use submit
                     String taskResult = "Task " + (taskIndex + 1) + " failed."; // Default error message for this specific task
                     boolean success = false;
                     try {
@@ -1090,7 +1211,7 @@ public class MenuUI extends JPanel {
                         // Increment completed task count
                         int doneCount = completedTasks.incrementAndGet();
 
-                        // Update UI with progress and final status on EDT
+                        // Update UI with progress and final status on EDT (from pre)
                         SwingUtilities.invokeLater(() -> {
                             // Append status for this task
                             // aiResultArea.append(taskResult + "\n"); // Appending can make UI jumpy for large batches
@@ -1112,14 +1233,15 @@ public class MenuUI extends JPanel {
                 });
             }
         });
-        // Personal Spending Summary Button
+
+        // Personal Spending Summary Button (from pre, uses ExecutorService)
         aiPersonalSummaryButton.addActionListener(e -> {
             aiResultArea.setText("--- Generating Personal Spending Summary ---\n\nGenerating summary based on your monthly spending data, please wait...\n");
             setAIButtonsEnabled(false);
 
             // Submit task to ExecutorService
-            executorService.submit(() -> {
-                String result = aiTransactionService.generatePersonalSummary(currentUser.getTransactionFilePath()); // Call the new method
+            executorService.submit(() -> { // Use submit
+                String result = aiTransactionService.generatePersonalSummary(currentUser.getTransactionFilePath()); // Call the method
                 SwingUtilities.invokeLater(() -> { // Update UI on EDT
                     aiResultArea.setText("--- Personal Spending Summary ---\n\n" + result);
                     setAIButtonsEnabled(true);
@@ -1127,14 +1249,14 @@ public class MenuUI extends JPanel {
             });
         });
 
-        // Savings Goal Suggestions Button
+        // Savings Goal Suggestions Button (from pre, uses ExecutorService)
         aiSavingsGoalsButton.addActionListener(e -> {
             aiResultArea.setText("--- Generating Savings Goal Suggestions ---\n\nGenerating savings goal suggestions based on your income and expenses, please wait...\n");
             setAIButtonsEnabled(false);
 
             // Submit task to ExecutorService
-            executorService.submit(() -> {
-                String result = aiTransactionService.suggestSavingsGoals(currentUser.getTransactionFilePath()); // Call the new method
+            executorService.submit(() -> { // Use submit
+                String result = aiTransactionService.suggestSavingsGoals(currentUser.getTransactionFilePath()); // Call the method
                 SwingUtilities.invokeLater(() -> { // Update UI on EDT
                     aiResultArea.setText("--- Savings Goal Suggestions ---\n\n" + result);
                     setAIButtonsEnabled(true);
@@ -1142,14 +1264,14 @@ public class MenuUI extends JPanel {
             });
         });
 
-        // Personalized Saving Tips Button
+        // Personalized Saving Tips Button (from pre, uses ExecutorService)
         aiPersonalSavingTipsButton.addActionListener(e -> {
             aiResultArea.setText("--- Generating Personalized Saving Tips ---\n\nGenerating saving tips based on your spending categories, please wait...\n");
             setAIButtonsEnabled(false);
 
             // Submit task to ExecutorService
-            executorService.submit(() -> {
-                String result = aiTransactionService.givePersonalSavingTips(currentUser.getTransactionFilePath()); // Call the new method
+            executorService.submit(() -> { // Use submit
+                String result = aiTransactionService.givePersonalSavingTips(currentUser.getTransactionFilePath()); // Call the method
                 SwingUtilities.invokeLater(() -> { // Update UI on EDT
                     aiResultArea.setText("--- Personalized Saving Tips ---\n\n" + result);
                     setAIButtonsEnabled(true);
@@ -1157,7 +1279,7 @@ public class MenuUI extends JPanel {
             });
         });
 
-        // General Analysis Button
+        // General Analysis Button (from pre, uses ExecutorService)
         aiAnalyzeButton.addActionListener(e -> {
             String userRequest = userRequestField.getText().trim();
             String startTimeStr = aiStartTimeField.getText().trim();
@@ -1175,7 +1297,7 @@ public class MenuUI extends JPanel {
             setAIButtonsEnabled(false);
 
             // Submit task to ExecutorService
-            executorService.submit(() -> {
+            executorService.submit(() -> { // Use submit
                 String result = aiTransactionService.analyzeTransactions(userRequest, currentUser.getTransactionFilePath(), startTimeStr, endTimeStr);
                 SwingUtilities.invokeLater(() -> { // Update UI on EDT
                     aiResultArea.setText("--- General Analysis Result ---\n\n" + result);
@@ -1184,13 +1306,13 @@ public class MenuUI extends JPanel {
             });
         });
 
-        // College Student Budget Button
+        // College Student Budget Button (from pre, uses ExecutorService)
         aiBudgetButton.addActionListener(e -> {
             aiResultArea.setText("--- Generating Student Budget Suggestion ---\n\nGenerating budget suggestion based on your historical spending, please wait...\n");
             setAIButtonsEnabled(false);
 
             // Submit task to ExecutorService
-            executorService.submit(() -> {
+            executorService.submit(() -> { // Use submit
                 String resultMessage;
                 try {
                     double[] budgetRange = collegeStudentNeeds.generateBudget(currentUser.getTransactionFilePath());
@@ -1215,13 +1337,13 @@ public class MenuUI extends JPanel {
             });
         });
 
-        // College Student Tips Button
+        // College Student Tips Button (from pre, uses ExecutorService)
         aiTipsButton.addActionListener(e -> {
             aiResultArea.setText("--- Generating Student Saving Tips ---\n\nGenerating saving tips, please wait...\n");
             setAIButtonsEnabled(false);
 
             // Submit task to ExecutorService
-            executorService.submit(() -> {
+            executorService.submit(() -> { // Use submit
                 String resultMessage;
                 try {
                     resultMessage = collegeStudentNeeds.generateTipsForSaving(currentUser.getTransactionFilePath());
@@ -1237,12 +1359,14 @@ public class MenuUI extends JPanel {
                 });
             });
         });
+
         return panel;
     }
 
     /**
      * Helper method to enable or disable all AI-related buttons (Updated).
-     * Includes the new batch button.
+     * Includes the new seasonal and batch buttons.
+     * (from pre, modified to include seasonal button)
      *
      * @param enabled True to enable, false to disable.
      */
@@ -1253,47 +1377,48 @@ public class MenuUI extends JPanel {
         if (aiPersonalSummaryButton != null) aiPersonalSummaryButton.setEnabled(enabled);
         if (aiSavingsGoalsButton != null) aiSavingsGoalsButton.setEnabled(enabled);
         if (aiPersonalSavingTipsButton != null) aiPersonalSavingTipsButton.setEnabled(enabled);
-        if (runBatchAiButton != null) runBatchAiButton.setEnabled(enabled); // Include the new button
+        if (runBatchAiButton != null) runBatchAiButton.setEnabled(enabled); // Include the batch button (from pre)
+        if (aiSeasonalAnalysisButton != null) aiSeasonalAnalysisButton.setEnabled(enabled); // Include the new button (from post)
+
     }
 
-    /**
-     * Creates the panel for displaying admin statistics.
-     * @return The admin stats panel.
-     */
+
+    // Inside MenuUI class, createAdminStatsPanel method - (from pre, uses ExecutorService)
     private JPanel createAdminStatsPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        generateStatsButton = new JButton("Generate/Update Statistics");
-        refreshDisplayButton = new JButton("Refresh Display");
+        generateStatsButton = new JButton("Generate/Update Statistics"); // "Generate/Update Statistics"
+        refreshDisplayButton = new JButton("Refresh Display");        // "Refresh Display"
         controlPanel.add(generateStatsButton);
         controlPanel.add(refreshDisplayButton);
         panel.add(controlPanel, BorderLayout.NORTH);
 
         adminStatsArea = new JTextArea();
-        adminStatsArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+        adminStatsArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14)); // "Microsoft YaHei"
         adminStatsArea.setEditable(false);
         adminStatsArea.setLineWrap(true);
         adminStatsArea.setWrapStyleWord(true);
         JScrollPane scrollPane = new JScrollPane(adminStatsArea);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Generate Stats button listener (Uses ExecutorService)
+        // Generate Stats button listener (Uses ExecutorService) (from pre)
         generateStatsButton.addActionListener(e -> {
-            adminStatsArea.setText("Generating/Updating summary statistics, please wait...\n");
+            adminStatsArea.setText("Generating/Updating summary statistics, please wait...\n"); // "Generating/Updating summary statistics, please wait...\n"
             generateStatsButton.setEnabled(false);
             refreshDisplayButton.setEnabled(false);
 
             // Submit task to ExecutorService
-            executorService.submit(() -> {
+            executorService.submit(() -> { // Use submit
                 String message;
                 try {
-                    summaryStatisticService.generateAndSaveWeeklyStatistics();
-                    message = "Summary statistics generated/updated successfully!\nPlease click 'Refresh Display' to view the latest data.";
+                    // This call might generate stats for all users, depending on SummaryStatisticService implementation
+                    summaryStatisticService.generateAndSaveWeeklyStatistics(); // Call the method
+                    message = "Summary statistics generated/updated successfully!\nPlease click 'Refresh Display' to view the latest data."; // "Summary statistics generated/updated successfully!\nPlease click 'Refresh Display' to view the latest data."
                     System.out.println("Generate Stats task finished: " + message);
                 } catch (Exception ex) {
-                    message = "Failed to generate/update summary statistics!\n" + ex.getMessage();
+                    message = "Failed to generate/update summary statistics!\n" + ex.getMessage(); // "Failed to generate/update summary statistics!\n"
                     System.err.println("Generate Stats task failed: " + ex.getMessage());
                     ex.printStackTrace();
                 }
@@ -1307,80 +1432,74 @@ public class MenuUI extends JPanel {
             });
         });
 
-        // Refresh Display button listener (Uses ExecutorService)
+        // Refresh Display button listener (Uses ExecutorService) (from pre)
         refreshDisplayButton.addActionListener(e -> {
             displaySummaryStatistics(); // This method itself submits a task
         });
 
-        // Initial display when the panel is first shown (Optional - can be triggered by refreshPanelData if implemented)
-        // For admin stats, it's good to load existing data on panel creation/display.
-        // Submit load task to ExecutorService
+        // Initial display when the panel is first shown (from pre)
         executorService.submit(() -> { // Use submit
             System.out.println("Initial Admin Stats load task submitted to ExecutorService...");
-            SwingUtilities.invokeLater(() -> adminStatsArea.setText("Loading existing statistics...\n"));
+            SwingUtilities.invokeLater(() -> adminStatsArea.setText("Loading existing statistics...\n")); // "Loading existing statistics...\n"
             try {
                 // This loads data from the configured summary file path (likely admin's own or global)
-                List<SummaryStatistic> initialStats = summaryStatisticService.getAllSummaryStatistics();
+                List<SummaryStatistic> initialStats = summaryStatisticService.getAllSummaryStatistics(); // Call the method
                 System.out.println("Initial Admin Stats load task finished. Found " + initialStats.size() + " stats.");
                 if (!initialStats.isEmpty()) {
                     // If initial stats exist, trigger display (which submits another EDT task)
                     SwingUtilities.invokeLater(this::displaySummaryStatistics); // This triggers display using the loaded data (indirectly)
                 } else {
-                    SwingUtilities.invokeLater(() -> adminStatsArea.setText("No existing summary statistics found.\nPlease click the 'Generate/Update Statistics' button to generate them."));
+                    SwingUtilities.invokeLater(() -> adminStatsArea.setText("No existing summary statistics found.\nPlease click the 'Generate/Update Statistics' button to generate them.")); // "No existing summary statistics found.\nPlease click the 'Generate/Update Statistics' button to generate them."
                 }
             } catch (IOException ex) {
                 System.err.println("Initial Admin Stats load task failed: " + ex.getMessage());
                 ex.printStackTrace();
-                SwingUtilities.invokeLater(() -> adminStatsArea.setText("Failed to load existing statistics!\n" + ex.getMessage()));
+                SwingUtilities.invokeLater(() -> adminStatsArea.setText("Failed to load existing statistics!\n" + ex.getMessage())); // "Failed to load existing statistics!\n"
             }
         });
 
         return panel;
     }
 
-    /**
-     * Displays the summary statistics in the admin stats text area.
-     * This method submits the data loading to the ExecutorService.
-     */
+    // Inside MenuUI class, displaySummaryStatistics method - (from pre, uses ExecutorService)
     private void displaySummaryStatistics() {
-        adminStatsArea.setText("Loading summary statistics...\n");
+        adminStatsArea.setText("Loading summary statistics...\n"); // "Loading summary statistics...\n"
         if(generateStatsButton != null) generateStatsButton.setEnabled(false);
         if(refreshDisplayButton != null) refreshDisplayButton.setEnabled(false);
 
-        // Submit data loading task to ExecutorService
+        // Submit data loading task to ExecutorService (from pre)
         executorService.submit(() -> { // Use submit
             String displayContent;
             try {
                 // This loads data from the configured summary file path (likely admin's own or global)
-                List<SummaryStatistic> stats = summaryStatisticService.getAllSummaryStatistics();
+                List<SummaryStatistic> stats = summaryStatisticService.getAllSummaryStatistics(); // Call the method
                 if (stats.isEmpty()) {
-                    displayContent = "No summary statistics currently available.\nPlease click the 'Generate/Update Statistics' button first.";
+                    displayContent = "No summary statistics currently available.\nPlease click the 'Generate/Update Statistics' button first."; // "No summary statistics currently available.\nPlease click the 'Generate/Update Statistics' button first."
                 } else {
-                    StringBuilder sb = new StringBuilder("===== Summary Statistics =====\n\n");
+                    StringBuilder sb = new StringBuilder("===== Summary Statistics =====\n\n"); // "===== Summary Statistics =====\n\n"
+                    // Sort stats by week identifier (from pre)
                     stats.sort(Comparator.comparing(SummaryStatistic::getWeekIdentifier));
+                    // Display in reverse chronological order (latest first) (from pre)
                     for (int i = stats.size() - 1; i >= 0; i--) {
                         SummaryStatistic stat = stats.get(i);
-                        sb.append("Week Identifier: ").append(stat.getWeekIdentifier()).append("\n");
-                        // NOTE: These fields were originally named "total_income_all_users" etc.
-                        // If the SummaryStatistic model was updated to single-user stats, these getters need adjustment
-                        // or the model names should reflect 'Total Income (User)' etc.
-                        // Assuming SummaryStatistic model now has simple totalIncome/totalExpense etc. for a single user:
-                        sb.append("  Total Income (User): ").append(String.format("%.2f", stat.getTotalIncomeAllUsers())).append(" CNY\n"); // Getter name might be outdated
-                        sb.append("  Total Expense (User): ").append(String.format("%.2f", stat.getTotalExpenseAllUsers())).append(" CNY\n"); // Getter name might be outdated
+                        sb.append("Week Identifier: ").append(stat.getWeekIdentifier()).append("\n"); // "Week Identifier: "
+                        // NOTE: These getters reflect the structure in the pre.txt SummaryStatistic model
+                        sb.append("  Total Income (All Users): ").append(String.format("%.2f", stat.getTotalIncomeAllUsers())).append(" CNY\n"); // "  Total Income: " ... " CNY\n"
+                        sb.append("  Total Expense (All Users): ").append(String.format("%.2f", stat.getTotalExpenseAllUsers())).append(" CNY\n"); // "  Total Expense: " ... " CNY\n"
                         if (stat.getTopExpenseCategoryAmount() > 0) {
-                            sb.append("  Top Expense Category: ").append(stat.getTopExpenseCategory()).append(" (").append(String.format("%.2f", stat.getTopExpenseCategoryAmount())).append(" CNY)\n");
+                            sb.append("  Top Expense Category (All Users): ").append(stat.getTopExpenseCategory()).append(" (").append(String.format("%.2f", stat.getTopExpenseCategoryAmount())).append(" CNY)\n"); // "  Top Expense Category: " ... " CNY)\n"
                         } else {
-                            sb.append("  Top Expense Category: No significant expense category\n");
+                            sb.append("  Top Expense Category (All Users): No significant expense category\n"); // "  Top Expense Category: No significant expense category\n"
                         }
-                        // If SummaryStatistic model removed numberOfUsersWithTransactions, remove this line
-                        sb.append("  Number of Participating Users: ").append(stat.getNumberOfUsersWithTransactions()).append("\n"); // Getter name might be outdated
-                        sb.append("  Generated Time: ").append(stat.getTimestampGenerated()).append("\n");
+                        // If SummaryStatistic model includes numberOfUsersWithTransactions
+                        sb.append("  Number of Participating Users: ").append(stat.getNumberOfUsersWithTransactions()).append("\n"); // "  Number of Participating Users: "
+                        sb.append("  Generated Time: ").append(stat.getTimestampGenerated()).append("\n"); // "  Generated Time: "
                         sb.append("--------------------\n");
                     }
                     displayContent = sb.toString();
                 }
             } catch (IOException ex) {
-                displayContent = "Failed to load summary statistics!\n" + ex.getMessage();
+                displayContent = "Failed to load summary statistics!\n" + ex.getMessage(); // "Failed to load summary statistics!\n"
                 ex.printStackTrace();
             }
             String finalDisplayContent = displayContent;
@@ -1392,11 +1511,7 @@ public class MenuUI extends JPanel {
         });
     }
 
-
-    /**
-     * Handles the deletion of a transaction row from the table and the underlying data.
-     * @param rowIndex The index of the row to delete in the current table view.
-     */
+    // Inside MenuUI class, deleteRow method - (from pre, uses ExecutorService)
     public void deleteRow(int rowIndex) {
         System.out.println("Attempting to delete row: " + rowIndex + " for user " + currentUser.getUsername());
         if (rowIndex >= 0 && rowIndex < this.tableModel.getRowCount()) {
@@ -1410,29 +1525,29 @@ public class MenuUI extends JPanel {
             System.out.println("Deleting transaction with order number: " + orderNumber);
             int confirm = JOptionPane.showConfirmDialog(
                     this,
-                    "Are you sure you want to delete the transaction with order number '" + orderNumber + "'?",
-                    "Confirm Delete",
+                    "Are you sure you want to delete the transaction with order number '" + orderNumber + "'?", // "Are you sure you want to delete the transaction with order number '" ... "'?"
+                    "Confirm Delete", // "Confirm Delete"
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE
             );
             if (confirm == JOptionPane.YES_OPTION) {
-                // Submit deletion task to the ExecutorService
+                // Submit deletion task to the ExecutorService (from pre)
                 String finalOrderNumber = orderNumber; // Final variable for lambda
                 executorService.submit(() -> { // Use submit
                     System.out.println("Delete task submitted to ExecutorService for ON: " + finalOrderNumber);
                     String message;
                     boolean deleted = false;
                     try {
-                        deleted = transactionService.deleteTransaction(finalOrderNumber);
+                        deleted = transactionService.deleteTransaction(finalOrderNumber); // Call the method
                         if (deleted) {
-                            message = "Delete successful!";
+                            message = "Delete successful!"; // "Delete successful!"
                             System.out.println("Delete task finished: " + message);
                         } else {
-                            message = "Delete failed: Corresponding order number " + finalOrderNumber + " not found.";
+                            message = "Delete failed: Corresponding order number " + finalOrderNumber + " not found."; // "Delete failed: Corresponding order number " ... " not found."
                             System.err.println("Delete task failed: " + message);
                         }
                     } catch (Exception ex) {
-                        message = "Delete failed!\n" + ex.getMessage();
+                        message = "Delete failed!\n" + ex.getMessage(); // "Delete failed!\n"
                         System.err.println("Delete task failed: " + ex.getMessage());
                         ex.printStackTrace();
                     }
@@ -1443,18 +1558,11 @@ public class MenuUI extends JPanel {
                         System.out.println("Updating UI on EDT after Delete task.");
                         if (finalDeleted) {
                             // Remove the row from the table model directly if deletion was successful
-                            // This is faster than reloading all data.
-                            // Note: This assumes the tableModel perfectly reflects the underlying data filtered by the current search.
-                            // If the search criteria is complex, reloading might be safer, but slower.
-                            // Let's stick with removing the row for performance.
-                            // Find the row index again, as it might have changed if multiple deletes happened while task was running.
-                            // A safer way would be to pass the original Transaction object or its key.
-                            // For simplicity now, let's assume rowIndex hasn't changed, but be aware this is a potential bug area in concurrent updates.
-                            // If you want robust concurrent UI updates, reloading after modification/deletion is safer.
-                            // Let's stick with removing by index for now, assuming minimal concurrent modification.
+                            // Find the row index again, as it might have changed (from pre logic)
                             int currentRowIndex = -1;
                             for(int i=0; i < this.tableModel.getRowCount(); i++) {
-                                if (finalOrderNumber.equals(((String) this.tableModel.getValueAt(i, 8)).trim())) {
+                                Object cellValue = this.tableModel.getValueAt(i, 8); // Order Number is at index 8
+                                if (cellValue != null && finalOrderNumber.equals(((String) cellValue).trim())) {
                                     currentRowIndex = i;
                                     break;
                                 }
@@ -1463,18 +1571,18 @@ public class MenuUI extends JPanel {
                                 this.tableModel.removeRow(currentRowIndex);
                             } else {
                                 // If row wasn't found in the model, just reload all data to be safe.
-                                loadCSVDataForCurrentUser(""); // Reload all or trigger current search
+                                // Reload all or trigger current search (from pre)
+                                triggerCurrentSearch();
                             }
 
-
-                            JOptionPane.showMessageDialog(null, finalMessage, "Information", JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(null, finalMessage, "Information", JOptionPane.INFORMATION_MESSAGE); // "Information"
                             System.out.println("UI update complete after Delete task. Row removed.");
 
-                            // After deletion, trigger a refresh of the displayed data based on current search criteria.
-                            triggerCurrentSearch(); // Trigger refresh after UI update
+                            // After deletion, trigger a refresh of the displayed data based on current search criteria. (from pre)
+                            // triggerCurrentSearch(); // Already called above if row wasn't found, or implicitly done by removing row
                         } else {
                             // If deletion failed in service (e.g., not found), just show message.
-                            JOptionPane.showMessageDialog(null, finalMessage, "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(null, finalMessage, "Error", JOptionPane.ERROR_MESSAGE); // "Error"
                             System.out.println("UI update complete after Delete task. Deletion failed.");
                         }
                     });
@@ -1489,11 +1597,7 @@ public class MenuUI extends JPanel {
         }
     }
 
-    /**
-     * Creates a Vector representing a table row from a Transaction object.
-     * @param transaction The Transaction object.
-     * @return A Vector<String> representing the table row.
-     */
+    // Inside MenuUI class, createRowFromTransaction method - same as before (from pre)
     private Vector<String> createRowFromTransaction(Transaction transaction) {
         Vector<String> row = new Vector<>();
         row.add(emptyIfNull(transaction.getTransactionTime()));
@@ -1512,15 +1616,7 @@ public class MenuUI extends JPanel {
         return row;
     }
 
-    /**
-     * Handles the search operation based on input panel criteria and updates the table.
-     * @param query1 Transaction Time criteria.
-     * @param query2 Transaction Type criteria.
-     * @param query3 Counterparty criteria.
-     * @param query4 Commodity criteria.
-     * @param query6 In/Out criteria.
-     * @param query5 Payment Method criteria.
-     */
+    // Inside MenuUI class, searchData method - (from pre, uses ExecutorService)
     public void searchData(String query1, String query2, String query3, String query4, String query6, String query5) {
         System.out.println("Searching with criteria: time='" + query1 + "', type='" + query2 + "', counterparty='" + query3 + "', commodity='" + query4 + "', inOut='" + query6 + "', paymentMethod='" + query5 + "'");
         this.tableModel.setRowCount(0); // Clear the current table display
@@ -1532,11 +1628,11 @@ public class MenuUI extends JPanel {
                 "", "", "", "" // Other fields are not searchable from the UI input fields
         );
 
-        // Submit search task to the ExecutorService
+        // Submit search task to the ExecutorService (from pre)
         executorService.submit(() -> { // Use submit
             System.out.println("Search task submitted to ExecutorService.");
             try {
-                List<Transaction> transactions = transactionService.searchTransaction(searchCriteria);
+                List<Transaction> transactions = transactionService.searchTransaction(searchCriteria); // Call the method
                 System.out.println("Search task finished. Found " + transactions.size() + " results.");
 
                 SwingUtilities.invokeLater(() -> { // Update UI on EDT
@@ -1551,9 +1647,9 @@ public class MenuUI extends JPanel {
             } catch (Exception ex) {
                 System.err.println("Search task failed: " + ex.getMessage());
                 ex.printStackTrace();
-                String errorMessage = "Search failed!\n" + ex.getMessage();
+                String errorMessage = "Search failed!\n" + ex.getMessage(); // "Search failed!\n"
                 SwingUtilities.invokeLater(() -> { // Show error message on EDT
-                    JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE); // "Error"
                     System.out.println("UI update complete after Search task. Error message shown.");
                 });
             }
@@ -1561,20 +1657,14 @@ public class MenuUI extends JPanel {
     }
 
 
-    /**
-     * Helper method to safely parse a double from a string, returning 0.0 on error.
-     * @param value The string to parse.
-     * @return The parsed double value, or 0.0 if parsing fails.
-     */
+    // Helper method to safely parse a double (from pre)
     private double safeParseDouble(String value) {
         if (value == null || value.trim().isEmpty()) return 0.0;
         try { return Double.parseDouble(value.trim()); }
         catch (NumberFormatException e) { System.err.println("Failed to parse double from string: '" + value + "'"); return 0.0; }
     }
 
-    /**
-     * Clears the search input fields in the input panel.
-     */
+    // Helper method to clear search fields (from pre)
     private void clearSearchFields() {
         searchTransactionTimeField.setText("");
         searchTransactionTypeField.setText("");
@@ -1584,10 +1674,7 @@ public class MenuUI extends JPanel {
         searchPaymentMethodField.setText("");
         System.out.println("Cleared search fields.");
     }
-
-    /**
-     * Triggers a search operation based on the current values in the search input fields.
-     */
+    // Helper method to trigger search (from pre)
     private void triggerCurrentSearch() {
         searchData(
                 searchTransactionTimeField.getText().trim(),
@@ -1599,48 +1686,15 @@ public class MenuUI extends JPanel {
         );
         System.out.println("Triggered search with current field values.");
     }
-
-    /**
-     * Helper method to return an empty string if the input value is null.
-     * @param value The input string.
-     * @return The input string if not null, otherwise an empty string.
-     */
+    // Helper method for null check (from pre)
     private String emptyIfNull(String value) {
         return value == null ? "" : value;
     }
-
-    /**
-     * Returns the JTable component. Used primarily for testing purposes.
-     * @return The transaction JTable.
-     */
+    // Getter for the table (from pre)
     public JTable getTable() {
         return table;
     }
 
-    // Inner classes for ButtonRenderer and ButtonEditor
-    // (Paste your ButtonRenderer and ButtonEditor classes here)
-    // You will need to ensure these classes are defined within or accessible to MenuUI.
-
-    // Assuming ButtonRenderer class definition is here or in a separate file
-    // For example:
-    // class ButtonRenderer extends DefaultTableCellRenderer { ... }
-
-    // Assuming ButtonEditor class definition is here or in a separate file
-    // For example:
-    // class ButtonEditor extends AbstractCellEditor implements TableCellEditor { ... }
-    // Note: ButtonEditor constructor takes a MenuUI instance: new ButtonEditor(this)
+    // Note: ButtonRenderer and ButtonEditor classes are assumed to be defined elsewhere or in inner classes,
+    // as they are used but not defined in the provided text.
 }
-
-// Make sure your ButtonRenderer and ButtonEditor class definitions are available to MenuUI.
-// If they are in separate files, ensure they are in the correct package (Controller) and imported.
-// If they were inner classes before, keep them as inner classes or move them to their own files.
-
-
-// Assuming ButtonRenderer and ButtonEditor are defined here or in separate files in the Controller package.
-// If they are inner classes, their definition should be inside the MenuUI class above.
-// If they are separate classes, they should be in the Controller package and need imports in MenuUI.
-// For now, I'll assume they are in separate files in the same package based on your initial source tree structure.
-
-// You need to provide the full code for ButtonRenderer.java and ButtonEditor.java separately
-// if they are not inner classes and their content has changed (e.g., translated strings).
-// Based on the source tree, they appear to be separate files.
