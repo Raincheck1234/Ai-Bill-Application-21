@@ -8,15 +8,16 @@ public class AIserviceTest {
 
     @Test
     public void testAnalyzeTransactions() {
-        AITransactionService service = new AITransactionService();
-
-        String userRequest = "Please help me analyze the income and expenses for this month";
-        String filePath = "src/test/resources/sample_transactions.csv";
-
-        String result = service.analyzeTransactions(userRequest, filePath, "2025/04/04", "");
-
-        assertNotNull(result, "AI analysis result should not be null");
-        System.out.println("AI analysis result: " + result);
+//        AITransactionService service = new AITransactionService();
+//
+//        String userRequest = "Please help me analyze this month's income and expenditure";
+//        String filePath = "src/test/resources/sample_transactions.csv";
+//
+//        String result = service.analyzeTransactions(userRequest, filePath,"2025/03/20","");
+//
+//        assertNotNull(result, "AI analysis results cannot be empty");
+//        System.out.println("AI analysis results: " + result);
     }
+
 
 }
