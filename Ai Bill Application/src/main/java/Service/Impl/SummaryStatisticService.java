@@ -148,7 +148,6 @@ public class SummaryStatisticService {
     // doesn't easily allow counting unique users per week unless we augment the Transaction object
     // or wrap it with User info during loading.
     // A better approach for unique user count is to process user by user.
-
     public void generateAndSaveWeeklyStatistics() throws Exception {
         System.out.println("Generating weekly summary statistics (Revised approach)...");
         List<User> allUsers = userDao.getAllUsers();
