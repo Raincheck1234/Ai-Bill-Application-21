@@ -1,0 +1,4 @@
+username,password,role,transaction_csv_path
+admin,admin123,admin,Ai Bill Application/src/test/resources/CSVForm/transactions/admin_transactions.csv
+user1,pass123,user,Ai Bill Application/src/test/resources/CSVForm/transactions/user1_transactions.csv
+user2,securepwd,user,Ai Bill Application/src/test/resources/CSVForm/transactions/user2_transactions.csv

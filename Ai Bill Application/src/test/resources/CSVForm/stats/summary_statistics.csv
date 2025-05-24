@@ -1,0 +1,6 @@
+week_identifier,total_income_all_users,total_expense_all_users,top_expense_category,top_expense_category_amount,number_of_users_with_transactions,timestamp_generated
+2022-W37,0.0,5000.0,Other Expenses,5000.0,1,2025-05-22 23:34:23
+2025-W09,10000.0,20000.0,No Expense,0.0,3,2025-05-22 23:34:23
+2025-W10,0.0,751.5,Other Expenses,751.5,3,2025-05-22 23:34:23
+2025-W11,0.0,257.25,Dining,107.25,3,2025-05-22 23:34:23
+2025-W12,0.0,15000.0,Other Expenses,10000.0,3,2025-05-22 23:34:23

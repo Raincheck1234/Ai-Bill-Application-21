@@ -1,0 +1,6 @@
+Transaction Time,Transaction Type,Counterparty,Commodity,In/Out,Amount(CNY),Payment Method,Current Status,Order Number,Merchant Number,Remarks
+2025/03/01 09:00:00,Salary,Company A,March Salary,Expense,¥10000.00,Bank Card,Credited,SALARY_MAR_A,PAYROLL_A_001,This month's base salary
+2025/03/05 14:30:00,Groceries,Supermarket B,Groceries,Expense,¥250.50,Alipay,Completed,SHOP_B_001,ALIPAY_12345,Weekend shopping
+2025/03/10 10:00:00,Transfer,User 1,Lunch Reimbursement,Expense,¥50.00,WeChat Pay,Completed,TRANSFER_U1_001,WECHAT_56789,Returning lunch money
+2025/03/15 11:00:00,Dining,Restaurant C,Lunch Takeaway,Expense,¥35.75,Meituan Pay,Completed,MEAL_C_001,MEITUAN_11223,Workday lunch
+2025/03/20 16:00:00,Investment,Stock Account,Stock Purchase,Expense,¥5000.00,Bank Transfer,Completed,INVEST_STOCK_001,BANK_99887,Long-term investment
