@@ -97,7 +97,7 @@ public class SummaryStatisticService {
                         System.err.println("Failed to parse date for week grouping: " + t.getTransactionTime() + ". Skipping transaction.");
                         // Transaction with unparseable date will be grouped under 'null' or skipped by filter
                     }
-                    return "未知周"; // Group unparseable dates under an 'unknown' key
+                    return "Unkown week"; // Group unparseable dates under an 'unknown' key
                 }));
     }
 
@@ -199,9 +199,9 @@ public class SummaryStatisticService {
                         // Aggregate income/expense
                         if (t.getInOut() != null) {
                             String inOut = t.getInOut().trim();
-                            if (inOut.equals("收入") || inOut.equals("收")) {
+                            if (inOut.equals("Income")) {
                                 totalIncomeByWeek.put(weekIdentifier, totalIncomeByWeek.getOrDefault(weekIdentifier, 0.0) + t.getPaymentAmount());
-                            } else if (inOut.equals("支出") || inOut.equals("支")) {
+                            } else if (inOut.equals("Expense")) {
                                 totalExpenseByWeek.put(weekIdentifier, totalExpenseByWeek.getOrDefault(weekIdentifier, 0.0) + t.getPaymentAmount());
 
                                 // Aggregate expense by standard category
