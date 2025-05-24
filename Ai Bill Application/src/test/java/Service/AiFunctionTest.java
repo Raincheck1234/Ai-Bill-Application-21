@@ -18,13 +18,13 @@ public class AiFunctionTest {
 //
 //        List<Transaction> transactions = transactionDao.loadFromCSV(filePath);
 //
-//        // 实例化服务类
+//        // Instantiate the service class
 //        AITransactionService service = new AITransactionService();
 //
-//        // 调用合并格式化函数
+//        // Call the merge formatting function
 //        List<String> result = service.formatTransactions(transactions,"2025/03/29","2025/04/10");
 //
-//        // 输出结果
+//        // Output
 //        result.forEach(System.out::println);
     }
 

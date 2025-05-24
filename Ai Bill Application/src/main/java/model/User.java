@@ -1,6 +1,6 @@
 package model;
 
-// 用户模型类
+// User model class
 public class User {
     private String username;
     private String password;

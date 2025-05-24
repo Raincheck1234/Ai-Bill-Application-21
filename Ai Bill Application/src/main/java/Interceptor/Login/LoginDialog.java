@@ -20,7 +20,7 @@ public class LoginDialog extends JDialog {
     public LoginDialog(UserService userService) {
         this.userService = userService; // Inject UserService
 
-        setTitle("用户登录");
+        setTitle("User Login"); // "用户登录"
         setLayout(new GridLayout(3, 2));
         setModal(true);
         setSize(300, 150);
@@ -29,13 +29,13 @@ public class LoginDialog extends JDialog {
         // Input components
         usernameField = new JTextField();
         passwordField = new JPasswordField();
-        JButton loginButton = new JButton("登录");
-        JButton cancelButton = new JButton("取消");
+        JButton loginButton = new JButton("Login");
+        JButton cancelButton = new JButton("Cancel");
 
         // Add components
-        add(new JLabel("用户名:"));
+        add(new JLabel("Username:"));
         add(usernameField);
-        add(new JLabel("密码:"));
+        add(new JLabel("Password:"));
         add(passwordField);
         add(loginButton);
         add(cancelButton);
@@ -52,8 +52,8 @@ public class LoginDialog extends JDialog {
             } else {
                 JOptionPane.showMessageDialog(
                         this,
-                        "用户名或密码错误！",
-                        "登录失败",
+                        "Incorrect username or password!", // "Wrong username or password!"
+                        "Login Failed",                    // "Login Failed"
                         JOptionPane.ERROR_MESSAGE
                 );
                 clearFields(); // Clear fields on failure

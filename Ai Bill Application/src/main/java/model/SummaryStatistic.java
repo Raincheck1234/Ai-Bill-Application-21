@@ -5,7 +5,7 @@ public class SummaryStatistic {
     private String weekIdentifier; // e.g., "2025-W14"
     private double totalIncomeAllUsers;
     private double totalExpenseAllUsers;
-    private String topExpenseCategory; // e.g., "餐饮"
+    private String topExpenseCategory; // e.g., "FOOD"
     private double topExpenseCategoryAmount; // Amount spent in the top category
     private int numberOfUsersWithTransactions; // Number of users who had any transaction this week
     private String timestampGenerated; // When this statistic record was created

@@ -21,51 +21,38 @@ import java.util.stream.Collectors;
 
 public class CsvTransactionDao implements TransactionDao { // Implement TransactionDao interface
 
-    // Remove the 'transactions' field and 'isLoad' flag, the cache/service layer will handle loading
-    // private List<Transaction> transactions;
-    // private boolean isLoad= false;
-
-    // Keep the load method, it will be used by the cache loader
     @Override
     public List<Transaction> loadFromCSV(String filePath) throws IOException {
         List<Transaction> transactions = new ArrayList<>();
         Path path = Paths.get(filePath);
 
-        // Check if file exists and is not empty before attempting to read
         if (!Files.exists(path) || Files.size(path) == 0) {
             System.out.println("CSV file not found or is empty: " + filePath);
-            return transactions; // Return empty list if file doesn't exist or is empty
+            return transactions;
         }
 
-        // Use BOMInputStream and InputStreamReader with UTF-8
         try (Reader reader = new InputStreamReader(
-                new BOMInputStream(Files.newInputStream(path)), // Use path here directly
+                new BOMInputStream(Files.newInputStream(path)),
                 StandardCharsets.UTF_8)) {
 
-            // *** Simplified Header Handling: Let CSVParser handle the header detection ***
             CSVFormat format = CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()    // Tell parser to treat the first line as header
-                    .withIgnoreHeaderCase(true)  // Ignore case for robustness
-                    .withTrim(true);             // Trim fields
+                    .withFirstRecordAsHeader()
+                    .withIgnoreHeaderCase(true)
+                    .withTrim(true);
 
             try (CSVParser csvParser = new CSVParser(reader, format)) {
-                // After creating the parser with withFirstRecordAsHeader,
-                // the header map should be available *if* a header was found.
-                // Check if the required headers are present
+                // Define expected English headers
                 List<String> requiredHeaders = List.of(
-                        "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)",
-                        "支付方式", "当前状态", "交易单号", "商户单号", "备注"
+                        "Transaction Time", "Transaction Type", "Counterparty", "Commodity", "In/Out", "Amount(CNY)",
+                        "Payment Method", "Current Status", "Order Number", "Merchant Number", "Remarks"
                 );
 
-                // Now check the header map obtained *by the parser*
                 Map<String, Integer> headerMap = csvParser.getHeaderMap();
                 if (headerMap == null || !headerMap.keySet().containsAll(requiredHeaders)) {
-                    // If headerMap is null (no header found) or incomplete
-                    throw new IOException("Missing required headers in CSV file: " + requiredHeaders +
-                            " Found: " + (headerMap == null ? "null" : headerMap.keySet()));
+                    throw new IOException("Missing required headers in CSV file. Expected: " + requiredHeaders +
+                            " Found: " + (headerMap == null ? "No headers found by parser" : headerMap.keySet()));
                 }
                 System.out.println("Successfully identified headers: " + headerMap.keySet() + " in file: " + filePath);
-
 
                 for (CSVRecord record : csvParser) {
                     try {
@@ -85,199 +72,156 @@ public class CsvTransactionDao implements TransactionDao { // Implement Transact
         return transactions;
     }
 
-
-    // Keep parseRecord private as it's an internal helper
     private Transaction parseRecord(CSVRecord record) {
-        // Safely get and trim values, handle potential missing columns gracefully if needed
-        String amountStr = record.get("金额(元)").trim();
+        // Now using English header names to get values from the record
+        String amountStr = record.get("Amount(CNY)").trim();
         double paymentAmount = 0.0;
         try {
-            if (amountStr.startsWith("¥")) {
+            if (amountStr.startsWith("¥") || amountStr.startsWith("$")) { // Allow for currency symbols
                 amountStr = amountStr.substring(1);
             }
             paymentAmount = Double.parseDouble(amountStr);
         } catch (NumberFormatException e) {
-            System.err.println("Warning: Could not parse payment amount '" + record.get("金额(元)") + "' at line " + record.getRecordNumber());
-            // Keep paymentAmount as 0.0 or handle as an error depending on strictness
+            System.err.println("Warning: Could not parse payment amount '" + record.get("Amount(CNY)") + "' at line " + record.getRecordNumber());
         } catch (IllegalArgumentException e) {
-            System.err.println("Warning: Missing '金额(元)' column or empty value at line " + record.getRecordNumber());
+            System.err.println("Warning: Missing 'Amount(CNY)' column or empty value at line " + record.getRecordNumber());
         }
 
+        // Expect English values for "In/Out" from CSV or standardize them here if necessary
+        // For now, assuming the CSV provides "Income" or "Expense" directly for "In/Out"
+        String inOut = record.get("In/Out").trim();
+        // Example standardization if CSV might still have Chinese:
+        // if (inOut.equals("收入") || inOut.equals("收")) {
+        //     inOut = "Income";
+        // } else if (inOut.equals("支出") || inOut.equals("支")) {
+        //     inOut = "Expense";
+        // }
 
         return new Transaction(
-                record.get("交易时间").trim(),
-                record.get("交易类型").trim(),
-                record.get("交易对方").trim(),
-                record.get("商品").trim(),
-                record.get("收/支").trim(),
-                paymentAmount, // Use parsed amount
-                record.get("支付方式").trim(),
-                record.get("当前状态").trim(),
-                record.get("交易单号").trim(),
-                record.get("商户单号").trim(),
-                record.get("备注").trim()
+                record.get("Transaction Time").trim(),
+                record.get("Transaction Type").trim(),
+                record.get("Counterparty").trim(),
+                record.get("Commodity").trim(),
+                inOut, // Use the processed/standardized inOut
+                paymentAmount,
+                record.get("Payment Method").trim(),
+                record.get("Current Status").trim(),
+                record.get("Order Number").trim(),
+                record.get("Merchant Number").trim(),
+                record.get("Remarks").trim()
         );
     }
 
-    // Implement DAO interface methods properly
-    public List<Transaction> getAllTransactions() throws IOException {
-        // This method is now handled by the service layer using the cache.
-        // The DAO should focus on direct file operations.
-        // This interface method might be redundant if service layer always uses cache.
-        // For clarity, let's make it load from CSV directly, but the service will prefer cache.
-        // Note: This might re-read the file even if cached. Service layer needs to manage this.
-        // Alternatively, this method could be removed from the interface/DAO if only cache loader uses loadFromCSV.
-        // Let's keep it for now, assuming it's a direct file read fallback.
-        System.out.println("DAO: Calling getAllTransactions directly from file (consider using service/cache)");
-        // We need a way to know *which* file here. This method signature is problematic for multi-user.
-        // The interface needs filePath, or the DAO instance needs to be created per file.
-        // Let's adjust the interface/DAO to be file-specific or pass path to methods.
-        // Option 1: DAO instance per file.
-        // Option 2: Add filePath parameter to all relevant interface methods.
-        // Option 2 seems more flexible for a single CsvTransactionDao class.
-        // Let's add filePath to interface methods and implement here.
-
-        // *** Decision: Modify TransactionDao interface to include filePath ***
-        throw new UnsupportedOperationException("This method signature is not suitable for multi-user. Use the overloaded method with filePath.");
-    }
-
-    // Adding filePath parameter to relevant interface methods definition (will update interface next)
-    // This implementation will be part of the updated DAO after interface change.
+    @Override
     public List<Transaction> getAllTransactions(String filePath) throws IOException {
-        return loadFromCSV(filePath); // Simple implementation using the existing load method
+        return loadFromCSV(filePath);
     }
 
-
-    // Add transaction
-    public void addTransaction(Transaction newTransaction) throws IOException {
-        throw new UnsupportedOperationException("This method signature is not suitable for multi-user. Use the overloaded method with filePath.");
-    }
-
+    @Override
     public void addTransaction(String filePath, Transaction newTransaction) throws IOException {
-        // Ensure the directory exists
         Path path = Paths.get(filePath);
         if (path.getParent() != null) {
             Files.createDirectories(path.getParent());
         }
-
         boolean fileExists = Files.exists(path) && Files.size(path) > 0;
 
-        // Define the header based on your CSV structure
-        String[] headers = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"};
+        // Use English headers for writing
+        String[] headers = {"Transaction Time", "Transaction Type", "Counterparty", "Commodity", "In/Out", "Amount(CNY)", "Payment Method", "Current Status", "Order Number", "Merchant Number", "Remarks"};
 
-        // Use StandardOpenOption.CREATE and StandardOpenOption.APPEND
-        // If the file doesn't exist, CREATE will create it. If it exists, APPEND will add to the end.
-        // We need to handle writing the header only if the file is new or empty.
-        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-
-            // Check if header needs to be written. A simple way is to check file size before opening in APPEND mode.
-            // However, opening in CREATE/APPEND and then checking size *after* opening might not work as expected if the file is created.
-            // A better approach is to check size *before* getting the writer or read the first line after opening if needed.
-            // The Apache CSVPrinter can handle writing headers IF the file is new.
-            // Let's adapt the existing logic slightly. Check exists and non-empty *before* opening.
-
-            // Re-check file state after potential creation by StandardOpenOption.CREATE
-            boolean fileWasEmptyBeforeAppend = !fileExists; // Or check if file size is 0 after creation if needed
-
-            // Configure CSV format - with header if file is new/empty, without if appending
+        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             CSVFormat format;
-            if (fileWasEmptyBeforeAppend) {
+            if (!fileExists) { // If file did not exist or was empty before this operation
                 format = CSVFormat.DEFAULT.withHeader(headers).withTrim();
             } else {
-                format = CSVFormat.DEFAULT.withTrim(); // Assume header is already there
+                format = CSVFormat.DEFAULT.withTrim();
             }
 
-            // Create CSVPrinter
             try (CSVPrinter csvPrinter = new CSVPrinter(writer, format)) {
                 csvPrinter.printRecord(
                         newTransaction.getTransactionTime(),
                         newTransaction.getTransactionType(),
                         newTransaction.getCounterparty(),
                         newTransaction.getCommodity(),
-                        newTransaction.getInOut(),
-                        // Format amount with ¥ sign and two decimal places
-                        String.format("¥%.2f", newTransaction.getPaymentAmount()),
+                        newTransaction.getInOut(), // Expecting this to be "Income" or "Expense"
+                        String.format("¥%.2f", newTransaction.getPaymentAmount()), // Or use "CNY" prefix if preferred
                         newTransaction.getPaymentMethod(),
                         newTransaction.getCurrentStatus(),
                         newTransaction.getOrderNumber(),
                         newTransaction.getMerchantNumber(),
                         newTransaction.getRemarks()
                 );
-                // No need to flush immediately, writer will be closed by try-with-resources.
-                // csvPrinter.flush();
             }
             System.out.println("Added transaction to " + filePath);
         } catch (IOException e) {
             System.err.println("Error adding transaction to CSV: " + filePath);
             e.printStackTrace();
-            throw e; // Re-throw
+            throw e;
         }
     }
 
-
-    // Delete transaction by order number
-    public boolean deleteTransaction(String orderNumber) throws IOException {
-        throw new UnsupportedOperationException("This method signature is not suitable for multi-user. Use the overloaded method with filePath.");
-    }
-
+    @Override
     public boolean deleteTransaction(String filePath, String orderNumber) throws IOException {
-        // Load all transactions first
         List<Transaction> allTransactions = loadFromCSV(filePath);
-
-        // Filter out the transaction to be deleted
         List<Transaction> updatedTransactions = allTransactions.stream()
                 .filter(t -> !t.getOrderNumber().trim().equals(orderNumber.trim()))
                 .collect(Collectors.toList());
 
-        // Check if any transaction was actually removed
         boolean deleted = allTransactions.size() > updatedTransactions.size();
-
         if (deleted) {
-            // Write the remaining transactions back to the CSV file
             writeTransactionsToCSV(filePath, updatedTransactions);
             System.out.println("Deleted transaction with order number " + orderNumber + " from " + filePath);
         } else {
             System.out.println("Transaction with order number " + orderNumber + " not found in " + filePath);
         }
-
         return deleted;
     }
 
-
-    // Update a specific field (implementing the interface method)
-    public boolean updateTransaction(String orderNumber, String fieldName, String newValue) throws IOException {
-        // This interface method needs a filePath parameter to be useful in a multi-user context.
-        // Let's add an overloaded method that includes filePath.
-        throw new UnsupportedOperationException("This method signature is not suitable for multi-user. Use the overloaded method with filePath.");
-    }
-
+    @Override
     public boolean updateTransaction(String filePath, String orderNumber, String fieldName, String newValue) throws IOException {
-        // Load all transactions
         List<Transaction> allTransactions = loadFromCSV(filePath);
-
-        // Find the transaction by order number
         Optional<Transaction> transactionToUpdateOpt = allTransactions.stream()
                 .filter(t -> t.getOrderNumber().trim().equals(orderNumber.trim()))
                 .findFirst();
 
         if (!transactionToUpdateOpt.isPresent()) {
             System.out.println("Transaction with order number " + orderNumber + " not found for update in " + filePath);
-            return false; // Transaction not found
+            return false;
         }
 
         Transaction transactionToUpdate = transactionToUpdateOpt.get();
         boolean updated = false;
 
-        // Use reflection or a switch/if-else block to update the specific field
-        // A switch is more explicit and safer than reflection here.
+        // Assuming fieldName matches the English property names of Transaction class
         switch (fieldName) {
-            case "transactionTime": transactionToUpdate.setTransactionTime(newValue); updated = true; break;
-            case "transactionType": transactionToUpdate.setTransactionType(newValue); updated = true; break;
-            case "counterparty": transactionToUpdate.setCounterparty(newValue); updated = true; break;
-            case "commodity": transactionToUpdate.setCommodity(newValue); updated = true; break;
-            case "inOut": transactionToUpdate.setInOut(newValue); updated = true; break;
+            case "transactionTime":
+                transactionToUpdate.setTransactionTime(newValue);
+                updated = true;
+                break;
+            case "transactionType":
+                transactionToUpdate.setTransactionType(newValue);
+                updated = true;
+                break;
+            case "counterparty":
+                transactionToUpdate.setCounterparty(newValue);
+                updated = true;
+                break;
+            case "commodity":
+                transactionToUpdate.setCommodity(newValue);
+                updated = true;
+                break;
+            case "inOut": // Ensure newValue is "Income" or "Expense"
+                if ("Income".equalsIgnoreCase(newValue) || "Expense".equalsIgnoreCase(newValue)) {
+                    transactionToUpdate.setInOut(newValue);
+                    updated = true;
+                } else {
+                    System.err.println("Invalid value for In/Out update: " + newValue + ". Must be 'Income' or 'Expense'.");
+                }
+                break;
             case "paymentAmount":
                 try {
+                    if (newValue.startsWith("¥") || newValue.startsWith("$")) {
+                        newValue = newValue.substring(1);
+                    }
                     transactionToUpdate.setPaymentAmount(Double.parseDouble(newValue));
                     updated = true;
                 } catch (NumberFormatException e) {
@@ -285,53 +229,60 @@ public class CsvTransactionDao implements TransactionDao { // Implement Transact
                     throw new NumberFormatException("Invalid number format for paymentAmount: " + newValue);
                 }
                 break;
-            case "paymentMethod": transactionToUpdate.setPaymentMethod(newValue); updated = true; break;
-            case "currentStatus": transactionToUpdate.setCurrentStatus(newValue); updated = true; break;
-            case "orderNumber": transactionToUpdate.setOrderNumber(newValue); updated = true; break; // Caution: Updating ID can be tricky
-            case "merchantNumber": transactionToUpdate.setMerchantNumber(newValue); updated = true; break;
-            case "remarks": transactionToUpdate.setRemarks(newValue); updated = true; break;
+            case "paymentMethod":
+                transactionToUpdate.setPaymentMethod(newValue);
+                updated = true;
+                break;
+            case "currentStatus":
+                transactionToUpdate.setCurrentStatus(newValue);
+                updated = true;
+                break;
+            case "orderNumber":
+                transactionToUpdate.setOrderNumber(newValue);
+                updated = true;
+                break;
+            case "merchantNumber":
+                transactionToUpdate.setMerchantNumber(newValue);
+                updated = true;
+                break;
+            case "remarks":
+                transactionToUpdate.setRemarks(newValue);
+                updated = true;
+                break;
             default:
                 System.err.println("Invalid field name for update: " + fieldName);
                 throw new IllegalArgumentException("Invalid field name: " + fieldName);
         }
 
         if (updated) {
-            // Write the modified list back to the CSV file
             writeTransactionsToCSV(filePath, allTransactions);
             System.out.println("Updated transaction with order number " + orderNumber + " in " + filePath + " field: " + fieldName);
         }
-
         return updated;
     }
 
-
-    // Keep writeTransactionsToCSV, ensure it uses the filePath parameter correctly
-    // This method seems OK as it already accepts filePath.
+    @Override
     public void writeTransactionsToCSV(String filePath, List<Transaction> transactions) throws IOException {
-        // Ensure the directory exists
         Path path = Paths.get(filePath);
         if (path.getParent() != null) {
             Files.createDirectories(path.getParent());
         }
-
         File targetFile = path.toFile();
-        // Create temporary file in the same directory
-        File tempFile = File.createTempFile("transaction_temp", ".csv", targetFile.getParentFile());
+        File tempFile = File.createTempFile("transaction_temp_", ".csv", targetFile.getParentFile());
 
-        // Define the header explicitly
-        String[] headers = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"};
+        // Use English headers for writing
+        String[] headers = {"Transaction Time", "Transaction Type", "Counterparty", "Commodity", "In/Out", "Amount(CNY)", "Payment Method", "Current Status", "Order Number", "Merchant Number", "Remarks"};
 
         try (BufferedWriter writer = Files.newBufferedWriter(tempFile.toPath(), StandardCharsets.UTF_8);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(headers).withTrim())) { // Always write header for overwrite
-
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(headers).withTrim())) {
             for (Transaction t : transactions) {
                 csvPrinter.printRecord(
                         t.getTransactionTime(),
                         t.getTransactionType(),
                         t.getCounterparty(),
                         t.getCommodity(),
-                        t.getInOut(),
-                        String.format("¥%.2f", t.getPaymentAmount()), // Format amount
+                        t.getInOut(), // Expecting "Income" or "Expense"
+                        String.format("¥%.2f", t.getPaymentAmount()), // Or "CNY" prefix
                         t.getPaymentMethod(),
                         t.getCurrentStatus(),
                         t.getOrderNumber(),
@@ -339,50 +290,30 @@ public class CsvTransactionDao implements TransactionDao { // Implement Transact
                         t.getRemarks()
                 );
             }
-            // csvPrinter.flush(); // Auto-flushed on close
         } catch (IOException e) {
-            tempFile.delete(); // Clean up temp file on failure
+            if (tempFile.exists()) tempFile.delete();
             System.err.println("Error writing transactions to temporary CSV file: " + tempFile.toPath());
             e.printStackTrace();
-            throw e; // Re-throw
+            throw e;
         }
 
-        // Atomic replacement of the original file
         try {
             Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             System.out.println("Atomically replaced " + filePath + " with updated data.");
         } catch (IOException e) {
             System.err.println("Failed to atomically replace original file: " + targetFile.toPath() + " with " + tempFile.toPath());
-            tempFile.delete(); // Clean up temp file
+            if (tempFile.exists()) tempFile.delete();
             e.printStackTrace();
-            throw e; // Re-throw
+            throw e;
         }
     }
 
-    // Implement getTransactionByOrderNumber from the interface
-    public Transaction getTransactionByOrderNumber(String orderNumber) throws IOException {
-        throw new UnsupportedOperationException("This method signature is not suitable for multi-user. Use the overloaded method with filePath.");
-    }
-
+    @Override
     public Transaction getTransactionByOrderNumber(String filePath, String orderNumber) throws IOException {
-        // Load all transactions
         List<Transaction> allTransactions = loadFromCSV(filePath);
-
-        // Find the transaction by order number
         Optional<Transaction> transactionOpt = allTransactions.stream()
                 .filter(t -> t.getOrderNumber().trim().equals(orderNumber.trim()))
                 .findFirst();
-
-        return transactionOpt.orElse(null); // Return Transaction object or null
+        return transactionOpt.orElse(null);
     }
-
-
-    // Remove or update these old methods
-    // private CSVFormat getCsvFormatWithHeader(String filePath) throws IOException { ... } // No longer needed with explicit headers
-    // private CSVFormat getCsvFormatWithoutHeader() { ... } // No longer needed with explicit headers
-    // boolean changeInformation(String orderNumber, String head, String value,String path) throws IOException // This is similar to updateTransaction, prefer the standard update method
-    // Let's remove changeInformation and update the service to use updateTransaction
-
-    // Removed changeInformation method based on the plan to use updateTransaction instead.
-    // Removed getCsvFormatWithHeader/WithoutHeader as we now use explicit headers in writeTransactionsToCSV.
 }

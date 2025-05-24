@@ -8,10 +8,10 @@ import java.util.function.Function;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
- * 通用缓存工具类（支持泛型和异常传播）
- * @param <K> 键类型
- * @param <V> 值类型
- * @param <E> 异常类型（如 IOException）
+ * Generic Cache Utility Class (Supports generics and exception propagation through the loader)
+ * @param <K> Key type
+ * @param <V> Value type
+ * @param <E> Exception type (e.g., IOException, which the loader function might throw)
  */
 public class CacheUtil<K, V, E extends Exception> {
     private final LoadingCache<K, V> cache;
@@ -29,21 +29,27 @@ public class CacheUtil<K, V, E extends Exception> {
     }
 
     /**
-     * 获取缓存值
+     * Gets the cached value.
+     * If the key is not in the cache, the loader function will be called to compute it.
+     * @param key The key whose associated value is to be returned.
+     * @return The value associated with the key.
      */
     public V get(K key) {
         return cache.get(key);
     }
 
     /**
-     * 手动更新缓存
+     * Manually updates the cache with a new value for a given key.
+     * @param key The key with which the specified value is to be associated.
+     * @param value The value to be associated with the specified key.
      */
     public void put(K key, V value) {
         cache.put(key, value);
     }
 
     /**
-     * 手动移除缓存
+     * Manually removes the entry for a key from the cache.
+     * @param key The key whose mapping is to be removed from the cache.
      */
     public void invalidate(K key) {
         cache.invalidate(key);

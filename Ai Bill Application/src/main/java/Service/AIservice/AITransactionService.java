@@ -1,16 +1,11 @@
 package Service.AIservice;
-// Remove import Service.Impl.TransactionServiceImpl;
-// Remove import Service.TransactionService;
-// Remove import Constants.ConfigConstants; // ConfigConstants might still be needed for API key logic if not elsewhere
-// Remove import DAO.CsvTransactionDao; // No longer directly used
-// Remove import Utils.CacheUtil; // No longer directly used
 
-import DAO.TransactionDao; // Use the interface
-import DAO.Impl.CsvTransactionDao; // Use the implementation to create instance for loader
+import DAO.TransactionDao;
+import DAO.Impl.CsvTransactionDao;
 import Service.TransactionService;
-import Utils.CacheManager; // Import CacheManager
+import Utils.CacheManager;
 import model.MonthlySummary;
-import model.Transaction; // Import Transaction
+import model.Transaction;
 
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
@@ -26,7 +21,6 @@ import java.util.stream.Collectors;
 import java.util.concurrent.*;
 
 import static Constants.CaffeineKeys.TRANSACTION_CAFFEINE_KEY;
-// Remove import static Constants.ConfigConstants.CSV_PATH; // No longer use static CSV_PATH
 
 public class AITransactionService {
     // Keep static ArkService as it's typically thread-safe and stateless
@@ -74,21 +68,21 @@ public class AITransactionService {
 
 
             // Check if any transactions were found after filtering
-            if (transactionDetails.isEmpty() || (transactionDetails.size() == 1 && transactionDetails.get(0).startsWith("该时间段内没有交易记录"))) {
-                return "在该时间段内没有找到符合条件的交易记录，无法进行分析。请检查时间和交易数据。";
+            if (transactionDetails.isEmpty() || (transactionDetails.size() == 1 && transactionDetails.get(0).startsWith("No transactions found within this time period"))) {
+                return "No transaction records found matching the criteria within this time period, analysis cannot be performed. Please check the time and transaction data.";
             }
 
-            String aiPrompt = userRequest + "\n" + "以下是我的账单信息：\n" + String.join("\n", transactionDetails);
+            String aiPrompt = userRequest + "\n" + "Here is my billing information:\n" + String.join("\n", transactionDetails);
             System.out.println("AI Service: Sending prompt to AI. Prompt length: " + aiPrompt.length());
             return askAi(aiPrompt);
         } catch (IllegalArgumentException e) {
             System.err.println("AI analysis failed due to invalid time format: " + e.getMessage());
-            return "AI分析失败: 时间格式不正确。" + e.getMessage();
+            return "AI analysis failed: Incorrect time format. " + e.getMessage();
         }
         catch (Exception e) {
             System.err.println("AI analysis failed during data retrieval or AI call for file: " + filePath);
             e.printStackTrace();
-            return "AI分析失败: 获取数据或调用AI服务时发生错误。" + e.getMessage();
+            return "AI analysis failed: An error occurred while fetching data or calling the AI service. " + e.getMessage();
         }
     }
 
@@ -107,11 +101,11 @@ public class AITransactionService {
             // Handle the case where start time is invalid.
             // Depending on requirements, you might throw an exception or return an error message list.
             // Throwing IllegalArgumentException is better for analyzeTransactions to catch.
-            throw new IllegalArgumentException("起始时间格式不正确: " + startTimeStr);
+            throw new IllegalArgumentException("Incorrect start time format: " + startTimeStr);
         }
         // If endTime parsing fails, treat it as current time as per original logic if endTimeStr was not empty
         if ((endTimeStr != null && !endTimeStr.trim().isEmpty()) && endTime == null) {
-            throw new IllegalArgumentException("结束时间格式不正确: " + endTimeStr);
+            throw new IllegalArgumentException("Incorrect end time format: " + endTimeStr);
         }
         // If endTimeStr was empty, endTime is already LocalDateTime.now() which is not null.
 
@@ -136,10 +130,11 @@ public class AITransactionService {
         for (Transaction t : filtered) {
             String counterparty = t.getCounterparty();
             double amount = t.getPaymentAmount();
-            if (t.getInOut().equals("支出") || t.getInOut().equals("支")) { // Normalize "支" to "支出" internally if needed, but compare against source
+            // Assuming t.getInOut() returns "Income"/"Expense" or "In"/"Out"
+            if (t.getInOut().equalsIgnoreCase("Expense") || t.getInOut().equalsIgnoreCase("Out")) {
                 amount = -amount;
-            } else if (!t.getInOut().equals("收入") && !t.getInOut().equals("收")) {
-                System.err.println("Warning: Unknown 收/支 type for transaction: " + t.getOrderNumber() + " - " + t.getInOut());
+            } else if (!t.getInOut().equalsIgnoreCase("Income") && !t.getInOut().equalsIgnoreCase("In")) {
+                System.err.println("Warning: Unknown In/Out type for transaction: " + t.getOrderNumber() + " - " + t.getInOut());
                 // Decide how to handle unknown types - ignore from analysis? Treat as 0?
                 continue; // Skip unknown types for aggregation
             }
@@ -156,12 +151,12 @@ public class AITransactionService {
                     String cp = e.getKey();
                     double net = e.getValue()[0];
                     int count = (int) e.getValue()[1];
-                    String inOut = net >= 0 ? "总收入" : "总支出"; // Changed label to reflect aggregate
+                    String inOutLabel = net >= 0 ? "Total Income" : "Total Expense";
                     if (Math.abs(net) < 0.01 && count > 0) { // If net is near zero but there were transactions
-                        inOut = "净零"; // Or specify "收支相抵"
+                        inOutLabel = "Net Zero"; // Or specify "Income equals Expense"
                     }
-                    return String.format("交易对方: %s, 净%s: %.2f元，交易次数: %d",
-                            cp, inOut, Math.abs(net), count);
+                    return String.format("Counterparty: %s, Net %s: %.2f CNY, Transaction Count: %d",
+                            cp, inOutLabel, Math.abs(net), count);
                 })
                 .collect(Collectors.toList());
         System.out.println("Formatted grouped results.");
@@ -169,11 +164,14 @@ public class AITransactionService {
 
         // Add time range information to the results list
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
-        String rangeInfo = String.format("分析交易时间范围：%s - %s",
+        String rangeInfo = String.format("Analysis Time Range: %s - %s",
                 formatter.format(startTime), formatter.format(endTime));
         results.add(0, rangeInfo); // Add range info at the beginning
 
-        return results.isEmpty() ? List.of(rangeInfo, "该时间段内没有交易记录。") : results; // Ensure range info is always included
+        if (filtered.isEmpty()) { // Check if the filtered list was empty before grouping
+            return List.of(rangeInfo, "No transactions found within this time period.");
+        }
+        return results;
     }
 
 
@@ -222,7 +220,7 @@ public class AITransactionService {
         try {
             if (API_KEY == null || API_KEY.trim().isEmpty()) {
                 System.err.println("ARK_API_KEY environment variable is not set.");
-                return "AI服务配置错误: ARK_API_KEY 未设置。";
+                return "AI service configuration error: ARK_API_KEY not set.";
             }
             // Ensure the static service instance is properly built with the key
             // This might be better done once at application startup if API_KEY is loaded from config.
@@ -248,7 +246,7 @@ public class AITransactionService {
         } catch (Exception e) {
             System.err.println("AI Service: AI request failed.");
             e.printStackTrace();
-            return "AI请求失败: " + e.getMessage();
+            return "AI request failed: " + e.getMessage();
         }
     }
 
@@ -290,12 +288,12 @@ public class AITransactionService {
             System.out.println("AI Service: Retrieved " + summaries.size() + " months of summary data.");
 
             if (summaries.isEmpty()) {
-                return "没有找到足够的交易数据来生成个人消费总结。";
+                return "Not enough transaction data found to generate a personal spending summary.";
             }
 
             // Format the summary data for the AI prompt
             StringBuilder summaryPromptBuilder = new StringBuilder();
-            summaryPromptBuilder.append("请根据以下月度消费总结数据，生成一份个人消费习惯总结，分析主要开销类别、月度变化趋势，并评估我的消费健康度：\n\n");
+            summaryPromptBuilder.append("Please generate a personal spending habits summary based on the following monthly data. Analyze main expense categories, monthly trends, and assess my spending health:\n\n");
 
             // Sort months chronologically for better trend analysis by AI
             List<String> sortedMonths = new ArrayList<>(summaries.keySet());
@@ -304,17 +302,17 @@ public class AITransactionService {
             for (String month : sortedMonths) {
                 MonthlySummary ms = summaries.get(month);
                 summaryPromptBuilder.append("--- ").append(ms.getMonthIdentifier()).append(" ---\n");
-                summaryPromptBuilder.append("  总收入: ").append(String.format("%.2f", ms.getTotalIncome())).append("元\n");
-                summaryPromptBuilder.append("  总支出: ").append(String.format("%.2f", ms.getTotalExpense())).append("元\n");
-                summaryPromptBuilder.append("  支出明细:\n");
+                summaryPromptBuilder.append("  Total Income: ").append(String.format("%.2f", ms.getTotalIncome())).append(" CNY\n");
+                summaryPromptBuilder.append("  Total Expense: ").append(String.format("%.2f", ms.getTotalExpense())).append(" CNY\n");
+                summaryPromptBuilder.append("  Expense Breakdown:\n");
                 if (ms.getExpenseByCategory().isEmpty()) {
-                    summaryPromptBuilder.append("    (无支出)\n");
+                    summaryPromptBuilder.append("    (No expenses)\n");
                 } else {
                     // Sort categories by amount descending for AI to easily see major categories
                     ms.getExpenseByCategory().entrySet().stream()
                             .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
                             .forEach(entry ->
-                                    summaryPromptBuilder.append(String.format("    %s: %.2f元\n", entry.getKey(), entry.getValue()))
+                                    summaryPromptBuilder.append(String.format("    %s: %.2f CNY\n", entry.getKey(), entry.getValue()))
                             );
                 }
                 summaryPromptBuilder.append("\n"); // Add space between months
@@ -327,7 +325,7 @@ public class AITransactionService {
         } catch (Exception e) {
             System.err.println("AI Service: Failed to generate personal summary.");
             e.printStackTrace();
-            return "生成个人消费总结失败: " + e.getMessage();
+            return "Failed to generate personal spending summary: " + e.getMessage();
         }
     }
 
@@ -342,11 +340,11 @@ public class AITransactionService {
             System.out.println("AI Service: Retrieved " + summaries.size() + " months of summary data for savings goal suggestion.");
 
             if (summaries.isEmpty()) {
-                return "没有找到足够的交易数据来建议储蓄目标。";
+                return "Not enough transaction data found to suggest savings goals.";
             }
 
             StringBuilder promptBuilder = new StringBuilder();
-            promptBuilder.append("请根据以下月度收支总结数据，为我这个消费习惯提供一些合理的储蓄目标建议：\n\n");
+            promptBuilder.append("Please provide some reasonable savings goal suggestions for my spending habits based on the following monthly income and expense summary data:\n\n");
 
             List<String> sortedMonths = new ArrayList<>(summaries.keySet());
             Collections.sort(sortedMonths);
@@ -354,10 +352,10 @@ public class AITransactionService {
             for (String month : sortedMonths) {
                 MonthlySummary ms = summaries.get(month);
                 promptBuilder.append("--- ").append(ms.getMonthIdentifier()).append(" ---\n");
-                promptBuilder.append("  总收入: ").append(String.format("%.2f", ms.getTotalIncome())).append("元\n");
-                promptBuilder.append("  总支出: ").append(String.format("%.2f", ms.getTotalExpense())).append("元\n");
+                promptBuilder.append("  Total Income: ").append(String.format("%.2f", ms.getTotalIncome())).append(" CNY\n");
+                promptBuilder.append("  Total Expense: ").append(String.format("%.2f", ms.getTotalExpense())).append(" CNY\n");
                 double net = ms.getTotalIncome() - ms.getTotalExpense();
-                promptBuilder.append("  月度净收支: ").append(String.format("%.2f", net)).append("元\n");
+                promptBuilder.append("  Monthly Net Income/Expense: ").append(String.format("%.2f", net)).append(" CNY\n");
                 promptBuilder.append("\n");
             }
 
@@ -368,7 +366,7 @@ public class AITransactionService {
         } catch (Exception e) {
             System.err.println("AI Service: Failed to suggest savings goals.");
             e.printStackTrace();
-            return "建议储蓄目标失败: " + e.getMessage();
+            return "Failed to suggest savings goals: " + e.getMessage();
         }
     }
 
@@ -383,11 +381,11 @@ public class AITransactionService {
             System.out.println("AI Service: Retrieved " + summaries.size() + " months of summary data for saving tips.");
 
             if (summaries.isEmpty()) {
-                return "没有找到足够的交易数据来提供个性化节约建议。";
+                return "Not enough transaction data found to provide personalized saving tips.";
             }
 
             StringBuilder promptBuilder = new StringBuilder();
-            promptBuilder.append("请根据以下月度消费总结数据，为我提供一些针对性的节约开销建议：\n\n");
+            promptBuilder.append("Please provide some targeted cost-saving suggestions for me based on the following monthly spending summary data:\n\n");
 
             List<String> sortedMonths = new ArrayList<>(summaries.keySet());
             Collections.sort(sortedMonths);
@@ -395,16 +393,16 @@ public class AITransactionService {
             for (String month : sortedMonths) {
                 MonthlySummary ms = summaries.get(month);
                 promptBuilder.append("--- ").append(ms.getMonthIdentifier()).append(" ---\n");
-                promptBuilder.append("  总支出: ").append(String.format("%.2f", ms.getTotalExpense())).append("元\n");
-                promptBuilder.append("  支出明细:\n");
+                promptBuilder.append("  Total Expense: ").append(String.format("%.2f", ms.getTotalExpense())).append(" CNY\n");
+                promptBuilder.append("  Expense Breakdown:\n");
                 if (ms.getExpenseByCategory().isEmpty()) {
-                    promptBuilder.append("    (无支出)\n");
+                    promptBuilder.append("    (No expenses)\n");
                 } else {
                     // Sort categories by amount descending
                     ms.getExpenseByCategory().entrySet().stream()
                             .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
                             .forEach(entry ->
-                                    promptBuilder.append(String.format("    %s: %.2f元\n", entry.getKey(), entry.getValue()))
+                                    promptBuilder.append(String.format("    %s: %.2f CNY\n", entry.getKey(), entry.getValue()))
                             );
                 }
                 promptBuilder.append("\n");
@@ -417,7 +415,7 @@ public class AITransactionService {
         } catch (Exception e) {
             System.err.println("AI Service: Failed to give personal saving tips.");
             e.printStackTrace();
-            return "生成个性化节约建议失败: " + e.getMessage();
+            return "Failed to generate personalized saving tips: " + e.getMessage();
         }
     }
 

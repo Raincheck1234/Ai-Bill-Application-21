@@ -1,19 +1,14 @@
 package Controller;
 
-import Constants.ConfigConstants;
 import Constants.StandardCategories; // Import StandardCategories if needed in UI
-import DAO.TransactionDao; // Import if needed
-import DAO.SummaryStatisticDao; // Import if needed
 import Service.AIservice.AITransactionService; // Import AI services
 import Service.AIservice.CollegeStudentNeeds;
-import Service.Impl.TransactionServiceImpl;
 import Service.Impl.SummaryStatisticService; // Import SummaryStatisticService
 import Service.TransactionService;
-import Utils.CacheManager;
 import model.SummaryStatistic; // Import SummaryStatistic
 import model.Transaction;
 import model.User;
-import Constants.StandardCategories;
+// import Constants.StandardCategories; // Already imported above
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 import java.util.Comparator; // For sorting stats display
+import java.util.stream.Collectors; // Added for loadCSVDataForCurrentUser
 
 public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (optional but common)
 
@@ -82,7 +78,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         this.collegeStudentNeeds = collegeStudentNeeds;
 
         // Initialize table model (same as before)
-        String[] columnNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注", "Modify", "Delete"};
+        String[] columnNames = {"Transaction Time", "Transaction Type", "Counterparty", "Commodity", "In/Out", "Amount(CNY)", "Payment Method", "Current Status", "Order Number", "Merchant Number", "Remarks", "Modify", "Delete"};
         this.tableModel = new DefaultTableModel(columnNames, 0);
         this.table = new JTable(this.tableModel);
 
@@ -97,14 +93,14 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         add(rightPanel, BorderLayout.CENTER);
 
         // Initial data load is done in createMainPanel (same as before)
-        // loadCSVDataForCurrentUser("收入");
+        // loadCSVDataForCurrentUser("Income");
 
         System.out.println("MenuUI initialized for user: " + currentUser.getUsername() + " (" + currentUser.getRole() + ")");
     }
 
     public JPanel createMainPanel() {
         // MenuUI itself is the main panel, just add the initial data
-        loadCSVDataForCurrentUser(""); // Load and display only income initially
+        loadCSVDataForCurrentUser(""); // Load and display all data initially, or a default like "Income"
         return this; // Return itself
     }
 
@@ -112,7 +108,6 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
     // Method to load CSV data for the current user with optional initial filter
     // Same logic as before
     public void loadCSVDataForCurrentUser(String initialInOutFilter) {
-        // ... existing implementation ...
         this.tableModel.setRowCount(0); // Clear the table model
 
         try {
@@ -124,11 +119,14 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                 filteredTransactions.addAll(transactions);
             } else {
                 String filter = initialInOutFilter.trim();
+                // Assuming "Income" maps to "收" and "Expense" maps to "支" or their English equivalents if data uses that.
+                // The UI might use "Income"/"Expense", while data might use "收"/"支" or "In"/"Out".
+                // This filter needs to be robust to these variations.
                 filteredTransactions = transactions.stream()
                         .filter(t -> t.getInOut() != null && (t.getInOut().equalsIgnoreCase(filter) ||
-                                (filter.equalsIgnoreCase("收入") && t.getInOut().equalsIgnoreCase("收")) ||
-                                (filter.equalsIgnoreCase("支出") && t.getInOut().equalsIgnoreCase("支")) ))
-                        .collect(java.util.stream.Collectors.toList());
+                                (filter.equalsIgnoreCase("Income") && (t.getInOut().equalsIgnoreCase("收") || t.getInOut().equalsIgnoreCase("In"))) ||
+                                (filter.equalsIgnoreCase("Expense") && (t.getInOut().equalsIgnoreCase("支") || t.getInOut().equalsIgnoreCase("Out"))) ))
+                        .collect(Collectors.toList());
             }
 
             for (Transaction transaction : filteredTransactions) {
@@ -139,7 +137,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
 
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "加载用户交易数据失败！", "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Failed to load user transaction data!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -149,23 +147,23 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JButton menuButton = new JButton("交易列表");
-        JButton aiButton = new JButton("AI分析");
-        JButton adminButton = new JButton("管理员统计");
-        JButton visualizationButton = new JButton("可视化"); // NEW Visualization button
+        JButton menuButton = new JButton("Transaction List"); // "交易列表"
+        JButton aiButton = new JButton("AI Analysis");       // "AI分析"
+        JButton adminButton = new JButton("Admin Stats");     // "管理员统计"
+        JButton visualizationButton = new JButton("Visualization"); // "可视化"
 
         // Set consistent size for buttons
         Dimension buttonSize = new Dimension(150, 40);
         menuButton.setMaximumSize(buttonSize);
         aiButton.setMaximumSize(buttonSize);
         adminButton.setMaximumSize(buttonSize);
-        visualizationButton.setMaximumSize(buttonSize); // Set size for new button
+        visualizationButton.setMaximumSize(buttonSize);
 
 
         menuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         aiButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         adminButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        visualizationButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Align new button
+        visualizationButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 
         leftPanel.add(menuButton);
@@ -180,14 +178,14 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         }
 
         // Add Visualization button (visible for all users)
-        leftPanel.add(visualizationButton); // Add the visualization button
+        leftPanel.add(visualizationButton);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
 
         // Add action listeners (existing for Menu, AI, Admin)
         menuButton.addActionListener(e -> {
             cardLayout.show(rightPanel, "Table");
-            loadCSVDataForCurrentUser("收入");
+            loadCSVDataForCurrentUser("Income"); // Load "Income" by default or "" for all
         });
 
         aiButton.addActionListener(e -> {
@@ -204,8 +202,9 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         // Add action listener for Visualization button - NEW
         visualizationButton.addActionListener(e -> {
             cardLayout.show(rightPanel, "Visualization"); // Switch to visualization view
-            // Optional: Trigger initial chart load or setup in VisualizationPanel
-            // visualizationPanel.loadAndDisplayCharts(); // Needs a method in VisualizationPanel
+            if (visualizationPanel != null) { // Ensure panel is initialized
+                visualizationPanel.refreshPanelData(); // Call refresh method
+            }
         });
 
 
@@ -223,7 +222,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         JPanel tablePanel = createTablePanel(); // Table view
         JPanel aiPanel = createAIPanel(); // AI view
         JPanel adminStatsPanel = createAdminStatsPanel(); // Admin stats view
-        this.visualizationPanel = new VisualizationPanel(this.transactionService); // NEW: Create VisualizationPanel, inject TransactionService
+        this.visualizationPanel = new VisualizationPanel(this.transactionService);
 
 
         rightPanel.add(tablePanel, "Table");
@@ -231,7 +230,7 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         if ("admin".equalsIgnoreCase(currentUser.getRole())) {
             rightPanel.add(adminStatsPanel, "AdminStats");
         }
-        rightPanel.add(visualizationPanel, "Visualization"); // NEW: Add Visualization panel
+        rightPanel.add(visualizationPanel, "Visualization");
 
 
         // Set the initially visible card (Table view)
@@ -242,12 +241,12 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
     private JPanel createTablePanel() {
         JPanel tablePanel = new JPanel(new BorderLayout());
 
-        JPanel inputPanel = createInputPanel(); // This method now initializes search fields
+        JPanel inputPanel = createInputPanel();
         tablePanel.add(inputPanel, BorderLayout.NORTH);
 
         JScrollPane tableScrollPane = new JScrollPane(this.table);
-        tableScrollPane.setPreferredSize(new Dimension(1000, 250)); // Preferred size hint
-        this.table.setFillsViewportHeight(true); // Make table fill the scroll pane height
+        tableScrollPane.setPreferredSize(new Dimension(1000, 250));
+        this.table.setFillsViewportHeight(true);
         this.table.setRowHeight(30);
 
         tablePanel.add(tableScrollPane, BorderLayout.CENTER);
@@ -259,9 +258,6 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         this.table.getColumnModel().getColumn(12).setCellRenderer(new ButtonRenderer());
         this.table.getColumnModel().getColumn(12).setCellEditor(new ButtonEditor(this));
 
-        // Initial data load is done in the MenuUI constructor or createMainPanel
-        // loadCSVDataForCurrentUser("收入"); // Moved to createMainPanel
-
         return tablePanel;
     }
 
@@ -269,39 +265,33 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
     private JPanel createInputPanel() {
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
-        // Create input fields and capture references (existing code)
         searchTransactionTimeField = new JTextField(10);
         searchTransactionTypeField = new JTextField(10);
         searchCounterpartyField = new JTextField(10);
         searchCommodityField = new JTextField(10);
-        searchInOutComboBox = new JComboBox<>(new String[]{"", "收入", "支出"});
+        searchInOutComboBox = new JComboBox<>(new String[]{"", "Income", "Expense"}); // "Income", "Expense"
         searchPaymentMethodField = new JTextField(10);
 
-        // Add labels and input fields (existing code)
-        inputPanel.add(new JLabel("交易时间:")); inputPanel.add(searchTransactionTimeField);
-        inputPanel.add(new JLabel("交易类型:")); inputPanel.add(searchTransactionTypeField);
-        inputPanel.add(new JLabel("交易对方:")); inputPanel.add(searchCounterpartyField);
-        inputPanel.add(new JLabel("商品:")); inputPanel.add(searchCommodityField);
-        inputPanel.add(new JLabel("收/支:")); inputPanel.add(searchInOutComboBox);
-        inputPanel.add(new JLabel("支付方式:")); inputPanel.add(searchPaymentMethodField);
+        inputPanel.add(new JLabel("Transaction Time:")); inputPanel.add(searchTransactionTimeField);
+        inputPanel.add(new JLabel("Transaction Type:")); inputPanel.add(searchTransactionTypeField);
+        inputPanel.add(new JLabel("Counterparty:")); inputPanel.add(searchCounterpartyField);
+        inputPanel.add(new JLabel("Commodity:")); inputPanel.add(searchCommodityField);
+        inputPanel.add(new JLabel("In/Out:")); inputPanel.add(searchInOutComboBox);
+        inputPanel.add(new JLabel("Payment Method:")); inputPanel.add(searchPaymentMethodField);
 
-        // Create Search, Add, and Import buttons
         searchButton = new JButton("Search");
         JButton addButton = new JButton("Add");
-        JButton importButton = new JButton("导入 CSV"); // 新增导入按钮
+        JButton importButton = new JButton("Import CSV"); // "Import CSV"
 
-        // Add buttons
         inputPanel.add(searchButton);
         inputPanel.add(addButton);
-        inputPanel.add(importButton); // 添加导入按钮
+        inputPanel.add(importButton);
 
-        // Add ActionListeners (existing code for Search and Add)
         searchButton.addActionListener(e -> triggerCurrentSearch());
         addButton.addActionListener(e -> showAddTransactionDialog());
 
-        // Add ActionListener for Import button
         importButton.addActionListener(e -> {
-            showImportDialog(); // Call a new method to handle import
+            showImportDialog();
         });
 
         return inputPanel;
@@ -310,73 +300,61 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
     // Inside MenuUI class
     private void showImportDialog() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("选择要导入的CSV文件");
-        // Optional: Add file filter for .csv files
+        fileChooser.setDialogTitle("Select CSV file to import");
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
 
-        int userSelection = fileChooser.showOpenDialog(this); // Show dialog relative to MenuUI panel
+        int userSelection = fileChooser.showOpenDialog(this);
 
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             java.io.File fileToImport = fileChooser.getSelectedFile();
             String filePath = fileToImport.getAbsolutePath();
-            System.out.println("用户选择了导入文件: " + filePath);
+            System.out.println("User selected file for import: " + filePath);
 
-            // Display "Importing..." message and disable button (optional UI feedback)
-            // This needs a status area, maybe in the main panel or a separate progress dialog.
-            // For simplicity now, we'll just show messages.
-
-            // Run import in a background thread
-            // Need to pass the file path and the current user's file path to the service
             new Thread(() -> {
                 String message;
                 try {
-                    // Call the service method to handle the import logic
                     int importedCount = transactionService.importTransactionsFromCsv(currentUser.getTransactionFilePath(), filePath);
-
-                    message = "成功导入 " + importedCount + " 条交易记录。";
+                    message = "Successfully imported " + importedCount + " transaction records.";
                     System.out.println(message);
 
-                    // Update UI on EDT after successful import
                     String finalMessage = message;
                     SwingUtilities.invokeLater(() -> {
-                        loadCSVDataForCurrentUser(""); // Reload all data to show imported items
-                        clearSearchFields(); // Clear search fields after reload
-                        JOptionPane.showMessageDialog(this, finalMessage, "导入成功", JOptionPane.INFORMATION_MESSAGE);
+                        loadCSVDataForCurrentUser("");
+                        clearSearchFields();
+                        JOptionPane.showMessageDialog(this, finalMessage, "Import Successful", JOptionPane.INFORMATION_MESSAGE);
                     });
 
-                } catch (Exception ex) { // Catch exceptions from the service layer
-                    message = "导入失败！\n" + ex.getMessage();
+                } catch (Exception ex) {
+                    message = "Import failed!\n" + ex.getMessage();
                     System.err.println("CSV Import failed: " + ex.getMessage());
                     ex.printStackTrace();
-                    // Update UI on EDT with error message
                     String finalMessage1 = message;
                     SwingUtilities.invokeLater(() -> {
-                        JOptionPane.showMessageDialog(this, finalMessage1, "导入错误", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, finalMessage1, "Import Error", JOptionPane.ERROR_MESSAGE);
                     });
                 }
             }).start();
         } else {
-            System.out.println("用户取消了文件选择。");
+            System.out.println("User cancelled file selection.");
         }
     }
 
     // Inside MenuUI class, showAddTransactionDialog method
     private void showAddTransactionDialog() {
         JDialog addDialog = new JDialog();
-        addDialog.setTitle("添加交易");
+        addDialog.setTitle("Add Transaction"); // "Add Transaction"
         JPanel dialogPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        // Default constraints
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 5, 5, 5);
 
         JTextField transactionTimeField = new JTextField(15);
         JTextField transactionTypeField = new JTextField(15);
-        JButton aiSuggestButton = new JButton("AI分类建议");
+        JButton aiSuggestButton = new JButton("AI Category Suggestion"); // "AI Category Suggestion"
 
         JTextField counterpartyField = new JTextField(15);
         JTextField commodityField = new JTextField(15);
-        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"});
+        JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"Income", "Expense"}); // "Income", "Expense"
         JTextField paymentAmountField = new JTextField(15);
         JTextField paymentMethodField = new JTextField(15);
         JTextField currentStatusField = new JTextField(15);
@@ -384,96 +362,61 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         JTextField merchantNumberField = new JTextField(15);
         JTextField remarksField = new JTextField(15);
 
-        // Array of fields for easier iteration
-        JTextField[] fields = {
-                transactionTimeField, transactionTypeField, counterpartyField,
-                commodityField, null, paymentAmountField, paymentMethodField,
-                currentStatusField, orderNumberField, merchantNumberField, remarksField
-        };
-        String[] fieldNames = {
-                "交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)",
-                "支付方式", "当前状态", "交易单号", "商户单号", "备注"
-        };
 
-        // Add components using GridBagLayout
-        // Iterate through the field names and components
-        for (int i = 0; i < fieldNames.length; i++) {
-            // Handle the JComboBox separately as it's not in the fields array
-            if (fieldNames[i].equals("收/支")) {
-                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; // Constraints for label
-                dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
+        gbc.gridx = 0; gbc.gridy = 0; dialogPanel.add(new JLabel("Transaction Time:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 0; gbc.gridwidth = 2; dialogPanel.add(transactionTimeField, gbc); gbc.gridwidth = 1;
 
-                gbc.gridx = 1; gbc.gridy = i; gbc.gridwidth = 2; gbc.weightx = 1.0; // Constraints for JComboBox
-                dialogPanel.add(inOutComboBox, gbc);
-                // No gbc.gridwidth reset needed here as it's the last component on this row spanning 2 columns
-                continue; // Move to next iteration
-            }
+        gbc.gridx = 0; gbc.gridy = 1; dialogPanel.add(new JLabel("Transaction Type:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 1; gbc.weightx = 1.0; dialogPanel.add(transactionTypeField, gbc);
+        gbc.gridx = 2; gbc.gridy = 1; gbc.weightx = 0.0; dialogPanel.add(aiSuggestButton, gbc);
 
-            // Constraints for Label
-            gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
-            dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Counterparty:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 2; gbc.gridwidth = 2; dialogPanel.add(counterpartyField, gbc); gbc.gridwidth = 1;
 
-            // Constraints for TextField
-            gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; // TextField gets horizontal weight
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Commodity:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 3; gbc.gridwidth = 2; dialogPanel.add(commodityField, gbc); gbc.gridwidth = 1;
 
-            // Special case for Transaction Type field (index 1)
-            if (fieldNames[i].equals("交易类型")) { // i is 1 here
-                gbc.gridwidth = 1; // It only spans 1 column to make space for the button
-                dialogPanel.add(fields[i], gbc); // Add the transactionTypeField
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 1; dialogPanel.add(new JLabel("In/Out:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 4; gbc.gridwidth = 2; dialogPanel.add(inOutComboBox, gbc); gbc.gridwidth = 1;
 
-                // Constraints for AI Suggest Button
-                gbc.gridx = 2; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; // Button has no horizontal weight
-                dialogPanel.add(aiSuggestButton, gbc);
-                // No gbc.gridwidth reset needed here as it's the last component on this row spanning 1 column
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Amount(CNY):"), gbc);
+        gbc.gridx = 1; gbc.gridy = 5; gbc.gridwidth = 2; dialogPanel.add(paymentAmountField, gbc); gbc.gridwidth = 1;
 
-            } else { // All other TextFields
-                gbc.gridwidth = 2; // These fields span 2 columns (1 and 2)
-                dialogPanel.add(fields[i], gbc); // Add the text field
-                // No gbc.gridwidth reset needed here as it's the last component on this row spanning 2 columns
-            }
-        }
+        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Payment Method:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 6; gbc.gridwidth = 2; dialogPanel.add(paymentMethodField, gbc); gbc.gridwidth = 1;
 
+        gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Current Status:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 7; gbc.gridwidth = 2; dialogPanel.add(currentStatusField, gbc); gbc.gridwidth = 1;
 
-        // --- Define the modal waiting dialog ---
-        JDialog waitingDialog = new JDialog(addDialog, "请稍候", true); // Modal dialog owned by addDialog
+        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Order Number:"));
+        gbc.gridx = 1; gbc.gridy = 8; gbc.gridwidth = 2; dialogPanel.add(orderNumberField, gbc); gbc.gridwidth = 1;
+
+        gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Merchant Number:"));
+        gbc.gridx = 1; gbc.gridy = 9; gbc.gridwidth = 2; dialogPanel.add(merchantNumberField, gbc); gbc.gridwidth = 1;
+
+        gbc.gridx = 0; gbc.gridy = 10; gbc.gridwidth = 1; dialogPanel.add(new JLabel("Remarks:"));
+        gbc.gridx = 1; gbc.gridy = 10; gbc.gridwidth = 2; dialogPanel.add(remarksField, gbc); gbc.gridwidth = 1;
+
+        JDialog waitingDialog = new JDialog(addDialog, "Please wait", true); // "Please wait"
         waitingDialog.setLayout(new FlowLayout());
-        waitingDialog.add(new JLabel("正在获取AI分类建议..."));
-        waitingDialog.setSize(200, 100);
+        waitingDialog.add(new JLabel("Getting AI category suggestion...")); // "Getting AI category suggestion..."
+        waitingDialog.setSize(250, 100);
         waitingDialog.setResizable(false);
-        // waitingDialog.setLocationRelativeTo(addDialog); // Set location later before showing
-        // --- End waiting dialog definition ---
 
-
-        // Add Confirm and Cancel buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton confirmButton = new JButton("确认");
-        JButton cancelButton = new JButton("取消");
+        JButton confirmButton = new JButton("Confirm"); // "Confirm"
+        JButton cancelButton = new JButton("Cancel");   // "Cancel"
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
-        // Constraints for Button Panel (placed below the last field row, which is index 10)
-        gbc.gridx = 0; gbc.gridy = fieldNames.length; // fieldNames.length is 11, so gridy = 11
-        gbc.gridwidth = 3; // Span all 3 columns
-        gbc.anchor = GridBagConstraints.CENTER; // Center the panel horizontally
-        gbc.fill = GridBagConstraints.NONE; // Don't resize button panel
-        gbc.insets = new Insets(15, 5, 5, 5); // Add some space above buttons
-        gbc.weightx = 0.0; // No horizontal weight for this row
-        gbc.weighty = 1.0; // Give this row vertical weight to push fields up
+        gbc.gridx = 0; gbc.gridy = 11; gbc.gridwidth = 3; gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE;
         dialogPanel.add(buttonPanel, gbc);
-
 
         addDialog.add(dialogPanel, BorderLayout.CENTER);
 
-
-        // Add AI Suggest button action listener - MODIFIED LOGIC FLOW
         aiSuggestButton.addActionListener(e -> {
             System.out.println("AI Suggest button clicked (EDT).");
-
-            // 1. Disable button immediately on EDT
             aiSuggestButton.setEnabled(false);
-            // confirmButton.setEnabled(false); // Optional: also disable confirm
-
-            // 2. Build temporary transaction object from current fields
             Transaction tempTransaction = new Transaction(
                     emptyIfNull(transactionTimeField.getText().trim()),
                     emptyIfNull(transactionTypeField.getText().trim()),
@@ -487,71 +430,47 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                     emptyIfNull(merchantNumberField.getText().trim()),
                     emptyIfNull(remarksField.getText().trim())
             );
-
-            // 3. Create and start the background thread FIRST
             new Thread(() -> {
                 System.out.println("Background thread started for AI classification...");
                 String aiSuggestion = null;
                 try {
-                    // Simulate delay for testing thread behavior
-                    // Thread.sleep(3000); // Uncomment to simulate a 3-second delay
                     aiSuggestion = collegeStudentNeeds.RecognizeTransaction(tempTransaction);
                     System.out.println("AI Classification returned in background thread: " + aiSuggestion);
                 } catch (Exception ex) {
                     System.err.println("Error in background AI thread: " + ex.getMessage());
                     ex.printStackTrace();
-                    aiSuggestion = "Error: " + ex.getMessage(); // Capture error to display later
+                    aiSuggestion = "Error: " + ex.getMessage();
                 }
-
-
-                // 4. Schedule the UI update and dialog hiding on the EDT from the background thread
-                String finalSuggestion = aiSuggestion; // Need a final variable for use in lambda
+                String finalSuggestion = aiSuggestion;
                 SwingUtilities.invokeLater(() -> {
                     System.out.println("Updating UI on EDT from background thread.");
-                    // --- Hide waiting dialog ---
-                    waitingDialog.setVisible(false); // This is the call that unblocks the initial setVisible(true)
-
-                    // --- Display AI suggestion ---
+                    waitingDialog.setVisible(false);
                     if (finalSuggestion != null && !finalSuggestion.isEmpty() && !finalSuggestion.startsWith("Error:")) {
-                        // Safety Check: Although prompt asks for standard, AI might deviate.
-                        // If AI *strictly* follows the prompt, this check might be redundant,
-                        // but adding it makes the UI robust against unexpected AI output.
                         if (StandardCategories.ALL_KNOWN_TYPES.contains(finalSuggestion.trim())) {
                             transactionTypeField.setText(finalSuggestion.trim());
                         } else {
                             System.err.println("AI returned non-standard category despite prompt: " + finalSuggestion);
-                            // Handle non-standard: Maybe use it anyway, or warn and clear.
-                            // According to requirement: "分类严格符合所规定的那几类". If AI fails, we should not inject non-standard.
-                            JOptionPane.showMessageDialog(addDialog, "AI返回了非预期的分类格式：\n" + finalSuggestion + "\n请手动输入。", "AI结果异常", JOptionPane.WARNING_MESSAGE);
-                            transactionTypeField.setText(""); // Clear or set to default if AI fails strict adherence
+                            JOptionPane.showMessageDialog(addDialog, "AI returned an unexpected category format:\n" + finalSuggestion + "\nPlease enter manually.", "AI Result Anomaly", JOptionPane.WARNING_MESSAGE);
+                            transactionTypeField.setText("");
                         }
                     } else if (finalSuggestion != null && finalSuggestion.startsWith("Error:")) {
-                        // Handle the error case
-                        JOptionPane.showMessageDialog(addDialog, "获取AI分类建议失败！\n" + finalSuggestion.substring(6), "AI错误", JOptionPane.ERROR_MESSAGE);
-                        transactionTypeField.setText(""); // Clear the field on error
-                    }
-                    else { // AI returned null or empty
-                        JOptionPane.showMessageDialog(addDialog, "AI未能提供分类建议。", "AI提示", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(addDialog, "Failed to get AI category suggestion!\n" + finalSuggestion.substring(6), "AI Error", JOptionPane.ERROR_MESSAGE);
                         transactionTypeField.setText("");
                     }
-
-                    // 5. Re-enable buttons on EDT
+                    else {
+                        JOptionPane.showMessageDialog(addDialog, "AI could not provide a category suggestion.", "AI Tip", JOptionPane.INFORMATION_MESSAGE);
+                        transactionTypeField.setText("");
+                    }
                     aiSuggestButton.setEnabled(true);
-                    // confirmButton.setEnabled(true);
                     System.out.println("UI update complete, buttons re-enabled.");
                 });
             }).start();
-
-            // --- 6. Show the modal waiting dialog LAST in the EDT block ---
-            // This call will block the EDT until waitingDialog.setVisible(false) is called from the thread.
             System.out.println("Showing waiting dialog (EDT block continues here).");
-            waitingDialog.setLocationRelativeTo(addDialog); // Center relative to add dialog before showing
-            waitingDialog.setVisible(true); // THIS IS THE CALL THAT BLOCKS THE EDT
-            System.out.println("waiting dialog is now hidden (EDT unblocked)."); // This line prints after dialog is hidden by the thread
+            waitingDialog.setLocationRelativeTo(addDialog);
+            waitingDialog.setVisible(true);
+            System.out.println("waiting dialog is now hidden (EDT unblocked).");
         });
 
-
-        // Add Confirm button action listener (existing validation logic)
         confirmButton.addActionListener(e -> {
             String transactionTime = emptyIfNull(transactionTimeField.getText().trim());
             String finalTransactionType = emptyIfNull(transactionTypeField.getText().trim());
@@ -565,432 +484,209 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
             String merchantNumber = emptyIfNull(merchantNumberField.getText().trim());
             String remarks = emptyIfNull(remarksField.getText().trim());
 
-            // --- Input Validation ---
             if (orderNumber.isEmpty()) {
-                JOptionPane.showMessageDialog(addDialog, "交易单号不能为空！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(addDialog, "Order Number cannot be empty!", "Input Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
             if (finalTransactionType.isEmpty()) {
-                JOptionPane.showMessageDialog(addDialog, "交易类型不能为空！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(addDialog, "Transaction Type cannot be empty!", "Input Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Validate against standard categories if strict input is desired from user too
             if (!StandardCategories.ALL_KNOWN_TYPES.contains(finalTransactionType)) {
-                JOptionPane.showMessageDialog(addDialog, "交易类型必须是标准类别之一！\n允许的类别:\n" + StandardCategories.getAllCategoriesString(), "输入错误", JOptionPane.ERROR_MESSAGE);
-                return; // Enforce standard categories for manual input
+                JOptionPane.showMessageDialog(addDialog, "Transaction type must be one of the standard categories!\nAllowed categories:\n" + StandardCategories.getAllCategoriesString(), "Input Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-
-
             double paymentAmount = 0.0;
             if (!paymentAmountText.isEmpty()) {
                 try {
                     paymentAmount = Double.parseDouble(paymentAmountText);
-                    // Optional: Check for non-negative amount for expenses/income
                     if (paymentAmount < 0) {
-                        JOptionPane.showMessageDialog(addDialog, "金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(addDialog, "Amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(addDialog, "金额格式不正确！请输入数字。", "输入错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(addDialog, "Amount format is incorrect! Please enter a number.", "Input Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
-            // Check for non-negative amount consistency with InOut
-            if (paymentAmount < 0 && (inOut != null && (inOut.equals("收入") || inOut.equals("收")))) {
-                JOptionPane.showMessageDialog(addDialog, "收入金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (paymentAmount < 0 && (inOut != null && (inOut.equals("支出") || inOut.equals("支")))) { // Assuming expenses are positive input amounts
-                JOptionPane.showMessageDialog(addDialog, "支出金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-
             Transaction newTransaction = new Transaction(
-                    transactionTime,
-                    finalTransactionType, // Use the final value from the field (now validated to be standard)
-                    counterparty,
-                    commodity,
-                    inOut,
-                    paymentAmount,
-                    paymentMethod,
-                    currentStatus,
-                    orderNumber,
-                    merchantNumber,
-                    remarks
+                    transactionTime, finalTransactionType, counterparty, commodity, inOut,
+                    paymentAmount, paymentMethod, currentStatus, orderNumber, merchantNumber, remarks
             );
-
-            // Order number uniqueness check is better in service layer before saving
-
             try {
-                // Optional: Check for duplicate order number in service layer before adding
-                // if (!transactionService.isOrderNumberUnique(orderNumber)) {
-                //      JOptionPane.showMessageDialog(addDialog, "交易单号 '" + orderNumber + "' 已存在！", "输入错误", JOptionPane.ERROR_MESSAGE);
-                //      return;
-                // }
-
                 transactionService.addTransaction(newTransaction);
-
-                loadCSVDataForCurrentUser(""); // Load all data after adding
+                loadCSVDataForCurrentUser("");
                 clearSearchFields();
-
                 addDialog.dispose();
-                JOptionPane.showMessageDialog(null, "交易添加成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
-
+                JOptionPane.showMessageDialog(null, "Transaction added successfully!", "Information", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException ex) {
                 ex.printStackTrace();
-                // Change ERROR_ERROR to ERROR_MESSAGE
-                JOptionPane.showMessageDialog(null, "交易添加失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Failed to add transaction!\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                // Change ERROR_ERROR to ERROR_MESSAGE
-                JOptionPane.showMessageDialog(null, "交易添加失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Failed to add transaction!\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
         cancelButton.addActionListener(e -> addDialog.dispose());
-
-        // --- Dialog setup and showing ---
-        addDialog.pack(); // Pack the dialog to fit its components
-        addDialog.setLocationRelativeTo(this); // Center relative to the MenuUI panel
-        addDialog.setVisible(true); // Show the add dialog (this is the initial blocking call for the add dialog itself)
-        // --- End Dialog setup ---
+        addDialog.pack();
+        addDialog.setLocationRelativeTo(this);
+        addDialog.setVisible(true);
     }
 
-
-    // Method to edit row - updated for AI integration and getting data from table model
     public void editRow(int rowIndex) {
-        System.out.println("编辑行: " + rowIndex + " for user " + currentUser.getUsername());
-        // Define JDialog, JPanel, GridBagConstraints at the start
+        System.out.println("Editing row: " + rowIndex + " for user " + currentUser.getUsername());
         JDialog editDialog = new JDialog();
         JPanel dialogPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-
         if (rowIndex >= 0 && rowIndex < this.tableModel.getRowCount()) {
             Vector<String> rowData = new Vector<>();
-            for (int i = 0; i <= 10; i++) { // Columns 0 to 10 are Transaction fields
+            for (int i = 0; i <= 10; i++) {
                 Object value = this.tableModel.getValueAt(rowIndex, i);
                 rowData.add(value != null ? value.toString() : "");
             }
             System.out.println("Retrieved row data from table model for editing: " + rowData);
-
             String originalOrderNumber = rowData.get(8).trim();
             if (originalOrderNumber.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "无法编辑：交易单号为空！", "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Cannot edit: Order Number is empty!", "Error", JOptionPane.ERROR_MESSAGE);
                 System.err.println("Attempted to edit row " + rowIndex + " but order number is empty.");
-                // editDialog remains undefined here if this happens, might crash later if used.
-                // Return immediately
                 return;
             }
-
-
-            editDialog.setTitle("修改交易信息 (订单号: " + originalOrderNumber + ")");
+            editDialog.setTitle("Edit Transaction (Order No: " + originalOrderNumber + ")"); // "Edit Transaction (Order No: "
             editDialog.setModal(true);
-
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = new Insets(5, 5, 5, 5);
-
             JTextField[] fields = new JTextField[11];
-            String[] fieldNames = {"交易时间", "交易类型", "交易对方", "商品", "收/支", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"};
-            JButton aiSuggestButton = new JButton("AI分类建议");
+            String[] fieldNames = {"Transaction Time", "Transaction Type", "Counterparty", "Commodity", "In/Out", "Amount(CNY)", "Payment Method", "Current Status", "Order Number", "Merchant Number", "Remarks"};
+            JButton aiSuggestButton = new JButton("AI Category Suggestion"); // "AI Category Suggestion"
 
-            // Add components using GridBagLayout
             for (int i = 0; i < fieldNames.length; i++) {
-                // Constraints for Label
-                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
-                dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
-
-                // Constraints for TextField
-                gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; // TextField gets horizontal weight
-
-                if (fieldNames[i].equals("收/支")) { // Handle ComboBox
-                    gbc.gridwidth = 2; // Spans 2 columns
-                    // Create ComboBox for 收/支 here, populated with current value
-                    JComboBox<String> inOutComboBox = new JComboBox<>(new String[]{"收入", "支出"});
-                    // Find the correct index for the current value and set it
-                    String currentInOut = rowData.get(i);
-                    for (int j = 0; j < inOutComboBox.getItemCount(); j++) {
-                        if (currentInOut != null && currentInOut.equals(inOutComboBox.getItemAt(j))) {
-                            inOutComboBox.setSelectedIndex(j);
-                            break;
-                        }
-                    }
-                    // Replace the JTextField in the fields array with this ComboBox
-                    // This requires adjusting how fields array is used or creating a separate array for components
-                    // Simpler: Access the ComboBox directly later, just add it here.
-                    dialogPanel.add(inOutComboBox, gbc);
-                    // Need to capture the ComboBox reference to get its value later
-                    // Let's create a final JComboBox reference just for this row
-                    final JComboBox<String> finalInOutComboBox = inOutComboBox; // Make it final to use in listeners
-                    // To retrieve value later: finalInOutComboBox.getSelectedItem()
-
-                    // Skip the rest of the loop body for this iteration (as it's not a JTextField being added)
-                    continue; // Move to next iteration
-
-                } else { // All other TextFields
-                    fields[i] = new JTextField(rowData.get(i)); // Create the text field
-                    gbc.gridwidth = 2; // These fields span 2 columns
-                    dialogPanel.add(fields[i], gbc); // Add the text field
-                }
-
-
-                if (fieldNames[i].equals("交易类型")) { // Add AI button next to Transaction Type field (index 1)
-                    // The field[1] has already been added above in the 'else' block
-                    // Need to adjust GBCs and add the AI button next to it
-                    gbc.gridx = 2; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; // Constraints for AI button
-                    dialogPanel.add(aiSuggestButton, gbc); // Add AI button
-                    // No gbc.gridwidth reset needed as it's the last component on this row spanning 1 column
+                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0; dialogPanel.add(new JLabel(fieldNames[i] + ":"), gbc);
+                fields[i] = new JTextField(rowData.get(i));
+                if (i == 1) {
+                    gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; dialogPanel.add(fields[i], gbc);
+                    gbc.gridx = 2; gbc.gridy = i; gbc.weightx = 0.0; dialogPanel.add(aiSuggestButton, gbc);
+                    gbc.gridwidth = 1;
+                } else {
+                    gbc.gridx = 1; gbc.gridy = i; gbc.gridwidth = 2; gbc.weightx = 1.0; dialogPanel.add(fields[i], gbc);
+                    gbc.gridwidth = 1;
                 }
             }
+            fields[8].setEditable(false);
 
-            // Re-populate fields array and handle the 收/支 ComboBox reference more cleanly
-            // Let's recreate the dialog panel setup more cleanly outside the loop if needed
-            // Or, adjust the loop to handle the ComboBox component addition correctly.
-            // The current loop structure is problematic for mixing JTextFields and JComboBox.
-
-            // Let's revert to the previous layout structure for fields and handle ComboBox separately
-            // Re-structure the field addition logic:
-
-            dialogPanel = new JPanel(new GridBagLayout()); // Re-initialize panel for clean layout
-            gbc = new GridBagConstraints(); // Re-initialize constraints
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(5, 5, 5, 5);
-
-            fields = new JTextField[10]; // 10 TextFields (excluding 收/支 which is ComboBox)
-            String[] fieldNamesExcludingInOut = {"交易时间", "交易类型", "交易对方", "商品", "金额(元)", "支付方式", "当前状态", "交易单号", "商户单号", "备注"};
-            JComboBox<String> editInOutComboBox = new JComboBox<>(new String[]{"收入", "支出"}); // New ComboBox for edit dialog
-
-            // Map rowData index to fieldNamesExcludingInOut index and JComboBox
-            int fieldIdx = 0;
-            for(int i = 0; i < fieldNames.length; i++) {
-                String currentFieldName = fieldNames[i];
-
-                gbc.gridx = 0; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
-                dialogPanel.add(new JLabel(currentFieldName + ":"), gbc); // Add Label
-
-                if (currentFieldName.equals("收/支")) { // Handle 收/支 row
-                    gbc.gridx = 1; gbc.gridy = i; gbc.gridwidth = 2; gbc.weightx = 1.0;
-                    // Set current value in ComboBox
-                    String currentInOutValue = rowData.get(i); // Get value from original rowData
-                    for (int j = 0; j < editInOutComboBox.getItemCount(); j++) {
-                        if (currentInOutValue != null && currentInOutValue.equals(editInOutComboBox.getItemAt(j))) {
-                            editInOutComboBox.setSelectedIndex(j);
-                            break;
-                        }
-                    }
-                    dialogPanel.add(editInOutComboBox, gbc);
-
-                } else { // Handle all JTextField rows
-                    fields[fieldIdx] = new JTextField(rowData.get(i)); // Create JTextField
-                    gbc.gridx = 1; gbc.gridy = i; gbc.weightx = 1.0; // Text field starts at column 1
-
-                    if (currentFieldName.equals("交易类型")) { // Special case for AI button
-                        gbc.gridwidth = 1; // Spans 1 column
-                        dialogPanel.add(fields[fieldIdx], gbc); // Add the field
-
-                        gbc.gridx = 2; gbc.gridy = i; gbc.gridwidth = 1; gbc.weightx = 0.0;
-                        dialogPanel.add(aiSuggestButton, gbc); // Add AI button
-
-                    } else { // Standard JTextField row
-                        gbc.gridwidth = 2; // Spans 2 columns
-                        dialogPanel.add(fields[fieldIdx], gbc); // Add the field
-                    }
-                    fieldIdx++; // Increment field index only for TextFields
-                }
-            }
-            // Disable editing the order number field (which is fields[7] in the new fields array)
-            fields[7].setEditable(false);
-
-
-            // --- Define the modal waiting dialog ---
-            JDialog waitingDialog = new JDialog(editDialog, "请稍候", true); // Modal dialog owned by editDialog
+            JDialog waitingDialog = new JDialog(editDialog, "Please wait", true); // "Please wait"
             waitingDialog.setLayout(new FlowLayout());
-            waitingDialog.add(new JLabel("正在获取AI分类建议..."));
-            waitingDialog.setSize(200, 100);
+            waitingDialog.add(new JLabel("Getting AI category suggestion...")); // "Getting AI category suggestion..."
+            waitingDialog.setSize(250, 100);
             waitingDialog.setResizable(false);
-            // waitingDialog.setLocationRelativeTo(editDialog); // Set location later before showing
-            // --- End waiting dialog definition ---
 
-
-            // Add Confirm and Cancel buttons
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            JButton confirmButton = new JButton("确认");
-            JButton cancelButton = new JButton("取消");
+            JButton confirmButton = new JButton("Confirm"); // "Confirm"
+            JButton cancelButton = new JButton("Cancel");   // "Cancel"
             buttonPanel.add(confirmButton);
             buttonPanel.add(cancelButton);
-
-            // Constraints for Button Panel (placed below the last field/combo row, which is index 10)
-            gbc.gridx = 0; gbc.gridy = fieldNames.length; // fieldNames.length is 11, so gridy = 11
-            gbc.gridwidth = 3; // Span all 3 columns
-            gbc.anchor = GridBagConstraints.CENTER; // Center the panel horizontally
-            gbc.fill = GridBagConstraints.NONE; // Don't resize button panel
-            gbc.insets = new Insets(15, 5, 5, 5); // Add some space above buttons
-            gbc.weightx = 0.0; // No horizontal weight for this row
-            gbc.weighty = 1.0; // Give this row vertical weight to push fields up
-            dialogPanel.add(buttonPanel, gbc);
-
-
+            gbc.gridx = 0; gbc.gridy = fieldNames.length; gbc.gridwidth = 3; gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE; dialogPanel.add(buttonPanel, gbc);
             editDialog.add(dialogPanel, BorderLayout.CENTER);
 
-
-            // Add AI Suggest button action listener - MODIFIED LOGIC FLOW
-            JTextField[] finalFields = fields;
             aiSuggestButton.addActionListener(e -> {
                 System.out.println("AI Suggest button clicked (EDT) in edit dialog.");
-                // 1. Disable button immediately on EDT
                 aiSuggestButton.setEnabled(false);
-                // confirmButton.setEnabled(false); // Optional: also disable confirm
-
-                // 2. Build temporary transaction object from current fields + ComboBox
                 Transaction tempTransaction = new Transaction(
-                        finalFields[0].getText().trim(), // 交易时间
-                        finalFields[1].getText().trim(), // 交易类型
-                        finalFields[2].getText().trim(), // 交易对方
-                        finalFields[3].getText().trim(), // 商品
-                        (String) editInOutComboBox.getSelectedItem(), // Get value from the edit dialog's ComboBox
-                        safeParseDouble(finalFields[4].getText().trim()), // 金额(元) - Index adjusted for fields array
-                        finalFields[5].getText().trim(), // 支付方式 - Index adjusted
-                        finalFields[6].getText().trim(), // 当前状态 - Index adjusted
-                        finalFields[7].getText().trim(), // 交易单号 - Index adjusted (this is originalOrderNumber field, but disabled)
-                        finalFields[8].getText().trim(), // 商户单号 - Index adjusted
-                        finalFields[9].getText().trim()  // 备注 - Index adjusted
+                        fields[0].getText().trim(), fields[1].getText().trim(), fields[2].getText().trim(),
+                        fields[3].getText().trim(), fields[4].getText().trim(), safeParseDouble(fields[5].getText().trim()),
+                        fields[6].getText().trim(), fields[7].getText().trim(), fields[8].getText().trim(),
+                        fields[9].getText().trim(), fields[10].getText().trim()
                 );
-                // Ensure the original order number is used for the temp transaction key if needed by RecognizeTransaction
-                tempTransaction.setOrderNumber(originalOrderNumber); // Use the actual original ON
-
-
-                // 3. Create and start the background thread FIRST
                 new Thread(() -> {
                     System.out.println("Background thread started for AI classification (edit dialog)...");
                     String aiSuggestion = null;
                     try {
-                        // Simulate delay for testing thread behavior
-                        // Thread.sleep(3000); // Uncomment to simulate a 3-second delay
                         aiSuggestion = collegeStudentNeeds.RecognizeTransaction(tempTransaction);
                         System.out.println("AI Classification returned in background thread (edit dialog): " + aiSuggestion);
                     } catch (Exception ex) {
                         System.err.println("Error in background AI thread (edit dialog): " + ex.getMessage());
                         ex.printStackTrace();
-                        aiSuggestion = "Error: " + ex.getMessage(); // Capture error to display later
+                        aiSuggestion = "Error: " + ex.getMessage();
                     }
-
-
-                    // 4. Schedule the UI update and dialog hiding on the EDT from the background thread
                     String finalSuggestion = aiSuggestion;
                     SwingUtilities.invokeLater(() -> {
                         System.out.println("Updating UI on EDT from background thread (edit dialog).");
-                        // --- Hide waiting dialog ---
-                        waitingDialog.setVisible(false); // This is the call that unblocks the initial setVisible(true)
-
-                        // --- Display AI suggestion ---
+                        waitingDialog.setVisible(false);
                         if (finalSuggestion != null && !finalSuggestion.isEmpty() && !finalSuggestion.startsWith("Error:")) {
-                            // Safety Check: Although prompt asks for standard, AI might deviate.
                             if (StandardCategories.ALL_KNOWN_TYPES.contains(finalSuggestion.trim())) {
-                                finalFields[1].setText(finalSuggestion.trim()); // Update Transaction Type field (index 1)
+                                fields[1].setText(finalSuggestion.trim());
                             } else {
-                                System.err.println("AI returned non-standard category despite prompt (edit dialog): " + finalSuggestion);
-                                JOptionPane.showMessageDialog(editDialog, "AI返回了非预期的分类格式：\n" + finalSuggestion + "\n请手动输入。", "AI结果异常", JOptionPane.WARNING_MESSAGE);
-                                finalFields[1].setText(""); // Clear or set to default
+                                System.err.println("AI returned non-standard category despite prompt: " + finalSuggestion);
+                                JOptionPane.showMessageDialog(editDialog, "AI returned an unexpected category format:\n" + finalSuggestion + "\nPlease enter manually.", "AI Result Anomaly", JOptionPane.WARNING_MESSAGE);
+                                fields[1].setText("");
                             }
                         } else if (finalSuggestion != null && finalSuggestion.startsWith("Error:")) {
-                            JOptionPane.showMessageDialog(editDialog, "获取AI分类建议失败！\n" + finalSuggestion.substring(6), "AI错误", JOptionPane.ERROR_MESSAGE);
-                            finalFields[1].setText("");
+                            JOptionPane.showMessageDialog(editDialog, "Failed to get AI category suggestion!\n" + finalSuggestion.substring(6), "AI Error", JOptionPane.ERROR_MESSAGE);
+                            fields[1].setText("");
                         }
-                        else { // AI returned null or empty
-                            JOptionPane.showMessageDialog(editDialog, "AI未能提供分类建议。", "AI提示", JOptionPane.INFORMATION_MESSAGE);
-                            finalFields[1].setText("");
+                        else {
+                            JOptionPane.showMessageDialog(editDialog, "AI could not provide a category suggestion.", "AI Tip", JOptionPane.INFORMATION_MESSAGE);
+                            fields[1].setText("");
                         }
-
-                        // 5. Re-enable buttons on EDT
                         aiSuggestButton.setEnabled(true);
-                        // confirmButton.setEnabled(true);
                         System.out.println("UI update complete, buttons re-enabled (edit dialog).");
                     });
                 }).start();
-
-                // --- 6. Show the modal waiting dialog LAST in the EDT block ---
                 System.out.println("Showing waiting dialog (EDT block continues here in edit dialog).");
-                waitingDialog.setLocationRelativeTo(editDialog); // Center relative to edit dialog before showing
-                waitingDialog.setVisible(true); // THIS IS THE CALL THAT BLOCKS THE EDT
-                System.out.println("waiting dialog is now hidden (EDT unblocked in edit dialog)."); // This line prints after dialog is hidden by the thread
+                waitingDialog.setLocationRelativeTo(editDialog);
+                waitingDialog.setVisible(true);
+                System.out.println("waiting dialog is now hidden (EDT unblocked in edit dialog).");
             });
 
-
-            // Add Confirm and Cancel button listeners
-            JTextField[] finalFields1 = fields;
             confirmButton.addActionListener(e -> {
-                // Get values from fields array and the specific ComboBox
-                String transactionTime = finalFields1[0].getText().trim();
-                String finalTransactionType = finalFields1[1].getText().trim();
-                String counterparty = finalFields1[2].getText().trim();
-                String commodity = finalFields1[3].getText().trim();
-                String inOut = (String) editInOutComboBox.getSelectedItem(); // GET VALUE FROM THE EDIT DIALOG'S COMBOBOX
-                String paymentAmountText = finalFields1[4].getText().trim(); // Index adjusted for fields array
-                String paymentMethod = finalFields1[5].getText().trim(); // Index adjusted
-                String currentStatus = finalFields1[6].getText().trim(); // Index adjusted
-                // Original ON is used from the variable 'originalOrderNumber' defined outside this listener
-                String merchantNumber = finalFields1[8].getText().trim(); // Index adjusted
-                String remarks = finalFields1[9].getText().trim();  // Index adjusted
+                String transactionTime = fields[0].getText().trim();
+                String finalTransactionType = fields[1].getText().trim();
+                String counterparty = fields[2].getText().trim();
+                String commodity = fields[3].getText().trim();
+                String inOut = fields[4].getText().trim();
+                String paymentAmountText = fields[5].getText().trim();
+                String paymentMethod = fields[6].getText().trim();
+                String currentStatus = fields[7].getText().trim();
+                String merchantNumber = fields[9].getText().trim();
+                String remarks = fields[10].getText().trim();
 
-                // --- Input Validation ---
                 if (finalTransactionType.isEmpty()) {
-                    JOptionPane.showMessageDialog(editDialog, "交易类型不能为空！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(editDialog, "Transaction Type cannot be empty!", "Input Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                // Validate against standard categories
                 if (!StandardCategories.ALL_KNOWN_TYPES.contains(finalTransactionType)) {
-                    JOptionPane.showMessageDialog(editDialog, "交易类型必须是标准类别之一！\n允许的类别:\n" + StandardCategories.getAllCategoriesString(), "输入错误", JOptionPane.ERROR_MESSAGE);
-                    return; // Enforce standard categories for manual input
-                }
-                // Validate 收/支 is one of expected values (ComboBox ensures this)
-                if (!inOut.equals("收入") && !inOut.equals("支出")) { // ComboBox only has these two
-                    // This validation is actually redundant if the ComboBox only offers "收入" and "支出"
-                    // But good to keep for robustness if the ComboBox items could change or if it included ""
-                    JOptionPane.showMessageDialog(editDialog, "收/支字段必须是 '收入' 或 '支出'。", "输入错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(editDialog, "Transaction type must be one of the standard categories!\nAllowed categories:\n" + StandardCategories.getAllCategoriesString(), "Input Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-
-
+                if (!inOut.equalsIgnoreCase("Income") && !inOut.equalsIgnoreCase("Expense") &&
+                        !inOut.equalsIgnoreCase("In") && !inOut.equalsIgnoreCase("Out")) {
+                    JOptionPane.showMessageDialog(editDialog, "In/Out field must be 'Income' or 'Expense'.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
                 double paymentAmount = 0.0;
                 if (!paymentAmountText.isEmpty()) {
                     try {
                         paymentAmount = Double.parseDouble(paymentAmountText);
                         if (paymentAmount < 0) {
-                            JOptionPane.showMessageDialog(editDialog, "金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(editDialog, "Amount cannot be negative!", "Input Error", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                     } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(editDialog, "金额格式不正确！请输入数字。", "输入错误", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(editDialog, "Amount format is incorrect! Please enter a number.", "Input Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
-                // Check for non-negative amount consistency with InOut
-                if (paymentAmount < 0 && (inOut.equals("收入"))) {
-                    JOptionPane.showMessageDialog(editDialog, "收入金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (paymentAmount < 0 && (inOut.equals("支出"))) {
-                    JOptionPane.showMessageDialog(editDialog, "支出金额不能为负数！", "输入错误", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-
                 Transaction updatedTransaction = new Transaction(
                         transactionTime, finalTransactionType, counterparty, commodity, inOut,
-                        paymentAmount, paymentMethod, currentStatus, originalOrderNumber, // Use the correct originalOrderNumber
+                        paymentAmount, paymentMethod, currentStatus, originalOrderNumber,
                         merchantNumber, remarks
                 );
-
-
                 try {
                     transactionService.changeTransaction(updatedTransaction);
                     System.out.println("Edit successful. Preparing to refresh display filtered by InOut: " + updatedTransaction.getInOut());
                     clearSearchFields();
                     String updatedInOut = updatedTransaction.getInOut();
                     boolean foundInOut = false;
-                    // Update the search UI ComboBox
                     for(int i=0; i < searchInOutComboBox.getItemCount(); i++) {
                         if (updatedInOut != null && updatedInOut.equals(searchInOutComboBox.getItemAt(i))) {
                             searchInOutComboBox.setSelectedItem(updatedInOut);
@@ -999,303 +695,237 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                         }
                     }
                     if (!foundInOut) { searchInOutComboBox.setSelectedItem(""); }
-
                     triggerCurrentSearch();
-
                     editDialog.dispose();
-                    JOptionPane.showMessageDialog(null, "修改成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Update successful!", "Information", JOptionPane.INFORMATION_MESSAGE);
                     System.out.println("Edited row " + rowIndex + " for order number " + originalOrderNumber + " and refreshed display.");
-
                 } catch (IllegalArgumentException ex) {
-                    JOptionPane.showMessageDialog(editDialog, "修改失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(editDialog, "Update failed!\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     ex.printStackTrace();
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(editDialog, "修改失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE); // Use ERROR_MESSAGE
+                    JOptionPane.showMessageDialog(editDialog, "Update failed!\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             });
-
             cancelButton.addActionListener(e -> editDialog.dispose());
-
-            // --- Dialog setup and showing ---
             editDialog.pack();
             editDialog.setLocationRelativeTo(this);
-            editDialog.setVisible(true); // Show the edit dialog (this is the initial blocking call for the edit dialog itself)
-            // --- End Dialog setup ---
-
+            editDialog.setVisible(true);
         } else {
-            // This block is for invalid rowIndex. The dialog shouldn't be shown.
             System.err.println("Attempted to edit row with invalid index: " + rowIndex + ". Table row count: " + this.tableModel.getRowCount());
         }
     }
 
-    // Method to create the AI panel - UPDATED
     private JPanel createAIPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        // Panel for General AI Analysis
         JPanel generalAnalysisPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         JTextField userRequestField = new JTextField(40);
         aiStartTimeField = new JTextField(10);
         aiEndTimeField = new JTextField(10);
-        aiAnalyzeButton = new JButton("通用分析 (按原始数据)"); // Clarify this uses raw data
+        aiAnalyzeButton = new JButton("General Analysis (Raw Data)"); // "General Analysis (Raw Data)"
 
-
-        generalAnalysisPanel.add(new JLabel("通用分析要求:"));
+        generalAnalysisPanel.add(new JLabel("General Analysis Request:")); // "General Analysis Request:"
         generalAnalysisPanel.add(userRequestField);
-        generalAnalysisPanel.add(new JLabel("时间范围 (yyyy/MM/dd HH:mm): 从:"));
+        generalAnalysisPanel.add(new JLabel("Time Range (yyyy/MM/dd HH:mm): From:")); // "Time Range (yyyy/MM/dd HH:mm): From:"
         generalAnalysisPanel.add(aiStartTimeField);
-        generalAnalysisPanel.add(new JLabel("到:"));
-        generalAnalysisPanel.add(aiEndTimeField);
+        generalAnalysisPanel.add(new JLabel("To:")); // "To:"
         generalAnalysisPanel.add(aiAnalyzeButton);
 
-
-        // Panel for Summary-Based AI Analysis (NEW)
         JPanel summaryAnalysisPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        aiPersonalSummaryButton = new JButton("个人消费总结"); // New button
-        aiSavingsGoalsButton = new JButton("储蓄目标建议"); // New button
-        aiPersonalSavingTipsButton = new JButton("个性化节约建议"); // New button
+        aiPersonalSummaryButton = new JButton("Personal Spending Summary"); // "Personal Spending Summary"
+        aiSavingsGoalsButton = new JButton("Savings Goal Suggestions");   // "Savings Goal Suggestions"
+        aiPersonalSavingTipsButton = new JButton("Personalized Saving Tips"); // "Personalized Saving Tips"
 
-        summaryAnalysisPanel.add(new JLabel("基于月度总结分析:"));
+        summaryAnalysisPanel.add(new JLabel("Based on Monthly Summary Analysis:")); // "Based on Monthly Summary Analysis:"
         summaryAnalysisPanel.add(aiPersonalSummaryButton);
         summaryAnalysisPanel.add(aiSavingsGoalsButton);
         summaryAnalysisPanel.add(aiPersonalSavingTipsButton);
 
-
-        // Panel for College Student Needs buttons (existing)
-        JPanel csButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10)); // Align left for consistency
-        aiBudgetButton = new JButton("预算建议"); // Clarify this is student-specific
-        aiTipsButton = new JButton("省钱技巧"); // Clarify this is student-specific
-        csButtonsPanel.add(new JLabel("专属功能:"));
+        JPanel csButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        aiBudgetButton = new JButton("Budget Suggestion (Student)"); // "Budget Suggestion (Student)"
+        aiTipsButton = new JButton("Saving Tips (Student)");       // "Saving Tips (Student)"
+        csButtonsPanel.add(new JLabel("Student-Specific Features:")); // "Student-Specific Features:"
         csButtonsPanel.add(aiBudgetButton);
         csButtonsPanel.add(aiTipsButton);
 
-
-        // Combine all control panels in a box layout
         JPanel topControlPanel = new JPanel();
         topControlPanel.setLayout(new BoxLayout(topControlPanel, BoxLayout.Y_AXIS));
         topControlPanel.add(generalAnalysisPanel);
-        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing
-        topControlPanel.add(summaryAnalysisPanel); // Add new panel
-        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing
-        topControlPanel.add(csButtonsPanel); // Add existing CS panel
-        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing
-
+        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        topControlPanel.add(summaryAnalysisPanel);
+        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        topControlPanel.add(csButtonsPanel);
+        topControlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         panel.add(topControlPanel, BorderLayout.NORTH);
-
-        // Center area for displaying AI results - same as before
         aiResultArea = new JTextArea();
-        aiResultArea.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+        aiResultArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14)); // "Microsoft YaHei" is a common font name for Chinese
         aiResultArea.setLineWrap(true);
         aiResultArea.setWrapStyleWord(true);
         aiResultArea.setEditable(false);
-        aiResultArea.setText("欢迎使用AI个人财务分析功能。\n\n" +
-                "您可以尝试以下操作：\n" +
-                "1. 在上方输入框提出通用分析要求（基于原始数据，可指定时间范围），点击\"通用分析\"。\n" +
-                "2. 点击\"个人消费总结\"，获取基于您月度收支汇总的详细总结。\n" +
-                "3. 点击\"储蓄目标建议\"，获取基于您收支情况的储蓄建议。\n" +
-                "4. 点击\"个性化节约建议\"，获取基于您消费类别的节约建议。\n" +
-                "5. 用户可点击\"预算建议\"和\"省钱技巧\"获取专属建议。\n");
-
+        aiResultArea.setText("Welcome to the AI Personal Finance Analysis feature.\n\n" +
+                "You can try the following operations:\n" +
+                "1. Enter a general analysis request in the input field above (based on raw data, time range can be specified), then click \"General Analysis\".\n" +
+                "2. Click \"Personal Spending Summary\" to get a detailed summary based on your monthly income and expenses.\n" +
+                "3. Click \"Savings Goal Suggestions\" to get savings advice based on your income and expenditure situation.\n" +
+                "4. Click \"Personalized Saving Tips\" to get saving advice based on your spending categories.\n" +
+                "5. Student users can click \"Budget Suggestion\" and \"Saving Tips\" for exclusive advice.\n");
 
         JScrollPane resultScrollPane = new JScrollPane(aiResultArea);
         panel.add(resultScrollPane, BorderLayout.CENTER);
 
-
-        // --- Add Action Listeners for NEW Buttons ---
-
         aiPersonalSummaryButton.addActionListener(e -> {
-            aiResultArea.setText("--- 个人消费总结生成中 ---\n\n正在根据您的月度消费数据生成总结，请稍候...\n");
+            aiResultArea.setText("--- Generating Personal Spending Summary ---\n\nGenerating summary based on your monthly spending data, please wait...\n");
             setAIButtonsEnabled(false);
-
             new Thread(() -> {
-                String result = aiTransactionService.generatePersonalSummary(currentUser.getTransactionFilePath()); // Call the new method
-
+                String result = aiTransactionService.generatePersonalSummary(currentUser.getTransactionFilePath());
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 个人消费总结 ---\n\n" + result);
+                    aiResultArea.setText("--- Personal Spending Summary ---\n\n" + result);
                     setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
         aiSavingsGoalsButton.addActionListener(e -> {
-            aiResultArea.setText("--- 储蓄目标建议生成中 ---\n\n正在根据您的收支情况生成储蓄目标建议，请稍候...\n");
+            aiResultArea.setText("--- Generating Savings Goal Suggestions ---\n\nGenerating savings goal suggestions based on your income and expenses, please wait...\n");
             setAIButtonsEnabled(false);
-
             new Thread(() -> {
-                String result = aiTransactionService.suggestSavingsGoals(currentUser.getTransactionFilePath()); // Call the new method
-
+                String result = aiTransactionService.suggestSavingsGoals(currentUser.getTransactionFilePath());
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 储蓄目标建议 ---\n\n" + result);
+                    aiResultArea.setText("--- Savings Goal Suggestions ---\n\n" + result);
                     setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
         aiPersonalSavingTipsButton.addActionListener(e -> {
-            aiResultArea.setText("--- 个性化节约建议生成中 ---\n\n正在根据您的消费类别生成节约建议，请稍候...\n");
+            aiResultArea.setText("--- Generating Personalized Saving Tips ---\n\nGenerating saving tips based on your spending categories, please wait...\n");
             setAIButtonsEnabled(false);
-
             new Thread(() -> {
-                String result = aiTransactionService.givePersonalSavingTips(currentUser.getTransactionFilePath()); // Call the new method
-
+                String result = aiTransactionService.givePersonalSavingTips(currentUser.getTransactionFilePath());
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 个性化节约建议 ---\n\n" + result);
+                    aiResultArea.setText("--- Personalized Saving Tips ---\n\n" + result);
                     setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
-
-        // --- Action Listeners for EXISTING Buttons (UPDATE PROMPTS/HEADERS) ---
-        // Update existing listeners to use better headers/messages
-
-        // General Analyze Button
         aiAnalyzeButton.addActionListener(e -> {
             String userRequest = userRequestField.getText().trim();
             String startTimeStr = aiStartTimeField.getText().trim();
             String endTimeStr = aiEndTimeField.getText().trim();
-
             if (userRequest.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "请输入AI通用分析要求。", "输入提示", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Please enter the AI general analysis request.", "Input Tip", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
             if (startTimeStr.isEmpty() && !endTimeStr.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "请至少输入分析的开始时间。", "输入提示", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Please enter at least the start time for the analysis.", "Input Tip", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-
-
-            aiResultArea.setText("--- 通用分析生成中 ---\n\n" + "正在进行AI通用分析，请稍候...\n");
+            aiResultArea.setText("--- Generating General Analysis ---\n\n" + "Performing AI general analysis, please wait...\n");
             setAIButtonsEnabled(false);
-
-
             new Thread(() -> {
                 String result = aiTransactionService.analyzeTransactions(userRequest, currentUser.getTransactionFilePath(), startTimeStr, endTimeStr);
-
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 通用分析结果 ---\n\n" + result);
+                    aiResultArea.setText("--- General Analysis Result ---\n\n" + result);
                     setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
-        // College Student Budget Button
         aiBudgetButton.addActionListener(e -> {
-            aiResultArea.setText("--- 预算建议生成中 ---\n\n正在根据您的历史支出生成预算建议，请稍候...\n");
+            aiResultArea.setText("--- Generating Student Budget Suggestion ---\n\nGenerating budget suggestion based on your historical spending, please wait...\n");
             setAIButtonsEnabled(false);
-
             new Thread(() -> {
                 String resultMessage;
                 try {
                     double[] budgetRange = collegeStudentNeeds.generateBudget(currentUser.getTransactionFilePath());
                     if (budgetRange != null && budgetRange.length == 2 && budgetRange[0] != -1) {
-                        resultMessage = String.format("根据您的消费记录，下周的建议预算范围是: [%.2f元, %.2f元]", budgetRange[0], budgetRange[1]);
+                        resultMessage = String.format("Based on your spending records, the recommended budget range for next week is: [%.2f CNY, %.2f CNY]", budgetRange[0], budgetRange[1]);
                     } else if (budgetRange != null && budgetRange.length == 2 && budgetRange[0] == -1) {
-                        resultMessage = "暂无足够的消费记录来计算周预算建议。";
+                        resultMessage = "Not enough spending records to calculate weekly budget suggestions.";
                     }
                     else {
-                        resultMessage = "生成预算建议失败，AI未能返回有效范围。";
+                        resultMessage = "Failed to generate budget suggestion, AI did not return a valid range.";
                         System.err.println("AI Budget generation failed, invalid response format.");
                     }
                 } catch (Exception ex) {
-                    resultMessage = "生成预算建议失败！\n" + ex.getMessage();
+                    resultMessage = "Failed to generate budget suggestion!\n" + ex.getMessage();
                     System.err.println("Error generating AI budget:");
                     ex.printStackTrace();
                 }
-
                 String finalResultMessage = resultMessage;
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 预算建议 ---\n\n" + finalResultMessage);
+                    aiResultArea.setText("--- Student Budget Suggestion ---\n\n" + finalResultMessage);
                     setAIButtonsEnabled(true);
                 });
             }).start();
         });
 
-        // College Student Tips Button
         aiTipsButton.addActionListener(e -> {
-            aiResultArea.setText("--- 省钱技巧生成中 ---\n\n正在生成省钱技巧，请稍候...\n");
+            aiResultArea.setText("--- Generating Student Saving Tips ---\n\nGenerating saving tips, please wait...\n");
             setAIButtonsEnabled(false);
-
             new Thread(() -> {
                 String resultMessage;
                 try {
-                    // Call the CollegeStudentNeeds method (now uses monthly summary)
                     resultMessage = collegeStudentNeeds.generateTipsForSaving(currentUser.getTransactionFilePath());
-
                 } catch (Exception ex) {
-                    resultMessage = "生成省钱技巧失败！\n" + ex.getMessage();
+                    resultMessage = "Failed to generate saving tips!\n" + ex.getMessage();
                     System.err.println("Error generating AI tips:");
                     ex.printStackTrace();
                 }
-
                 String finalResultMessage = resultMessage;
                 SwingUtilities.invokeLater(() -> {
-                    aiResultArea.setText("--- 省钱技巧 ---\n\n" + finalResultMessage);
+                    aiResultArea.setText("--- Student Saving Tips ---\n\n" + finalResultMessage);
                     setAIButtonsEnabled(true);
                 });
             }).start();
         });
-
-
         return panel;
     }
 
-    // Helper method to enable/disable all AI related buttons - UPDATED
     private void setAIButtonsEnabled(boolean enabled) {
         if (aiAnalyzeButton != null) aiAnalyzeButton.setEnabled(enabled);
         if (aiBudgetButton != null) aiBudgetButton.setEnabled(enabled);
         if (aiTipsButton != null) aiTipsButton.setEnabled(enabled);
-        // Enable/disable new buttons
         if (aiPersonalSummaryButton != null) aiPersonalSummaryButton.setEnabled(enabled);
         if (aiSavingsGoalsButton != null) aiSavingsGoalsButton.setEnabled(enabled);
         if (aiPersonalSavingTipsButton != null) aiPersonalSavingTipsButton.setEnabled(enabled);
     }
 
-
-    // Method to create the Admin Stats panel (Implement the placeholder)
     private JPanel createAdminStatsPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        generateStatsButton = new JButton("生成/更新统计数据"); // Assign to instance field
-        refreshDisplayButton = new JButton("刷新显示"); // Assign to instance field
-
+        generateStatsButton = new JButton("Generate/Update Statistics"); // "Generate/Update Statistics"
+        refreshDisplayButton = new JButton("Refresh Display");        // "Refresh Display"
         controlPanel.add(generateStatsButton);
         controlPanel.add(refreshDisplayButton);
-
         panel.add(controlPanel, BorderLayout.NORTH);
-
-        adminStatsArea = new JTextArea(); // Assign to instance field
-        adminStatsArea.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+        adminStatsArea = new JTextArea();
+        adminStatsArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14)); // "Microsoft YaHei"
         adminStatsArea.setEditable(false);
-        adminStatsArea.setLineWrap(true); // Enable line wrapping
-        adminStatsArea.setWrapStyleWord(true); // Wrap at word boundaries
+        adminStatsArea.setLineWrap(true);
+        adminStatsArea.setWrapStyleWord(true);
         JScrollPane scrollPane = new JScrollPane(adminStatsArea);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-
         generateStatsButton.addActionListener(e -> {
-            adminStatsArea.setText("正在生成/更新汇总统计数据，请稍候...\n");
+            adminStatsArea.setText("Generating/Updating summary statistics, please wait...\n"); // "Generating/Updating summary statistics, please wait...\n"
             generateStatsButton.setEnabled(false);
             refreshDisplayButton.setEnabled(false);
-
             new Thread(() -> {
                 String message;
                 try {
-                    // Use the injected SummaryStatisticService
                     summaryStatisticService.generateAndSaveWeeklyStatistics();
-                    message = "汇总统计数据生成/更新成功！\n请点击 '刷新显示' 查看最新数据。";
+                    message = "Summary statistics generated/updated successfully!\nPlease click 'Refresh Display' to view the latest data."; // "Summary statistics generated/updated successfully!\nPlease click 'Refresh Display' to view the latest data."
                     System.out.println(message);
                 } catch (Exception ex) {
-                    message = "汇总统计数据生成/更新失败！\n" + ex.getMessage();
+                    message = "Failed to generate/update summary statistics!\n" + ex.getMessage(); // "Failed to generate/update summary statistics!\n"
                     System.err.println(message);
                     ex.printStackTrace();
                 }
-
                 String finalMessage = message;
                 SwingUtilities.invokeLater(() -> {
                     adminStatsArea.setText(finalMessage);
@@ -1309,132 +939,99 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
             displaySummaryStatistics();
         });
 
-        // Initial display when the panel is first shown (Optional)
-        // Load existing stats when the panel is created, before it's potentially shown
-        // This avoids a blank screen initially.
         new Thread(() -> {
-            SwingUtilities.invokeLater(() -> adminStatsArea.setText("正在加载现有统计数据...\n"));
+            SwingUtilities.invokeLater(() -> adminStatsArea.setText("Loading existing statistics...\n")); // "Loading existing statistics...\n"
             try {
                 List<SummaryStatistic> initialStats = summaryStatisticService.getAllSummaryStatistics();
                 if (!initialStats.isEmpty()) {
-                    // If initial stats exist, display them
                     SwingUtilities.invokeLater(this::displaySummaryStatistics);
                 } else {
-                    SwingUtilities.invokeLater(() -> adminStatsArea.setText("没有找到现有的汇总统计数据。\n请点击 '生成/更新统计数据' 按钮来生成。"));
+                    SwingUtilities.invokeLater(() -> adminStatsArea.setText("No existing summary statistics found.\nPlease click the 'Generate/Update Statistics' button to generate them.")); // "No existing summary statistics found.\nPlease click the 'Generate/Update Statistics' button to generate them."
                 }
             } catch (IOException ex) {
-                SwingUtilities.invokeLater(() -> adminStatsArea.setText("加载现有统计数据失败！\n" + ex.getMessage()));
+                SwingUtilities.invokeLater(() -> adminStatsArea.setText("Failed to load existing statistics!\n" + ex.getMessage())); // "Failed to load existing statistics!\n"
                 ex.printStackTrace();
             }
         }).start();
-
-
         return panel;
     }
 
-    // Method to display summary statistics (Implement the placeholder)
     private void displaySummaryStatistics() {
-        adminStatsArea.setText("正在加载汇总统计数据...\n");
-        // Optional: Disable buttons while loading
+        adminStatsArea.setText("Loading summary statistics...\n"); // "Loading summary statistics...\n"
         if(generateStatsButton != null) generateStatsButton.setEnabled(false);
         if(refreshDisplayButton != null) refreshDisplayButton.setEnabled(false);
-
 
         new Thread(() -> {
             String displayContent;
             try {
                 List<SummaryStatistic> stats = summaryStatisticService.getAllSummaryStatistics();
                 if (stats.isEmpty()) {
-                    displayContent = "目前没有汇总统计数据。\n请先点击 '生成/更新统计数据' 按钮。";
+                    displayContent = "No summary statistics currently available.\nPlease click the 'Generate/Update Statistics' button first."; // "No summary statistics currently available.\nPlease click the 'Generate/Update Statistics' button first."
                 } else {
-                    StringBuilder sb = new StringBuilder("===== 汇总统计数据 =====\n\n");
-                    // Sort stats by week identifier (chronologically) before displaying
+                    StringBuilder sb = new StringBuilder("===== Summary Statistics =====\n\n"); // "===== Summary Statistics =====\n\n"
                     stats.sort(Comparator.comparing(SummaryStatistic::getWeekIdentifier));
-
-                    // Display newest week first
                     for (int i = stats.size() - 1; i >= 0; i--) {
                         SummaryStatistic stat = stats.get(i);
-                        sb.append("周标识: ").append(stat.getWeekIdentifier()).append("\n");
-                        sb.append("  总收入: ").append(String.format("%.2f", stat.getTotalIncomeAllUsers())).append("元\n");
-                        sb.append("  总支出: ").append(String.format("%.2f", stat.getTotalExpenseAllUsers())).append("元\n");
-                        // Only show top category if there was actual expense in that category
+                        sb.append("Week Identifier: ").append(stat.getWeekIdentifier()).append("\n"); // "Week Identifier: "
+                        sb.append("  Total Income: ").append(String.format("%.2f", stat.getTotalIncomeAllUsers())).append(" CNY\n"); // "  Total Income: " ... " CNY\n"
+                        sb.append("  Total Expense: ").append(String.format("%.2f", stat.getTotalExpenseAllUsers())).append(" CNY\n"); // "  Total Expense: " ... " CNY\n"
                         if (stat.getTopExpenseCategoryAmount() > 0) {
-                            sb.append("  最高支出类别: ").append(stat.getTopExpenseCategory()).append(" (").append(String.format("%.2f", stat.getTopExpenseCategoryAmount())).append("元)\n");
+                            sb.append("  Top Expense Category: ").append(stat.getTopExpenseCategory()).append(" (").append(String.format("%.2f", stat.getTopExpenseCategoryAmount())).append(" CNY)\n"); // "  Top Expense Category: " ... " CNY)\n"
                         } else {
-                            sb.append("  最高支出类别: 无显著支出类别\n"); // Or "无支出" if total expense is 0
+                            sb.append("  Top Expense Category: No significant expense category\n"); // "  Top Expense Category: No significant expense category\n"
                         }
-
-                        sb.append("  参与用户数: ").append(stat.getNumberOfUsersWithTransactions()).append("\n");
-                        sb.append("  生成时间: ").append(stat.getTimestampGenerated()).append("\n");
+                        sb.append("  Number of Participating Users: ").append(stat.getNumberOfUsersWithTransactions()).append("\n"); // "  Number of Participating Users: "
+                        sb.append("  Generated Time: ").append(stat.getTimestampGenerated()).append("\n"); // "  Generated Time: "
                         sb.append("--------------------\n");
                     }
                     displayContent = sb.toString();
                 }
             } catch (IOException ex) {
-                displayContent = "加载汇总统计数据失败！\n" + ex.getMessage();
+                displayContent = "Failed to load summary statistics!\n" + ex.getMessage(); // "Failed to load summary statistics!\n"
                 ex.printStackTrace();
             }
-
             String finalDisplayContent = displayContent;
             SwingUtilities.invokeLater(() -> {
                 adminStatsArea.setText(finalDisplayContent);
-                // Re-enable buttons
                 if(generateStatsButton != null) generateStatsButton.setEnabled(true);
                 if(refreshDisplayButton != null) refreshDisplayButton.setEnabled(true);
             });
         }).start();
     }
 
-    // Method to delete row - get data from tableModel (remove allData usage)
     public void deleteRow(int rowIndex) {
-        System.out.println("尝试删除行: " + rowIndex + " for user " + currentUser.getUsername());
-        if (rowIndex >= 0 && rowIndex < this.tableModel.getRowCount()) { // Use tableModel row count
-
-            // Get the order number directly from the displayed table row
-            String orderNumber = (String) this.tableModel.getValueAt(rowIndex, 8); // OrderNumber is at index 8
+        System.out.println("Attempting to delete row: " + rowIndex + " for user " + currentUser.getUsername());
+        if (rowIndex >= 0 && rowIndex < this.tableModel.getRowCount()) {
+            String orderNumber = (String) this.tableModel.getValueAt(rowIndex, 8);
             if (orderNumber == null || orderNumber.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(null, "无法删除：交易单号为空！", "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Cannot delete: Order Number is empty!", "Error", JOptionPane.ERROR_MESSAGE);
                 System.err.println("Attempted to delete row " + rowIndex + " but order number is null or empty.");
-                return; // Cannot delete without an order number
+                return;
             }
             orderNumber = orderNumber.trim();
             System.out.println("Deleting transaction with order number: " + orderNumber);
-
-            // Optional: Ask for confirmation before deleting
             int confirm = JOptionPane.showConfirmDialog(
-                    this, // Parent component
-                    "确定要删除订单号为 '" + orderNumber + "' 的交易吗？",
-                    "确认删除",
+                    this,
+                    "Are you sure you want to delete the transaction with order number '" + orderNumber + "'?", // "Are you sure you want to delete the transaction with order number '" ... "'?"
+                    "Confirm Delete", // "Confirm Delete"
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE
             );
-
             if (confirm == JOptionPane.YES_OPTION) {
                 try {
-                    // Use the injected transactionService instance
                     boolean deleted = transactionService.deleteTransaction(orderNumber);
-
                     if (deleted) {
-                        // Data is removed from CSV and cache invalidated by service.
-                        // Update the UI model directly by removing the row.
-                        // This is faster than reloading all data for just one deletion.
                         this.tableModel.removeRow(rowIndex);
-
-                        JOptionPane.showMessageDialog(null, "删除成功！", "提示", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Delete successful!", "Information", JOptionPane.INFORMATION_MESSAGE); // "Delete successful!"
                         System.out.println("Deleted row " + rowIndex + " with order number " + orderNumber + " from UI.");
-
-                        // After delete, refresh the view by re-applying the current search/filter criteria.
                         triggerCurrentSearch();
-
                     } else {
-                        // This case means the service said it wasn't deleted (likely not found)
-                        // This might happen if the underlying data changed between loading and deleting
-                        JOptionPane.showMessageDialog(null, "删除失败：未找到对应的交易单号 " + orderNumber, "错误", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Delete failed: Corresponding order number " + orderNumber + " not found", "Error", JOptionPane.ERROR_MESSAGE); // "Delete failed: Corresponding order number " ... " not found"
                         System.err.println("Delete failed: order number " + orderNumber + " not found by service.");
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "删除失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Delete failed!\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // "Delete failed!\n"
                     System.err.println("Error during deletion for order number " + orderNumber);
                 }
             } else {
@@ -1445,7 +1042,6 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         }
     }
 
-    // Method to create table row from Transaction object - no changes needed here
     private Vector<String> createRowFromTransaction(Transaction transaction) {
         Vector<String> row = new Vector<>();
         row.add(emptyIfNull(transaction.getTransactionTime()));
@@ -1464,19 +1060,15 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
         return row;
     }
 
-    // Method to search data - same as before
     public void searchData(String query1, String query2, String query3, String query4, String query6, String query5) {
-        // ... existing implementation ...
         System.out.println("Searching with criteria: time='" + query1 + "', type='" + query2 + "', counterparty='" + query3 + "', commodity='" + query4 + "', inOut='" + query6 + "', paymentMethod='" + query5 + "'");
         this.tableModel.setRowCount(0);
-
         Transaction searchCriteria = new Transaction(
                 query1, query2, query3, query4, query6,
                 0,
                 query5,
                 "", "", "", ""
         );
-
         try {
             List<Transaction> transactions = transactionService.searchTransaction(searchCriteria);
             System.out.println("Search results count: " + transactions.size());
@@ -1484,15 +1076,12 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
                 Vector<String> row = createRowFromTransaction(transaction);
                 this.tableModel.addRow(row);
             }
-
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "查询失败！\n" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Search failed!\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // "Search failed!\n"
         }
     }
 
-
-    // ... safeParseDouble, clearSearchFields, triggerCurrentSearch, emptyIfNull, getTable methods ...
     private double safeParseDouble(String value) {
         if (value == null || value.trim().isEmpty()) return 0.0;
         try { return Double.parseDouble(value.trim()); }
@@ -1524,5 +1113,4 @@ public class MenuUI extends JPanel { // Extend JPanel for easier use in Main (op
     public JTable getTable() {
         return table;
     }
-
 }

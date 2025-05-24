@@ -1,7 +1,8 @@
-交易时间,交易类型,交易对方,商品,收/支,金额(元),支付方式,当前状态,交易单号,商户单号,备注
-2025/03/01 09:00:00,工资,公司B,三月工资,收入,¥10000.00,银行卡,已入账,SALARY_MAR_A,PAYROLL_A_001,本月基本工资
-2025/03/05 14:30:00,购物,超市B,食品杂货,支出,¥250.50,支付宝,已完成,SHOP_B_001,ALIPAY_12345,周末采购
-2025/03/15 11:00:00,餐饮,餐厅C,午餐外卖,支出,¥35.75,美团支付,已完成,MEAL_C_001,MEITUAN_11223,工作日午餐
-2025/03/20 16:00:00,金融服务,股票账户,购入股票,支出,¥5000.00,美团支付,已完成,INVEST_STOCK_001,BANK_99887,长期投资
-2022/09/10 16:00:00,投资,股票账户,购入股票,支出,¥5000.00,同花顺,未完成,INVEST_STOCK_002,BANK_99887,短线投资
-2025/03/10 10:00:00,转账,用户1,报销午餐,支出,¥50.00,微信支付,已完成,TRANSFER_U1_001,WECHAT_56789,归还午餐费
+Transaction Time,Transaction Type,Counterparty,Commodity,In/Out,Amount(CNY),Payment Method,Current Status,Order Number,Merchant Number,Remarks
+2025/03/01 09:00:00,Salary,Company A,March Salary,Income,¥10000.00,Bank Card,Credited,SALARY_MAR_A,PAYROLL_A_001,This month's base salary
+2025/03/05 14:30:00,Groceries,Supermarket B,Groceries,Expense,¥250.50,Alipay,Completed,SHOP_B_001,ALIPAY_12345,Weekend shopping
+2025/03/15 11:00:00,Dining,Restaurant C,Lunch Takeaway,Expense,¥35.75,Meituan Pay,Completed,MEAL_C_001,MEITUAN_11223,Workday lunch
+2025/03/20 16:00:00,Financial Services,Stock Account,Stock Purchase,Expense,¥5000.00,Meituan Pay,Completed,INVEST_STOCK_001,BANK_99887,Long-term investment
+2022/09/10 16:00:00,Investment,Stock Account,Stock Purchase,Expense,¥5000.00,TongHuaShun,Pending,INVEST_STOCK_002,BANK_99887,Short-term investment
+2025/03/10 10:00:00,Transfer,User 1,Lunch Reimbursement,Expense,¥50.00,WeChat Pay,Completed,TRANSFER_U1_001,WECHAT_56789,Returning lunch money
+2025/03/10 10:00:00,Transfer,BUPT,ASS,Income,¥2000.00,AliPay,Completed,1,1,Wow!

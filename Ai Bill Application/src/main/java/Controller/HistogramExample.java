@@ -5,7 +5,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Random;
 
-// 数据生成类
+// Data Generation Class
 class DataGenerator {
     public static int[] generateData(int numberOfDataPoints, int maxValue) {
         Random random = new Random();
@@ -17,7 +17,7 @@ class DataGenerator {
     }
 }
 
-// 直方图计算类
+// Histogram Calculation Class
 class Histogram {
     private int binSize;
     private int[] data;
@@ -37,7 +37,7 @@ class Histogram {
     }
 }
 
-// 直方图 GUI 绘制类
+// Histogram GUI Drawing Class
 class HistogramPanel extends JPanel {
     HashMap<Integer, Integer> frequencyMap;
 
@@ -71,14 +71,26 @@ class HistogramPanel extends JPanel {
 }
 
 
-// 主窗口类
+// Main Window Class
 public class HistogramExample {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("数据分析界面");
+            JFrame frame = new JFrame("Data Analysis Interface"); // "数据分析界面"
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(800, 600);
-            frame.add(new HistogramPanelContainer());
+            // Assuming HistogramPanelContainer is defined elsewhere or if it's a typo and should be HistogramPanel
+            // If HistogramPanelContainer is a separate class, its content is not provided for translation.
+            // For now, I'll assume it might be a placeholder for HistogramPanel or a similar container.
+            // If HistogramPanel itself is to be added:
+            // HistogramPanel histogramPanel = new HistogramPanel();
+            // // Example data for histogram (if not loaded through a container)
+            // int[] data = DataGenerator.generateData(100, 100);
+            // Histogram histogram = new Histogram(data, 10);
+            // histogramPanel.updateData(histogram.computeFrequency());
+            // frame.add(histogramPanel);
+            // If HistogramPanelContainer is a real class, its name implies it contains HistogramPanel.
+            // The user will need to provide that class if its internal strings/comments need translation.
+            frame.add(new HistogramPanelContainer()); // This line remains, assuming HistogramPanelContainer exists
             frame.setVisible(true);
         });
     }

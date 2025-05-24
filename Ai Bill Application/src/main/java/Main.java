@@ -71,9 +71,9 @@ public class Main {
                 MenuUI menuUI = new MenuUI(authenticatedUser, transactionServiceForCurrentUser, summaryStatisticService, aiTransactionService, collegeStudentNeeds); // Modify MenuUI constructor
 
 
-                JFrame frame = new JFrame("交易管理系统 - " + authenticatedUser.getUsername());
+                JFrame frame = new JFrame("Transaction Management System - " + authenticatedUser.getUsername());
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setSize(1500, 800);
+                frame.setSize(2000, 1500);
                 frame.setLocationRelativeTo(null);
                 frame.add(menuUI.createMainPanel());
                 frame.setVisible(true);

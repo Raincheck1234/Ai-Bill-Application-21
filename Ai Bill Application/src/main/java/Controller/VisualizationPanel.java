@@ -35,6 +35,12 @@ public class VisualizationPanel extends JPanel {
     private JButton generateChartButton;
     private JPanel chartDisplayPanel;
 
+    // Define string constants for chart types to avoid magic strings in comparisons
+    private static final String SELECT_CHART_TYPE_PROMPT = "Select Chart Type";
+    private static final String MONTHLY_EXPENSE_PIE_CHART = "Monthly Expense Category Pie Chart";
+    private static final String MONTHLY_TREND_BAR_CHART = "Monthly Income/Expense Trend Bar Chart";
+    private static final String SELECT_MONTH_PROMPT = "Select Month";
+
 
     /**
      * Constructor to inject the TransactionService.
@@ -48,17 +54,17 @@ public class VisualizationPanel extends JPanel {
         // --- Control Panel (Top) ---
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
 
-        chartTypeSelector = new JComboBox<>(new String[]{"请选择图表类型", "月度支出分类饼图", "月度收支趋势柱状图"});
-        controlPanel.add(new JLabel("图表类型:"));
+        chartTypeSelector = new JComboBox<>(new String[]{SELECT_CHART_TYPE_PROMPT, MONTHLY_EXPENSE_PIE_CHART, MONTHLY_TREND_BAR_CHART});
+        controlPanel.add(new JLabel("Chart Type:"));
         controlPanel.add(chartTypeSelector);
 
         monthSelector = new JComboBox<>();
         monthSelector.setEnabled(false);
-        controlPanel.add(new JLabel("选择月份:"));
+        controlPanel.add(new JLabel("Select Month:"));
         controlPanel.add(monthSelector);
 
 
-        generateChartButton = new JButton("生成图表");
+        generateChartButton = new JButton("Generate Chart");
         controlPanel.add(generateChartButton);
 
         add(controlPanel, BorderLayout.NORTH);
@@ -73,14 +79,14 @@ public class VisualizationPanel extends JPanel {
         // --- Action Listeners ---
         chartTypeSelector.addActionListener(e -> {
             String selectedType = (String) chartTypeSelector.getSelectedItem();
-            boolean needsMonth = "月度支出分类饼图".equals(selectedType);
+            boolean needsMonth = MONTHLY_EXPENSE_PIE_CHART.equals(selectedType);
             monthSelector.setEnabled(needsMonth);
             // Populate months only when Pie Chart is selected
             if (needsMonth) {
                 populateMonthSelector();
             } else {
                 monthSelector.removeAllItems(); // Clear months if not needed
-                monthSelector.addItem("请选择月份"); // Add default item back
+                monthSelector.addItem(SELECT_MONTH_PROMPT); // Add default item back
             }
         });
 
@@ -89,10 +95,8 @@ public class VisualizationPanel extends JPanel {
         });
 
         // Initial state display
-        displayPlaceholderChart("请选择一种图表类型和必要参数来生成图表。");
+        displayPlaceholderChart("Please select a chart type and necessary parameters to generate the chart.");
 
-        // Initial data loading if needed on panel creation - Let's load months when Pie Chart is selected
-        // populateMonthSelector(); // Removed, triggered by chart type selection
     }
 
     /**
@@ -100,22 +104,19 @@ public class VisualizationPanel extends JPanel {
      */
     private void populateMonthSelector() {
         monthSelector.removeAllItems();
-        monthSelector.addItem("请选择月份");
+        monthSelector.addItem(SELECT_MONTH_PROMPT);
 
         try {
             Map<String, MonthlySummary> summaries = transactionService.getMonthlyTransactionSummary();
             if (summaries != null && !summaries.isEmpty()) {
                 // Sort month identifiers chronologically
                 summaries.keySet().stream().sorted().forEach(monthSelector::addItem);
-                // monthSelector.setEnabled(true); // Enabled by chartTypeSelector listener
             } else {
-                // monthSelector.setEnabled(false); // Disabled by chartTypeSelector listener
-                JOptionPane.showMessageDialog(this, "没有找到月度交易数据来生成图表。", "数据不足", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No monthly transaction data found to generate charts.", "Insufficient Data", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (Exception e) {
             System.err.println("Error loading monthly summaries for month selector: " + e.getMessage());
-            // monthSelector.setEnabled(false); // Disabled by chartTypeSelector listener
-            JOptionPane.showMessageDialog(this, "加载月份数据失败！\n" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to load month data!\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -135,38 +136,37 @@ public class VisualizationPanel extends JPanel {
         try {
             Map<String, MonthlySummary> summaries = transactionService.getMonthlyTransactionSummary();
             if (summaries == null || summaries.isEmpty()) {
-                displayPlaceholderChart("没有找到月度交易数据来生成图表。");
+                displayPlaceholderChart("No monthly transaction data found to generate charts.");
                 return;
             }
 
-            if ("月度支出分类饼图".equals(selectedChartType)) {
-                if (selectedMonth == null || selectedMonth.equals("请选择月份") || selectedMonth.trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "请选择要查看的月份。", "提示", JOptionPane.INFORMATION_MESSAGE);
-                    displayPlaceholderChart("请选择一个有效的月份来生成饼图。");
+            if (MONTHLY_EXPENSE_PIE_CHART.equals(selectedChartType)) {
+                if (selectedMonth == null || selectedMonth.equals(SELECT_MONTH_PROMPT) || selectedMonth.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Please select a month to view.", "Information", JOptionPane.INFORMATION_MESSAGE);
+                    displayPlaceholderChart("Please select a valid month to generate the pie chart.");
                     return;
                 }
                 // --- Generate Pie Chart ---
                 MonthlySummary selectedMonthSummary = summaries.get(selectedMonth);
                 if (selectedMonthSummary == null || selectedMonthSummary.getExpenseByCategory().isEmpty()) {
-                    displayPlaceholderChart(selectedMonth + " 月没有支出分类数据。");
+                    displayPlaceholderChart(selectedMonth + " has no expense category data.");
                     return;
                 }
 
                 System.out.println("Generating Pie Chart for " + selectedMonth + "...");
                 PieChart chart = new PieChartBuilder()
-                        .width(chartDisplayPanel.getWidth())
-                        .height(chartDisplayPanel.getHeight())
-                        .title(selectedMonth + " 月支出分类")
+                        .width(chartDisplayPanel.getWidth() > 0 ? chartDisplayPanel.getWidth() : 600) // Ensure width > 0
+                        .height(chartDisplayPanel.getHeight() > 0 ? chartDisplayPanel.getHeight() : 400) // Ensure height > 0
+                        .title(selectedMonth + " Expense Categories")
                         .build();
 
                 selectedMonthSummary.getExpenseByCategory().entrySet().stream()
                         .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
                         .forEach(entry -> chart.addSeries(entry.getKey(), entry.getValue()));
 
-                // Customize chart style (optional - COMMENT OUT lines causing errors)
-                // chart.getStyler().setLegendVisible(true); // Keep if it works
-                // chart.getStyler().setAnnotationType(org.knowm.xchart.style.Styler.AnnotationType.LabelAndPercentage); // COMMENT OUT or FIX
-                // chart.getStyler().setDonutTogether(true); // COMMENT OUT or FIX
+                // Customize chart style
+                chart.getStyler().setLegendPosition(LegendPosition.OutsideE);
+
 
                 // Add the chart to the display panel
                 XChartPanel<PieChart> chartPanel = new XChartPanel<>(chart);
@@ -174,7 +174,7 @@ public class VisualizationPanel extends JPanel {
                 System.out.println("Pie Chart generated and displayed.");
 
 
-            } else if ("月度收支趋势柱状图".equals(selectedChartType)) {
+            } else if (MONTHLY_TREND_BAR_CHART.equals(selectedChartType)) {
                 // --- Generate Bar Chart (Category Chart) ---
                 System.out.println("Generating Monthly Income/Expense Trend Bar Chart...");
 
@@ -193,20 +193,19 @@ public class VisualizationPanel extends JPanel {
                 }
 
                 CategoryChart chart = new CategoryChartBuilder()
-                        .width(chartDisplayPanel.getWidth())
-                        .height(chartDisplayPanel.getHeight())
-                        .title("月度收支趋势")
-                        .xAxisTitle("月份")
-                        .yAxisTitle("金额 (元)")
+                        .width(chartDisplayPanel.getWidth() > 0 ? chartDisplayPanel.getWidth() : 800) // Ensure width > 0
+                        .height(chartDisplayPanel.getHeight() > 0 ? chartDisplayPanel.getHeight() : 500) // Ensure height > 0
+                        .title("Monthly Income/Expense Trend")
+                        .xAxisTitle("Month")
+                        .yAxisTitle("Amount (CNY)")
                         .build();
 
-                chart.addSeries("总收入", months, totalIncomes);
-                chart.addSeries("总支出", months, totalExpenses);
+                chart.addSeries("Total Income", months, totalIncomes);
+                chart.addSeries("Total Expense", months, totalExpenses);
 
-                // Customize chart style (optional - COMMENT OUT lines causing errors)
-                // chart.getStyler().setLegendPosition(LegendPosition.OutsideS); // Keep if it works
-                // chart.getStyler().setHasAnnotations(true); // COMMENT OUT or FIX
-                // chart.getStyler().setStacked(false); // Keep if it works
+                // Customize chart style
+                chart.getStyler().setLegendPosition(LegendPosition.OutsideS);
+                chart.getStyler().setStacked(false);
 
                 // Add the chart to the display panel
                 XChartPanel<CategoryChart> chartPanel = new XChartPanel<>(chart);
@@ -215,14 +214,14 @@ public class VisualizationPanel extends JPanel {
 
 
             } else {
-                displayPlaceholderChart("请选择一种图表类型和必要参数来生成图表。");
+                displayPlaceholderChart("Please select a chart type and necessary parameters to generate the chart.");
             }
 
         } catch (Exception e) {
             System.err.println("Error generating chart: " + selectedChartType);
             e.printStackTrace();
-            displayPlaceholderChart("生成图表失败！\n" + e.getMessage());
-            JOptionPane.showMessageDialog(this, "生成图表失败！\n" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+            displayPlaceholderChart("Failed to generate chart!\n" + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Failed to generate chart!\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } finally {
             chartDisplayPanel.revalidate();
             chartDisplayPanel.repaint();
@@ -237,7 +236,7 @@ public class VisualizationPanel extends JPanel {
         chartDisplayPanel.removeAll();
 
         JLabel placeholderLabel = new JLabel(message, SwingConstants.CENTER);
-        placeholderLabel.setFont(new Font("微软雅黑", Font.PLAIN, 16));
+        placeholderLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 16)); // Using a common font name
         chartDisplayPanel.add(placeholderLabel, BorderLayout.CENTER);
 
         chartDisplayPanel.revalidate();
@@ -248,16 +247,10 @@ public class VisualizationPanel extends JPanel {
     // Call this from MenuUI's ActionListener for the Visualization button
     public void refreshPanelData() {
         System.out.println("VisualizationPanel refreshPanelData called.");
-        // Populate month selector when the panel is visible
-        // It's populated by the chartTypeSelector listener when Pie chart is selected.
-        // So, no need to call populateMonthSelector here directly.
-
         // Reset chart type selector to default on refresh
-        chartTypeSelector.setSelectedItem("请选择图表类型");
-        // This action will trigger monthSelector logic
-
+        chartTypeSelector.setSelectedItem(SELECT_CHART_TYPE_PROMPT);
         // Display initial instruction message
-        displayPlaceholderChart("请选择一种图表类型和必要参数来生成图表。");
+        displayPlaceholderChart("Please select a chart type and necessary parameters to generate the chart.");
     }
 
 }

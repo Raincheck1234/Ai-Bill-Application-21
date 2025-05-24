@@ -29,7 +29,7 @@ public class AIAnalyzerThreadTest {
 
         AIAnalyzerThread analyzerThread = new AIAnalyzerThread(
                 aiService,
-                "分析我的支出",
+                "Analyze my spending",
                 testUser.getTransactionFilePath(),
                 "2025/03/01",
                 ""

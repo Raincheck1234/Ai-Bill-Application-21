@@ -39,67 +39,67 @@ public class SummaryStatisticService {
         System.out.println("SummaryStatisticService initialized. Summary file: " + summaryFilePath);
     }
 
-//    /**
-//     * Helper method to load all transactions from all user files.
-//     * Uses CacheManager to benefit from caching.
-//     * @param users List of all users.
-//     * @return A single list containing all transactions from all users.
-//     * @throws Exception If loading from any user file fails.
-//     */
-//    private List<Transaction> loadAllTransactionsFromAllUsers(List<User> users) throws Exception {
-//        List<Transaction> allTransactions = new ArrayList<>();
-//        for (User user : users) {
-//            String userFilePath = user.getTransactionFilePath();
-//            if (userFilePath != null && !userFilePath.trim().isEmpty()) {
-//                try {
-//                    // Use CacheManager to get transactions for this user's file
-//                    // Pass the transactionDao instance for the loader
-//                    List<Transaction> userTransactions = CacheManager.getTransactions(userFilePath, transactionDao);
-//                    allTransactions.addAll(userTransactions);
-//                    System.out.println("Loaded " + userTransactions.size() + " transactions for user: " + user.getUsername() + " from " + userFilePath);
-//                } catch (Exception e) {
-//                    System.err.println("Error loading transactions for user " + user.getUsername() + " from " + userFilePath + ". Skipping this user.");
-//                    e.printStackTrace();
-//                    // Decide whether to stop or continue if one user's file fails.
-//                    // Continuing is more robust for aggregate statistics.
-//                    // throw e; // Uncomment to stop processing if any user file fails
-//                }
-//            } else {
-//                System.out.println("User " + user.getUsername() + " has no transaction file path configured. Skipping.");
-//            }
-//        }
-//        return allTransactions;
-//    }
-//
-//
-//    /**
-//     * Helper method to group transactions by week identifier (YYYY-Www).
-//     * @param transactions The list of transactions.
-//     * @return A map where keys are week identifiers and values are lists of transactions in that week.
-//     */
-//    private Map<String, List<Transaction>> groupTransactionsByWeek(List<Transaction> transactions) {
-//        WeekFields weekFields = WeekFields.ISO; // ISO 8601 week numbering (Monday is the first day of the week)
-//        DateTimeFormatter weekFormatter = DateTimeFormatter.ofPattern("yyyy-'W'ww"); // Format as "YYYY-Www"
-//
-//        return transactions.stream()
-//                .filter(t -> t.getTransactionTime() != null && !t.getTransactionTime().trim().isEmpty()) // Filter out transactions with no time
-//                .collect(Collectors.groupingBy(t -> {
-//                    try {
-//                        // Safely parse the transaction date (only date part is needed for week)
-//                        // Need to ensure the parser is consistent with the one in TransactionServiceImpl/AITransactionService
-//                        // Let's re-use the safe parsing logic or ensure consistency.
-//                        // Simplest: Use a helper method for date parsing just for this service, matching expected formats.
-//                        LocalDate date = parseDateFromTransactionTime(t.getTransactionTime());
-//                        if (date != null) {
-//                            return date.format(weekFormatter); // Format date to week identifier
-//                        }
-//                    } catch (Exception e) {
-//                        System.err.println("Failed to parse date for week grouping: " + t.getTransactionTime() + ". Skipping transaction.");
-//                        // Transaction with unparseable date will be grouped under 'null' or skipped by filter
-//                    }
-//                    return "未知周"; // Group unparseable dates under an 'unknown' key
-//                }));
-//    }
+    /**
+     * Helper method to load all transactions from all user files.
+     * Uses CacheManager to benefit from caching.
+     * @param users List of all users.
+     * @return A single list containing all transactions from all users.
+     * @throws Exception If loading from any user file fails.
+     */
+    private List<Transaction> loadAllTransactionsFromAllUsers(List<User> users) throws Exception {
+        List<Transaction> allTransactions = new ArrayList<>();
+        for (User user : users) {
+            String userFilePath = user.getTransactionFilePath();
+            if (userFilePath != null && !userFilePath.trim().isEmpty()) {
+                try {
+                    // Use CacheManager to get transactions for this user's file
+                    // Pass the transactionDao instance for the loader
+                    List<Transaction> userTransactions = CacheManager.getTransactions(userFilePath, transactionDao);
+                    allTransactions.addAll(userTransactions);
+                    System.out.println("Loaded " + userTransactions.size() + " transactions for user: " + user.getUsername() + " from " + userFilePath);
+                } catch (Exception e) {
+                    System.err.println("Error loading transactions for user " + user.getUsername() + " from " + userFilePath + ". Skipping this user.");
+                    e.printStackTrace();
+                    // Decide whether to stop or continue if one user's file fails.
+                    // Continuing is more robust for aggregate statistics.
+                    // throw e; // Uncomment to stop processing if any user file fails
+                }
+            } else {
+                System.out.println("User " + user.getUsername() + " has no transaction file path configured. Skipping.");
+            }
+        }
+        return allTransactions;
+    }
+
+
+    /**
+     * Helper method to group transactions by week identifier (YYYY-Www).
+     * @param transactions The list of transactions.
+     * @return A map where keys are week identifiers and values are lists of transactions in that week.
+     */
+    private Map<String, List<Transaction>> groupTransactionsByWeek(List<Transaction> transactions) {
+        WeekFields weekFields = WeekFields.ISO; // ISO 8601 week numbering (Monday is the first day of the week)
+        DateTimeFormatter weekFormatter = DateTimeFormatter.ofPattern("yyyy-'W'ww"); // Format as "YYYY-Www"
+
+        return transactions.stream()
+                .filter(t -> t.getTransactionTime() != null && !t.getTransactionTime().trim().isEmpty()) // Filter out transactions with no time
+                .collect(Collectors.groupingBy(t -> {
+                    try {
+                        // Safely parse the transaction date (only date part is needed for week)
+                        // Need to ensure the parser is consistent with the one in TransactionServiceImpl/AITransactionService
+                        // Let's re-use the safe parsing logic or ensure consistency.
+                        // Simplest: Use a helper method for date parsing just for this service, matching expected formats.
+                        LocalDate date = parseDateFromTransactionTime(t.getTransactionTime());
+                        if (date != null) {
+                            return date.format(weekFormatter); // Format date to week identifier
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Failed to parse date for week grouping: " + t.getTransactionTime() + ". Skipping transaction.");
+                        // Transaction with unparseable date will be grouped under 'null' or skipped by filter
+                    }
+                    return "未知周"; // Group unparseable dates under an 'unknown' key
+                }));
+    }
 
     // Helper method to parse date from transaction time string (should match other parsers)
     private LocalDate parseDateFromTransactionTime(String timeStr) {
@@ -148,6 +148,7 @@ public class SummaryStatisticService {
     // doesn't easily allow counting unique users per week unless we augment the Transaction object
     // or wrap it with User info during loading.
     // A better approach for unique user count is to process user by user.
+
     public void generateAndSaveWeeklyStatistics() throws Exception {
         System.out.println("Generating weekly summary statistics (Revised approach)...");
         List<User> allUsers = userDao.getAllUsers();

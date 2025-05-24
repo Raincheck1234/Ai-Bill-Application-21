@@ -9,16 +9,16 @@ public class AIAnalyzerThreadTest {
 
 //    @Test
 //    public void testRunAIAnalyzerThread() throws InterruptedException {
-//        String userRequest = "请帮我分析最近的交易收支情况";
+//        String userRequest = "Please help me analyze the recent transaction income and expenditure";
 //        String filePath = "src/test/resources/sample_transactions.csv";
 //        String startTimeStr = "2025/03/20";
 //        String endTimeStr = "";
 //
-//        // 启动线程
+//        // Starting a Thread
 //        Thread thread = new Thread(new AIAnalyzerThread(userRequest, filePath, startTimeStr, endTimeStr));
 //        thread.start();
 //
-//        // 等待线程执行完成
+//        // Waiting for thread execution to complete
 //        thread.join();
 //    }
 }

@@ -10,38 +10,38 @@ public final class StandardCategories {
 
     // Standard Expense Categories for analysis and filtering
     public static final List<String> EXPENSE_CATEGORIES = Collections.unmodifiableList(List.of(
-            "餐饮",
-            "食品杂货",
-            "服饰",
-            "日用品",
-            "交通",
-            "娱乐",
-            "住房",
-            "通信",
-            "教育",
-            "医疗",
-            "金融服务",
-            "其他支出" // General catch-all for expenses
+            "Dining",
+            "Groceries",
+            "Clothing",
+            "Daily Necessities",
+            "Transportation",
+            "Entertainment",
+            "Housing",
+            "Communication",
+            "Education",
+            "Medical",
+            "Financial Services",
+            "Other Expenses"      //  General catch-all for expenses
     ));
 
     // Standard Income Categories
     public static final List<String> INCOME_CATEGORIES = Collections.unmodifiableList(List.of(
-            "工资",
-            "兼职收入",
-            "投资收益",
-            "其他收入" // General catch-all for income
+            "Salary",
+            "Part-time Income",
+            "Investment Income",
+            "Other Income"        //  General catch-all for income
     ));
 
     // Special Transaction Types (may not be strictly 'expense' or 'income' in analysis)
     public static final List<String> SPECIAL_TYPES = Collections.unmodifiableList(List.of(
-            "转账", // Transfers between accounts or people
-            "红包" // WeChat/Alipay Red Packets - often social, not regular income/expense
+            "Transfer",           //  Transfers between accounts or people
+            "Red Packet"          //  WeChat/Alipay Red Packets - often social, not regular income/expense
             // Add other special types as needed, e.g., Refund, Credit Card Repayment
     ));
 
     /**
      * Generates a comma-separated string of all standard categories for AI prompts.
-     * @return String like "餐饮,食品杂货,服饰,..."
+     * @return String like "Dining,Groceries,Clothing,..."
      */
     public static String getAllCategoriesString() {
         return ALL_KNOWN_TYPES.stream()
@@ -83,11 +83,11 @@ public final class StandardCategories {
      * For now, a simple direct match is used. In the future, this could use AI recognition results
      * or manual mapping rules.
      * @param rawType The transaction type string from data.
-     * @return The matched standard category, or the original rawType if no standard match, or "未知" for null/empty.
+     * @return The matched standard category, or the original rawType if no standard match, or "Unknown" for null/empty.
      */
     public static String getStandardCategory(String rawType) {
         if (rawType == null || rawType.trim().isEmpty()) {
-            return "未知"; // Unknown category
+            return "Unknown"; // Unknown category
         }
         String trimmedType = rawType.trim();
         // Check if it matches any standard category (case-insensitive might be better)
@@ -98,7 +98,7 @@ public final class StandardCategories {
 
         // Future Improvement: Implement smarter mapping here, potentially using AI suggestions
         // or a configuration file for mapping common user inputs to standard categories.
-        // E.g., if rawType is "吃饭", map to "餐饮". If "地铁票", map to "交通".
+
 
         return trimmedType; // If no standard match, return the original type.
         // We might want a dedicated "Other" if it doesn't fit any *known* type.

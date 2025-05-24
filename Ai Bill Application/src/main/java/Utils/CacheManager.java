@@ -75,8 +75,7 @@ public class CacheManager {
             // The cache key for List<Transaction> is likely a constant like "transactions"
             cache.invalidate(CaffeineKeys.TRANSACTION_CAFFEINE_KEY); // Invalidate the entry storing the transaction list
         }
-        // Optionally, remove the cache itself if the file is no longer needed
-        // fileCaches.remove(filePath); // Might do this on user logout, etc.
+
     }
 
     /**

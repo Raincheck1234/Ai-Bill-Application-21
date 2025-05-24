@@ -41,7 +41,7 @@ public class AITransactionServiceTest {
         System.out.println("AITransactionServiceTest: Running testAnalyzeTransactions...");
         try {
             String result = aiTransactionService.analyzeTransactions(
-                    "帮我分析一下最近的支出",
+                    "Help me analyze my recent spending",
                     testUser.getTransactionFilePath(),
                     "2025/03/01",
                     "2025/03/31"

@@ -3,7 +3,7 @@ package Controller;
 import javax.swing.*;
 import java.awt.*;
 
-// 直方图面板容器
+// Histogram Panel Container
 public class HistogramPanelContainer extends JPanel {
     private HistogramPanel histogramPanel;
     private JTextArea textArea;
@@ -15,9 +15,9 @@ public class HistogramPanelContainer extends JPanel {
         setLayout(new BorderLayout(10, 10));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JButton btnShowHistogram = new JButton("显示直方图");
-        JButton btnShowText1 = new JButton("显示文本 1");
-        JButton btnShowText2 = new JButton("显示文本 2");
+        JButton btnShowHistogram = new JButton("Show Histogram");
+        JButton btnShowText1 = new JButton("Show Text 1");
+        JButton btnShowText2 = new JButton("Show Text 2");
 
         buttonPanel.add(btnShowHistogram);
         buttonPanel.add(btnShowText1);
@@ -25,7 +25,7 @@ public class HistogramPanelContainer extends JPanel {
         add(buttonPanel, BorderLayout.NORTH);
 
         textArea = new JTextArea();
-        textArea.setFont(new Font("微软雅黑", Font.PLAIN, 18));
+        textArea.setFont(new Font("Microsoft YaHei", Font.PLAIN, 18)); // "微软雅黑" (Microsoft YaHei is a common font name)
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         textArea.setEditable(false);
@@ -37,7 +37,7 @@ public class HistogramPanelContainer extends JPanel {
         add(splitPane, BorderLayout.CENTER);
 
         btnShowHistogram.addActionListener(e -> toggleHistogram());
-        btnShowText1.addActionListener(e -> toggleText("这是一段非常长的文本..."));
+        btnShowText1.addActionListener(e -> toggleText("This is a very long text..."));
         btnShowText2.addActionListener(e -> toggleText("222222222222222"));
     }
 

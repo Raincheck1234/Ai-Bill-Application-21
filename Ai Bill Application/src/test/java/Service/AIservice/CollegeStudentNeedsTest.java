@@ -41,8 +41,8 @@ public class CollegeStudentNeedsTest {
         System.out.println("CollegeStudentNeedsTest: Running testRecognizeTransaction...");
         try {
             Transaction sampleTransaction = new Transaction(
-                    "2025/03/15 12:00", "午餐", "学校食堂", "红烧肉套餐", "支出",
-                    15.0, "校园卡", "已完成", "STU001", "SCH001", "普通午饭"
+                    "2025/03/15 12:00", "lunch", "school cafeteria", "braised pork set meal", "expenditure",
+                    15.0, "Campus Card", "Completed", "STU001", "SCH001", "Regular Lunch"
             );
             String category = collegeStudentNeeds.RecognizeTransaction(sampleTransaction);
             System.out.println("CollegeStudentNeedsTest (RecognizeTransaction) Suggested Category: " + category);

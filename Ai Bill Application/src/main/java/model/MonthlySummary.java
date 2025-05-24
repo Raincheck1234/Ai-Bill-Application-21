@@ -60,7 +60,7 @@ public class MonthlySummary {
             expenseByCategory.entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
                     .forEach(entry ->
-                            sb.append(String.format("    %s: %.2f元\n", entry.getKey(), entry.getValue()))
+                            sb.append(String.format("    %s: %.2fCNY\n", entry.getKey(), entry.getValue()))
                     );
         }
         return sb.toString();
