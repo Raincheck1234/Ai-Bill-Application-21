@@ -14,17 +14,43 @@ import Service.AIservice.AITransactionService; // Import AI Service classes
 import Service.AIservice.CollegeStudentNeeds;
 import Service.TransactionService;
 import Service.User.UserService;
-import com.formdev.flatlaf.FlatIntelliJLaf;
 import model.User;
 import Constants.ConfigConstants;
+
+// Import FlatLaf class
+import com.formdev.flatlaf.FlatIntelliJLaf; // Or FlatLaf, FlatDarculaLaf, etc.
 
 public class Main {
     public static void main(String[] args) {
         // Ensure ConfigConstants is loaded first
         String usersCsvPath = ConfigConstants.USERS_CSV_PATH;
-        String summaryCsvPath = ConfigConstants.SUMMARY_CSV_PATH;
+        String summaryCsvPath = ConfigConstants.SUMMARY_CSV_PATH; // This might be admin global path
+        String userDataBaseDir = ConfigConstants.USER_DATA_BASE_DIR; // Base directory for user data files
+
+
         System.out.println("Attempting to load users from: " + usersCsvPath);
-        System.out.println("Summary statistics will be saved to: " + summaryCsvPath);
+        System.out.println("User-specific data will be stored under: " + userDataBaseDir);
+
+
+        // --- Initialize FlatLaf Look and Feel ---
+        try {
+            // You can use different FlatLaf themes, like FlatLaf(), FlatDarculaLaf(), FlatLightLaf(), FlatDarkLaf()
+            // FlatIntelliJLaf is often a good starting point for a modern look
+            UIManager.setLookAndFeel( new FlatIntelliJLaf() );
+            System.out.println("FlatLaf Look and Feel initialized.");
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize FlatLaf Look and Feel" );
+            ex.printStackTrace();
+            // Handle the error - maybe set default Look and Feel or exit
+            // For robustness, you can set the system default L&F as a fallback:
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                System.out.println("Set System Look and Feel as fallback.");
+            } catch (Exception e) {
+                System.err.println("Failed to set System Look and Feel.");
+            }
+        }
+        // --- End FlatLaf Initialization ---
 
 
         // Initialize DAOs
@@ -34,21 +60,17 @@ public class Main {
 
 
         // Initialize Services
-        UserService userService = new UserService(userDao);
-        // TransactionServiceImpl is initialized per user in MenuUI -> NO, initialize it here and pass it!
-        // The TransactionServiceImpl instance *is* user-specific, so it's better to create it *after* login.
-        // But AI Services need it *before* MenuUI is fully constructed and shows the panel.
-        // Option 1: Pass TransactionService to MenuUI constructor and AI/CS services are initialized in MenuUI. (Current approach)
-        // Option 2: Create AI/CS services here in Main and pass them to MenuUI. They would need the user-specific TS instance.
-        // Let's stick with Option 1 for now, initializing AI/CS in MenuUI after getting TS.
+        // Inject DAOs into UserService
+        // Note: You mentioned inject TransactionDao and SummaryStatisticDao into UserService in Step 9.2.
+        // Let's confirm if UserService constructor was updated. If not, this line might cause error.
+        // Assuming UserService constructor now accepts TransactionDao and SummaryStatisticDao:
+        UserService userService = new UserService(userDao, transactionDao, summaryStatisticDao);
 
+
+        // SummaryStatisticService also needs these DAOs
         SummaryStatisticService summaryStatisticService = new SummaryStatisticService(userDao, transactionDao, summaryStatisticDao);
 
-        try {
-            UIManager.setLookAndFeel( new FlatIntelliJLaf() );
-        } catch( Exception ex ) {
-            System.err.println( "Failed to initialize LaF" );
-        }
+
         // In the event dispatch thread (EDT) start GUI
         SwingUtilities.invokeLater(() -> {
             LoginDialog loginDialog = new LoginDialog(userService);
@@ -57,30 +79,38 @@ public class Main {
             if (authenticatedUser != null) {
                 System.out.println("Logged in as: " + authenticatedUser.getUsername() + " (" + authenticatedUser.getRole() + ")");
                 System.out.println("User's transaction file: " + authenticatedUser.getTransactionFilePath());
+                if (authenticatedUser.getSummaryFilePath() != null) { // Check if summary path exists
+                    System.out.println("User's summary file: " + authenticatedUser.getSummaryFilePath());
+                }
+
 
                 // Initialize TransactionServiceImpl *for the logged-in user*
                 TransactionService transactionServiceForCurrentUser = new TransactionServiceImpl(authenticatedUser.getTransactionFilePath());
 
                 // Initialize AI Services *with* the user-specific TransactionService
-                // This is where AI/CS services are created with their dependency injected
+                // Assuming AITransactionService and CollegeStudentNeeds constructors accept TransactionService
                 AITransactionService aiTransactionService = new AITransactionService(transactionServiceForCurrentUser);
                 CollegeStudentNeeds collegeStudentNeeds = new CollegeStudentNeeds(transactionServiceForCurrentUser);
 
 
-                // Pass the authenticated user, their transaction service, summary statistic service, AND AI services to MenuUI
-                MenuUI menuUI = new MenuUI(authenticatedUser, transactionServiceForCurrentUser, summaryStatisticService, aiTransactionService, collegeStudentNeeds); // Modify MenuUI constructor
+                // Pass all necessary service instances to MenuUI
+                // Assuming MenuUI constructor accepts all these services
+                MenuUI menuUI = new MenuUI(authenticatedUser, transactionServiceForCurrentUser, summaryStatisticService, aiTransactionService, collegeStudentNeeds);
 
 
-                JFrame frame = new JFrame("Transaction Management System - " + authenticatedUser.getUsername());
+                JFrame frame = new JFrame("Transaction Management System - " + authenticatedUser.getUsername()); // Include username in title
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setSize(2000, 1500);
+                frame.setSize(1200, 600); // Reverted size, 2000x1500 is very large
                 frame.setLocationRelativeTo(null);
-                frame.add(menuUI.createMainPanel());
+                frame.add(menuUI.createMainPanel()); // Get the main panel from MenuUI instance
                 frame.setVisible(true);
             } else {
                 System.out.println("Login failed or cancelled. Exiting.");
-                System.exit(0);
+                System.exit(0); // Exit on login failure or cancel
             }
         });
     }
+
+    // showMainUI method is not used anymore
+    // private static void showMainUI(JPanel panel) { ... }
 }

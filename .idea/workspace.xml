@@ -5,11 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6bf69696-d36a-42be-8caa-8a990ff96ed1" name="更改" comment="翻译后版本">
+      <change afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Interceptor/Login/RegistrationDialog.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/CSVForm/transactions/admin_transactions_opy.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Constants/ConfigConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Constants/ConfigConstants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/DAO/Impl/CsvUserDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/DAO/Impl/CsvUserDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/DAO/UserDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/DAO/UserDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Interceptor/Login/LoginDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Interceptor/Login/LoginDialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Service/Impl/SummaryStatisticService.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Service/Impl/SummaryStatisticService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/CSVForm/stats/summary_statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/CSVForm/stats/summary_statistics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Service/User/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/Service/User/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/java/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/java/model/User.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/CSVForm/transactions/admin_transactions.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/CSVForm/transactions/admin_transactions.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Ai-Bill-Application-Prompt.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Ai-Bill-Application-Prompt.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/CSVForm/users/users.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/CSVForm/users/users.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/Ai Bill Application/src/main/resources/config.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,12 +83,15 @@
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler",
     "vue.rearranger.settings.migration": "true",
-    "应用程序.Main.executor": "Run"
+    "应用程序.Main.executor": "Debug"
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\学习\软工\新建 WinRAR ZIP 压缩文件(2)\Ai-Bill-Application-Group211 - 副本\Ai Bill Application\src\main\resources\CSVForm\transactions" />
+      <recent name="D:\学习\软工\新建 WinRAR ZIP 压缩文件(2)\Ai-Bill-Application-Group211 - 副本\Ai Bill Application\src\main\java\Service\Impl" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\学习\软工\新建 WinRAR ZIP 压缩文件(2)\Ai-Bill-Application-Group211\Ai Bill Application\src\main\java\Service\Impl" />
       <recent name="D:\学习\软工\新建 WinRAR ZIP 压缩文件(2)\Ai-Bill-Application-Group211\Ai Bill Application\src\main\java\Controller" />
     </key>
   </component>
@@ -111,10 +125,13 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1748057151822</updated>
-      <workItem from="1748057153094" duration="3400000" />
-      <workItem from="1748066604581" duration="360000" />
-      <workItem from="1748067034728" duration="1408000" />
-      <workItem from="1748071311593" duration="1629000" />
+      <workItem from="1748057153094" duration="2492000" />
+      <workItem from="1748066971965" duration="38000" />
+      <workItem from="1748067018880" duration="12000" />
+      <workItem from="1748067103043" duration="129000" />
+      <workItem from="1748068460841" duration="2717000" />
+      <workItem from="1748072470072" duration="2511000" />
+      <workItem from="1748082031687" duration="653000" />
     </task>
     <task id="LOCAL-00001" summary="翻译后版本">
       <option name="closed" value="true" />
@@ -160,5 +177,29 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="翻译后版本" />
     <option name="LAST_COMMIT_MESSAGE" value="翻译后版本" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/Ai Bill Application/src/main/java/DAO/Impl/CsvUserDao.java</url>
+          <line>84</line>
+          <properties class="DAO.Impl.CsvUserDao" method="addUser">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Ai Bill Application/src/main/java/Service/User/UserService.java</url>
+          <line>199</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
