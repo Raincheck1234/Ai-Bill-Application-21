@@ -170,13 +170,36 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public void addTransaction(Transaction transaction) throws IOException {
-        // Set transaction time to current time if not already set
-        if (transaction.getTransactionTime() == null || transaction.getTransactionTime().isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-            // Using a flexible format, match parseDateTime in AITransactionService
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-            String currentTime = now.format(formatter);
-            transaction.setTransactionTime(currentTime);
+        // 增强参数验证
+        if (transaction == null) {
+            throw new IllegalArgumentException("交易记录不能为空");
+        }
+        
+        // 严格验证交易时间格式
+        String transactionTime = transaction.getTransactionTime();
+        if (transactionTime != null && !transactionTime.isEmpty()) {
+            if (!transactionTime.matches("^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01]) ([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$")) {
+                throw new IllegalArgumentException("交易时间格式必须为 yyyy/MM/dd HH:mm:ss（例: 2023/12/31 23:59:59）");
+            }
+        } else {
+            // 自动生成符合格式的当前时间
+            transaction.setTransactionTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
+        }
+
+        // 验证金额为有效数字
+        if (transaction.getPaymentAmount() <= 0) {
+            throw new IllegalArgumentException("交易金额必须为大于零的有效数字");
+        }
+
+        // 严格验证交易状态
+        String status = transaction.getCurrentStatus();
+        if (status == null || !status.matches("^(已完成|未完成)$")) {
+            throw new IllegalArgumentException("当前状态必须为'已完成'或'未完成'");
+        }
+
+        // 保留原有交易类型验证
+        if (transaction.getTransactionType() == null || transaction.getTransactionType().trim().isEmpty()) {
+            throw new IllegalArgumentException("交易类型不能为空");
         }
 
         try {
@@ -250,10 +273,13 @@ public class TransactionServiceImpl implements TransactionService {
      * Helper method: Updates non-empty fields from source to target.
      */
     private void updateTransactionFields(Transaction target, Transaction source) {
-        // Assuming orderNumber is the key and shouldn't be updated this way
-        // Add checks for null and empty strings before updating
+        // 增强字段验证
         if (source.getTransactionTime() != null && !source.getTransactionTime().trim().isEmpty()) {
-            target.setTransactionTime(source.getTransactionTime().trim());
+            String newTime = source.getTransactionTime().trim();
+            if (!newTime.matches("^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01]) ([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$")) {
+                throw new IllegalArgumentException("更新时间格式必须为 yyyy/MM/dd HH:mm:ss（例: 2023/12/31 23:59:59）");
+            }
+            target.setTransactionTime(newTime);
         }
         if (source.getTransactionType() != null && !source.getTransactionType().trim().isEmpty()) {
             target.setTransactionType(source.getTransactionType().trim());
@@ -298,7 +324,11 @@ public class TransactionServiceImpl implements TransactionService {
             target.setPaymentMethod(source.getPaymentMethod().trim());
         }
         if (source.getCurrentStatus() != null && !source.getCurrentStatus().trim().isEmpty()) {
-            target.setCurrentStatus(source.getCurrentStatus().trim());
+            String newStatus = source.getCurrentStatus().trim();
+            if (!newStatus.matches("^(已完成|未完成)$")) {
+                throw new IllegalArgumentException("当前状态必须为'已完成'或'未完成'");
+            }
+            target.setCurrentStatus(newStatus);
         }
         // OrderNumber is typically the key, updating it is risky and often disallowed.
         // If allowed, need to ensure uniqueness and handle file operations carefully.

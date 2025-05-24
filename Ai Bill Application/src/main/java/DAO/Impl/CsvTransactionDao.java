@@ -127,15 +127,8 @@ public class CsvTransactionDao implements TransactionDao { // Implement Transact
         // For clarity, let's make it load from CSV directly, but the service will prefer cache.
         // Note: This might re-read the file even if cached. Service layer needs to manage this.
         // Alternatively, this method could be removed from the interface/DAO if only cache loader uses loadFromCSV.
-        // Let's keep it for now, assuming it's a direct file read fallback.
         System.out.println("DAO: Calling getAllTransactions directly from file (consider using service/cache)");
-        // We need a way to know *which* file here. This method signature is problematic for multi-user.
-        // The interface needs filePath, or the DAO instance needs to be created per file.
-        // Let's adjust the interface/DAO to be file-specific or pass path to methods.
-        // Option 1: DAO instance per file.
-        // Option 2: Add filePath parameter to all relevant interface methods.
-        // Option 2 seems more flexible for a single CsvTransactionDao class.
-        // Let's add filePath to interface methods and implement here.
+
 
         // *** Decision: Modify TransactionDao interface to include filePath ***
         throw new UnsupportedOperationException("This method signature is not suitable for multi-user. Use the overloaded method with filePath.");
