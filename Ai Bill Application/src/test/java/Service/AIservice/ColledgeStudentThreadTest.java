@@ -1,5 +1,7 @@
 package Service.AIservice;
 
+import DAO.Impl.CsvSummaryStatisticDao;
+import DAO.Impl.CsvTransactionDao;
 import DAO.Impl.CsvUserDao;
 import DAO.UserDao;
 import Service.Impl.TransactionServiceImpl;
@@ -16,7 +18,7 @@ public class ColledgeStudentThreadTest { // Corrected class name
     void testRunCollegeStudentThread() {
         System.out.println("CollegeStudentThreadTest: Running testRunCollegeStudentThread...");
         UserDao userDao = new CsvUserDao(ConfigConstants.USERS_CSV_PATH);
-        UserService userService = new UserService(userDao);
+        UserService userService = new UserService(userDao, new CsvTransactionDao(), new CsvSummaryStatisticDao());
         User testUser = userService.authenticate("user1", "pass123"); // Student user
 
         if (testUser == null) {

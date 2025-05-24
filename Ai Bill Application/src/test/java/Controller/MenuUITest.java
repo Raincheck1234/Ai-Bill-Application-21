@@ -14,12 +14,14 @@ import Service.Impl.SummaryStatisticService;
 import Service.Impl.TransactionServiceImpl;
 import Service.TransactionService;
 import Service.User.UserService;
+import com.group21.ai.Main;
 import model.User;
 import Constants.ConfigConstants; // For paths
 
 import org.junit.jupiter.api.Test;
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.ExecutorService;
 
 public class MenuUITest {
 
@@ -27,7 +29,7 @@ public class MenuUITest {
     void testDisplayMenuUI() {
         // Setup services and user
         UserDao userDao = new CsvUserDao(ConfigConstants.USERS_CSV_PATH);
-        UserService userService = new UserService(userDao);
+        UserService userService = new UserService(userDao, new CsvTransactionDao(), new CsvSummaryStatisticDao());
         // Authenticate a test user (e.g., user1)
         User testUser = userService.authenticate("user1", "pass123");
         if (testUser == null) {
@@ -50,9 +52,11 @@ public class MenuUITest {
         AITransactionService aiTransactionService = new AITransactionService(transactionService);
         CollegeStudentNeeds collegeStudentNeeds = new CollegeStudentNeeds(transactionService);
 
+        ExecutorService executorService = Main.getExecutorService(); // Assuming Main class has a static method to get the executor service
+
         SwingUtilities.invokeLater(() -> {
             try {
-                MenuUI menuUI = new MenuUI(currentUser, transactionService, summaryStatisticService, aiTransactionService, collegeStudentNeeds);
+                MenuUI menuUI = new MenuUI(currentUser, transactionService, summaryStatisticService, aiTransactionService, collegeStudentNeeds, executorService);
                 JPanel mainPanel = menuUI.createMainPanel();
 
                 JFrame frame = new JFrame("MenuUI Test Display");

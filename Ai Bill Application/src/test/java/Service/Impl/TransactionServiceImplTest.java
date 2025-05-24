@@ -1,5 +1,6 @@
 package Service.Impl;
 
+import DAO.Impl.CsvSummaryStatisticDao;
 import DAO.Impl.CsvTransactionDao; // For direct use in creating temp files if needed
 import DAO.Impl.CsvUserDao;
 import DAO.UserDao;
@@ -42,7 +43,7 @@ public class TransactionServiceImplTest {
         // Initialize UserService and authenticate a test user.
         // This setup assumes user authentication and user CSV structure are working.
         UserDao userDao = new CsvUserDao(ConfigConstants.USERS_CSV_PATH); // Assumes USERS_CSV_PATH is correctly configured.
-        UserService userService = new UserService(userDao);
+        UserService userService = new UserService(userDao, new CsvTransactionDao(), new CsvSummaryStatisticDao());
         testUser = userService.authenticate("user1", "pass123"); // Use actual credentials for a test user
 
         if (testUser == null) {

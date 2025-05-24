@@ -1,5 +1,7 @@
 package Service.User;
 
+import DAO.Impl.CsvSummaryStatisticDao;
+import DAO.Impl.CsvTransactionDao;
 import DAO.Impl.CsvUserDao;
 import DAO.UserDao;
 import model.User;
@@ -15,7 +17,7 @@ public class UserServiceTest {
     @BeforeEach
     void setUp() {
         UserDao userDao = new CsvUserDao(ConfigConstants.USERS_CSV_PATH);
-        userService = new UserService(userDao);
+        userService = new UserService(userDao, new CsvTransactionDao(), new CsvSummaryStatisticDao());
     }
 
     @Test

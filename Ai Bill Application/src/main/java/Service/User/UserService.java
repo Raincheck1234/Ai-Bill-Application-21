@@ -51,6 +51,9 @@ public class UserService {
 
         loadUsers(); // Load users when the service is initialized
     }
+//
+//    public UserService(UserDao userDao) {
+//    }
 
     /**
      * Loads all users into an in-memory cache.

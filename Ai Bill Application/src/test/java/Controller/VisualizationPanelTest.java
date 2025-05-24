@@ -1,6 +1,8 @@
 package Controller;
 
 import Controller.VisualizationPanel;
+import DAO.Impl.CsvSummaryStatisticDao;
+import DAO.Impl.CsvTransactionDao;
 import DAO.Impl.CsvUserDao;
 import DAO.UserDao;
 import Service.Impl.TransactionServiceImpl;
@@ -19,7 +21,7 @@ public class VisualizationPanelTest {
     void testDisplayVisualizationPanel() {
         // Setup a TransactionService instance
         UserDao userDao = new CsvUserDao(ConfigConstants.USERS_CSV_PATH);
-        UserService userService = new UserService(userDao);
+        UserService userService = new UserService(userDao, new CsvTransactionDao(), new CsvSummaryStatisticDao());
         User testUser = userService.authenticate("user1", "pass123"); // Using user1 for transaction data
 
         if (testUser == null) {
